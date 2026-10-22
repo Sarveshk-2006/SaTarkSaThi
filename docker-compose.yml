@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  satark-saathi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: satark-saathi:latest
+    container_name: satark_saathi_app
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=Satark Saathi API
+      - APP_ENV=production
+      - DEBUG=false
+      - PORT=8000
+      - HOST=0.0.0.0
+      - DATABASE_URL=sqlite:///./satark_saathi.db
+      - ANALYSIS_PROVIDER=watsonx
+      - WATSONX_APIKEY=bob_prod_bob-apikey_3jL8vHQCvrWzrrCPjvyjMpoQFGgPwVhUPAUFugdvxvsxxQ4M4hQkk5QU6yS3fwqVmCGmijZaPmoLXV37qo2e6dx4_5B6scRNgiXLqbpPNQ2AjL3ZcEgHXgghruGvNEjZPEBtA
+      - BOB_API_KEY=bob_prod_bob-apikey_3jL8vHQCvrWzrrCPjvyjMpoQFGgPwVhUPAUFugdvxvsxxQ4M4hQkk5QU6yS3fwqVmCGmijZaPmoLXV37qo2e6dx4_5B6scRNgiXLqbpPNQ2AjL3ZcEgHXgghruGvNEjZPEBtA
+      - BOBSHELL_API_KEY=bob_prod_bob-apikey_3jL8vHQCvrWzrrCPjvyjMpoQFGgPwVhUPAUFugdvxvsxxQ4M4hQkk5QU6yS3fwqVmCGmijZaPmoLXV37qo2e6dx4_5B6scRNgiXLqbpPNQ2AjL3ZcEgHXgghruGvNEjZPEBtA
+    volumes:
+      - satark_data:/app
+    restart: unless-stopped
+
+volumes:
+  satark_data:

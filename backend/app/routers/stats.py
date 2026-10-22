@@ -1,0 +1,44 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from backend.app.database import get_db
+from backend.app.models import ScamAnalysis, FamilyAlert, TrustedContact, Incident
+from backend.app.schemas import OverviewStatsResponse
+
+router = APIRouter(prefix="/stats", tags=["Statistics & Overview"])
+
+@router.get("/overview", response_model=OverviewStatsResponse)
+def get_overview_stats(db: Session = Depends(get_db)):
+    """
+    Computes real summary metrics derived solely from stored records in the local database.
+    Does not invent fabricated threat counts.
+    """
+    total_analyses = db.query(ScamAnalysis).count()
+    high_risk_analyses = db.query(ScamAnalysis).filter(ScamAnalysis.severity == "HIGH_RISK").count()
+    caution_analyses = db.query(ScamAnalysis).filter(ScamAnalysis.severity == "CAUTION").count()
+    safe_analyses = db.query(ScamAnalysis).filter(ScamAnalysis.severity == "SAFE").count()
+
+    total_family_alerts = db.query(FamilyAlert).count()
+    active_trusted_contacts = db.query(TrustedContact).filter(TrustedContact.is_active == True).count()
+    
+    total_incidents = db.query(Incident).count()
+    recovery_cases_created = db.query(Incident).filter(Incident.financial_loss > 0).count()
+
+    total_loss_recorded = db.query(func.coalesce(func.sum(Incident.financial_loss), 0.0)).scalar()
+
+    recent_incidents = db.query(Incident).order_by(Incident.created_at.desc()).limit(5).all()
+    recent_analyses = db.query(ScamAnalysis).order_by(ScamAnalysis.created_at.desc()).limit(5).all()
+
+    return OverviewStatsResponse(
+        total_analyses=total_analyses,
+        high_risk_analyses=high_risk_analyses,
+        caution_analyses=caution_analyses,
+        safe_analyses=safe_analyses,
+        total_family_alerts=total_family_alerts,
+        active_trusted_contacts=active_trusted_contacts,
+        total_incidents=total_incidents,
+        recovery_cases_created=recovery_cases_created,
+        total_loss_recorded=float(total_loss_recorded),
+        recent_incidents=recent_incidents,
+        recent_analyses=recent_analyses
+    )
