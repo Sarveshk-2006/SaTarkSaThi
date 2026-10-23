@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,10 +6,12 @@
 
 @layer base {
   :root {
-    --bg-main: #FBFBFA;
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
+    --bg-main: #F6F8FB;
+    --text-primary: #182536;
+    --text-secondary: #64748B;
     --border-color: #E2E8F0;
+    --brand-teal: #176B58;
+    --brand-navy: #14243A;
   }
 
   body {
@@ -22,9 +24,9 @@
     margin: 0;
   }
 
-  /* Accessible focus indicators */
+  /* Accessible, restrained focus indicators */
   :focus-visible {
-    outline: 2px solid #0D9488;
+    outline: 2px solid #176B58;
     outline-offset: 2px;
   }
 }

@@ -167,23 +167,23 @@ export const SettingsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: User Profile Form (6 cols) */}
         <div className="lg:col-span-6 space-y-4">
-          <form onSubmit={handleSaveProfile} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-2.5">
-              <User className="w-4 h-4 text-teal-800" />
+          <form onSubmit={handleSaveProfile} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
+              <User className="w-4 h-4 text-[#176B58]" />
               <span>Primary User Profile (Complainant)</span>
             </div>
             <p className="text-xs text-slate-500">
               These details are automatically populated in the 1930 Cyber Crime and Bank Nodal dispute drafts.
             </p>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3.5 text-xs">
               <div>
                 <label className="font-semibold text-slate-700 block mb-1">Full Legal Name *</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
@@ -194,7 +194,7 @@ export const SettingsPage: React.FC = () => {
                     type="text"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                   />
                 </div>
                 <div>
@@ -203,7 +203,7 @@ export const SettingsPage: React.FC = () => {
                     type="text"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900"
+                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                   />
                 </div>
               </div>
@@ -214,7 +214,7 @@ export const SettingsPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
@@ -224,7 +224,7 @@ export const SettingsPage: React.FC = () => {
                   type="text"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
@@ -232,7 +232,7 @@ export const SettingsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={savingProfile}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-teal-800 hover:bg-teal-900 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-[#176B58] hover:bg-[#125243] disabled:opacity-50 rounded-xl shadow-sm transition-colors cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{savingProfile ? 'Saving...' : 'Save Profile'}</span>
@@ -242,10 +242,10 @@ export const SettingsPage: React.FC = () => {
           </form>
 
           {/* Database Reset / Evaluation Tools */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-2">
-              <Database className="w-4 h-4 text-teal-800" />
-              <span>Hackathon Evaluation & Seed Data Controls</span>
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
+              <Database className="w-4 h-4 text-[#176B58]" />
+              <span>Demonstration &amp; Seed Data Controls</span>
             </div>
             <p className="text-xs text-slate-500 leading-relaxed">
               Switch between a brand new, empty account state and realistic pre-loaded Indian scam cases (Digital Arrest, Electricity Phishing).
@@ -255,7 +255,7 @@ export const SettingsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsSeedModalOpen(true)}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-lg transition-colors"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-[#176B58] bg-[#E8F5EF] hover:bg-teal-100/70 border border-teal-200 rounded-xl transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Restore Realistic Demo Data</span>
@@ -264,7 +264,7 @@ export const SettingsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsResetEmptyModalOpen(true)}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-lg transition-colors"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-colors cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5 text-slate-500" />
                 <span>Test Clean Empty State</span>
@@ -275,14 +275,14 @@ export const SettingsPage: React.FC = () => {
 
         {/* Right Column: AI Engine & WatsonX Adapter Settings (6 cols) */}
         <div className="lg:col-span-6 space-y-4">
-          <form onSubmit={handleSaveAiSettings} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-2.5">
-              <Sparkles className="w-4 h-4 text-teal-800" />
-              <span>AI Analysis Engine & IBM watsonx.ai Bridge</span>
+          <form onSubmit={handleSaveAiSettings} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
+              <Sparkles className="w-4 h-4 text-[#176B58]" />
+              <span>AI Analysis Engine &amp; IBM watsonx.ai Bridge</span>
             </div>
 
-            <div className="p-3 bg-teal-50/70 rounded-lg border border-teal-200 text-xs text-teal-950 leading-relaxed">
-              <span className="font-bold block mb-0.5">Injectable IBM watsonx.ai Granite Architecture</span>
+            <div className="p-3.5 bg-[#E8F5EF] rounded-xl border border-teal-200 text-xs text-[#176B58] leading-relaxed">
+              <span className="font-bold block mb-0.5 text-slate-900">Injectable IBM watsonx.ai Granite Architecture</span>
               The platform implements an injectable analysis adapter interface. The default high-speed Indian heuristic engine requires no API keys. Enter your IBM watsonx.ai credentials below to bridge IBM Granite foundation models in the next evaluation phase.
             </div>
 
@@ -292,7 +292,7 @@ export const SettingsPage: React.FC = () => {
                 <select
                   value={provider}
                   onChange={(e) => setProvider(e.target.value)}
-                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-medium"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 >
                   <option value="rule_based">Satark Heuristic Engine (Offline / Rapid Heuristics)</option>
                   <option value="watsonx">IBM watsonx.ai Granite Model Adapter (Injectable)</option>
@@ -306,7 +306,7 @@ export const SettingsPage: React.FC = () => {
                   value={watsonxApiKey}
                   onChange={(e) => setWatsonxApiKey(e.target.value)}
                   placeholder="Optional: Enter IBM Cloud watsonx API key"
-                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
@@ -317,7 +317,7 @@ export const SettingsPage: React.FC = () => {
                   value={watsonxProjectId}
                   onChange={(e) => setWatsonxProjectId(e.target.value)}
                   placeholder="Optional: Enter watsonx Project GUID"
-                  className="w-full p-2 bg-slate-50 border border-slate-300 rounded-lg font-mono text-slate-900"
+                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
@@ -325,7 +325,7 @@ export const SettingsPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={savingAi}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-teal-800 hover:bg-teal-900 disabled:opacity-50 rounded-lg shadow-sm transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-[#176B58] hover:bg-[#125243] disabled:opacity-50 rounded-xl shadow-sm transition-colors cursor-pointer"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{savingAi ? 'Saving...' : 'Update AI Engine Config'}</span>
@@ -335,9 +335,9 @@ export const SettingsPage: React.FC = () => {
           </form>
 
           {/* Platform Standards / Ethical Compliance Note */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-2 text-xs text-slate-600">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-xs text-slate-600">
             <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-              Credible Fintech & Responsible AI Guardrails
+              Credible Fintech &amp; Responsible AI Guardrails
             </h4>
             <ul className="space-y-1.5 list-disc list-inside text-slate-600 leading-relaxed text-[11px]">
               <li>Never invents live threat counts or claims fictitious direct links to police databases.</li>

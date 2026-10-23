@@ -147,8 +147,8 @@ export const IncidentHistoryPage: React.FC = () => {
       <div className="border-b border-slate-200 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <History className="w-6 h-6 text-teal-800" />
-            Incident History & Audit Ledger
+            <History className="w-6 h-6 text-[#176B58]" />
+            Incident History &amp; Audit Ledger
           </h1>
           <p className="text-sm text-slate-600 mt-1">
             Complete database records of detected scam attempts, family notifications, and recovery filings.
@@ -157,7 +157,7 @@ export const IncidentHistoryPage: React.FC = () => {
 
         <button
           onClick={() => navigate('/golden-hour')}
-          className="px-4 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer self-start sm:self-auto"
+          className="px-4 py-2 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer self-start sm:self-auto transition-colors"
         >
           <LifeBuoy className="w-4 h-4" />
           New Recovery Case
@@ -175,7 +175,7 @@ export const IncidentHistoryPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by ID (SA-...), title, bank, or UTR..."
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 font-mono"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] font-mono"
             />
           </div>
 
@@ -184,7 +184,7 @@ export const IncidentHistoryPage: React.FC = () => {
             <select
               value={scamTypeFilter}
               onChange={(e) => setScamTypeFilter(e.target.value)}
-              className="w-full py-2 px-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+              className="w-full py-2 px-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
             >
               <option value="">All Scam Categories</option>
               <option value="Digital Arrest / Police Impersonation Fraud">Digital Arrest Fraud</option>
@@ -199,7 +199,7 @@ export const IncidentHistoryPage: React.FC = () => {
             <select
               value={riskLevelFilter}
               onChange={(e) => setRiskLevelFilter(e.target.value)}
-              className="w-full py-2 px-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+              className="w-full py-2 px-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
             >
               <option value="">All Risk Levels</option>
               <option value="CRITICAL">Critical</option>
@@ -214,7 +214,7 @@ export const IncidentHistoryPage: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full py-2 px-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+              className="w-full py-2 px-3 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
             >
               <option value="">All Statuses</option>
               <option value="UNDER_REVIEW">Under Review</option>
@@ -230,7 +230,7 @@ export const IncidentHistoryPage: React.FC = () => {
             <span className="text-slate-500">Filtered view active</span>
             <button
               onClick={resetFilters}
-              className="text-teal-800 font-semibold hover:underline cursor-pointer"
+              className="text-[#176B58] font-semibold hover:underline cursor-pointer"
             >
               Reset All Filters
             </button>
@@ -332,7 +332,7 @@ export const IncidentHistoryPage: React.FC = () => {
             <div className="flex items-start justify-between border-b border-slate-100 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                  <span className="font-mono text-xs font-bold text-[#176B58] bg-[#E8F5EF] px-2 py-0.5 rounded border border-teal-200">
                     {selectedIncident.incident_id}
                   </span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
@@ -388,7 +388,7 @@ export const IncidentHistoryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate(`/golden-hour?incident_id=${encodeURIComponent(selectedIncident.incident_id)}`)}
-                className="w-full py-2.5 px-3 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                className="w-full py-2.5 px-3 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
               >
                 <LifeBuoy className="w-4 h-4 text-amber-400" />
                 Open Golden Hour Recovery Desk for this Case &rarr;
@@ -407,7 +407,7 @@ export const IncidentHistoryPage: React.FC = () => {
                     onClick={() => handleUpdateStatus(selectedIncident.incident_id, st)}
                     className={`py-2 px-2.5 rounded-xl text-xs font-semibold border text-center transition-all cursor-pointer ${
                       selectedIncident.status === st
-                        ? 'bg-teal-800 text-white border-teal-800 shadow-xs'
+                        ? 'bg-[#176B58] text-white border-[#176B58] shadow-xs'
                         : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
@@ -426,7 +426,7 @@ export const IncidentHistoryPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleExportAuditJson}
-                  className="text-xs text-teal-800 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-[#176B58] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
                 >
                   <FileDown className="w-3.5 h-3.5" />
                   Export JSON
@@ -467,7 +467,7 @@ export const IncidentHistoryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/golden-hour', { state: { classification: selectedIncident.scam_type, summary: selectedIncident.description } })}
-                className="text-xs font-semibold text-teal-800 hover:text-teal-900 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-[#176B58] hover:text-[#125243] flex items-center gap-1 cursor-pointer"
               >
                 Draft Complaint Dossier &rarr;
               </button>

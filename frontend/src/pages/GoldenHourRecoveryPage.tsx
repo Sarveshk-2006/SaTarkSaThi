@@ -30,6 +30,7 @@ import {
 } from '../api/types';
 import { CopyButton } from '../components/common/CopyButton';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
+import { SimulationBanner } from '../components/common/SimulationBanner';
 import { useToast } from '../context/ToastContext';
 
 export const GoldenHourRecoveryPage: React.FC = () => {
@@ -299,21 +300,23 @@ export const GoldenHourRecoveryPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <SimulationBanner message="Golden Hour Incident Recovery prepares verified, structured dispute drafts for cyber authorities and bank nodal desks. Dispatches under Step 4 demonstrate prototype electronic freeze formatting without creating real FIR police filings." />
+
       {/* 1930 Cyber Fraud Helpline Urgent Banner (Mandatory Requirement) */}
-      <div className="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-white rounded-2xl p-6 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-red-500">
+      <div className="bg-[#991B1B] text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-red-700/60">
         <div className="flex items-start gap-4">
           <div className="p-3 bg-white/10 rounded-2xl border border-white/20 shrink-0">
             <PhoneCall className="w-8 h-8 text-white animate-bounce-short" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white text-red-700">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white text-[#991B1B]">
                 CRITICAL GOLDEN HOUR ACTION
               </span>
               <span className="text-xs text-red-100 font-medium">Within 2 to 3 Hours</span>
             </div>
-            <h2 className="text-xl font-black mt-1">
+            <h2 className="text-xl font-bold mt-1 tracking-tight">
               Dial 1930 &bull; Citizen Cyber Fraud Reporting System
             </h2>
             <p className="text-xs text-red-100 mt-1 max-w-xl leading-relaxed">
@@ -321,7 +324,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="underline font-bold text-white hover:text-amber-200">
                 cybercrime.gov.in
               </a>. Initiates inter-bank lien marking to freeze funds before mule ATM withdrawals.
-              <span className="block mt-1 text-[11px] text-red-200 font-medium">
+              <span className="block mt-1 text-[11px] text-red-200 font-normal">
                 *Notice: Official reporting initiates immediate tracing, but does not guarantee recovery.
               </span>
             </p>
@@ -331,16 +334,16 @@ export const GoldenHourRecoveryPage: React.FC = () => {
         <div className="flex items-center gap-2.5 shrink-0">
           <a
             href="tel:1930"
-            className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-red-700 font-bold text-sm flex items-center gap-2 shadow-lg transition-transform active:scale-95"
+            className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-[#991B1B] font-bold text-sm flex items-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
           >
-            <PhoneCall className="w-4 h-4 text-red-700" />
+            <PhoneCall className="w-4 h-4 text-[#991B1B]" />
             Call 1930 Now
           </a>
           <a
             href="https://cybercrime.gov.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-3 rounded-xl bg-red-800/80 hover:bg-red-800 text-white font-semibold text-xs flex items-center gap-1.5 border border-red-400/40"
+            className="px-4 py-3 rounded-xl bg-red-950/60 hover:bg-red-950 text-white font-medium text-xs flex items-center gap-1.5 border border-red-400/30 cursor-pointer"
           >
             Portal
             <ExternalLink className="w-3.5 h-3.5" />
@@ -354,11 +357,11 @@ export const GoldenHourRecoveryPage: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <LifeBuoy className="w-5 h-5 text-teal-800" />
+                <LifeBuoy className="w-5 h-5 text-[#176B58]" />
                 Golden Hour Incident Recovery Wizard
               </h1>
               {linkedIncidentId && (
-                <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-900 border border-teal-200">
+                <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#E8F5EF] text-[#176B58] border border-teal-200">
                   Case #{linkedIncidentId}
                 </span>
               )}
@@ -367,15 +370,15 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               Compile non-fabricated, structured dispute drafts for cyber authorities and bank nodal desks.
             </p>
           </div>
-          <span className="text-xs font-bold text-slate-700 bg-slate-100 px-3 py-1 rounded-xl">
+          <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1 rounded-xl">
             Step {wizardStep} of 4
           </span>
         </div>
 
         {/* Case Hydration Loading State */}
         {caseLoading && (
-          <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-800 flex items-center gap-2">
-            <RotateCcw className="w-4 h-4 text-teal-600 animate-spin" />
+          <div className="p-3 bg-[#E8F5EF] border border-teal-200 rounded-xl text-xs text-[#176B58] flex items-center gap-2">
+            <RotateCcw className="w-4 h-4 text-[#176B58] animate-spin" />
             <span>Retrieving authoritative incident dossier from backend...</span>
           </div>
         )}
@@ -407,11 +410,11 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               onClick={() => {
                 if (generatedDraft || s.step < wizardStep) setWizardStep(s.step as any);
               }}
-              className={`py-2 px-1 rounded-xl font-bold transition-all border ${
+              className={`py-2 px-1 rounded-xl font-semibold transition-all border ${
                 wizardStep === s.step
-                  ? 'bg-teal-800 text-white border-teal-800 shadow-sm'
+                  ? 'bg-[#176B58] text-white border-[#176B58] shadow-sm'
                   : wizardStep > s.step
-                  ? 'bg-teal-50 text-teal-900 border-teal-200 cursor-pointer'
+                  ? 'bg-[#E8F5EF] text-[#176B58] border-teal-200 cursor-pointer'
                   : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
               }`}
             >
@@ -425,7 +428,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
       {wizardStep === 1 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
           <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-teal-800" />
+            <Calendar className="w-5 h-5 text-[#176B58]" />
             Step 1: Incident Particulars
           </h2>
 
@@ -438,7 +441,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 type="datetime-local"
                 value={incidentDate}
                 onChange={(e) => setIncidentDate(e.target.value)}
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               />
             </div>
 
@@ -449,7 +452,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               <select
                 value={scamType}
                 onChange={(e) => setScamType(e.target.value)}
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               >
                 <option value="Digital Arrest Scam">Digital Arrest Scam (Fake Police / CBI)</option>
                 <option value="Utility Impersonation Phishing">Electricity Bill Disconnection Threat</option>
@@ -470,7 +473,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               value={channel}
               onChange={(e) => setChannel(e.target.value)}
               placeholder="e.g. WhatsApp Video Call (+91 98201 98201), Skype, Telegram"
-              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
             />
           </div>
 
@@ -484,7 +487,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Explain clearly what happened: who called, what claims were made, what pressure was applied..."
-              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 leading-relaxed"
+              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] leading-relaxed"
             />
           </div>
 
@@ -493,7 +496,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               type="button"
               onClick={() => setWizardStep(2)}
               disabled={!description.trim()}
-              className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-semibold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               Continue to Financial Details
               <ChevronRight className="w-4 h-4" />
@@ -506,8 +509,8 @@ export const GoldenHourRecoveryPage: React.FC = () => {
       {wizardStep === 2 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
           <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-teal-800" />
-            Step 2: Financial Details & Transaction References
+            <Building2 className="w-5 h-5 text-[#176B58]" />
+            Step 2: Financial Details &amp; Transaction References
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -521,7 +524,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 value={financialLoss}
                 onChange={(e) => setFinancialLoss(e.target.value)}
                 placeholder="e.g. 25000"
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 font-mono font-bold"
+                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] font-mono font-bold"
               />
             </div>
 
@@ -534,7 +537,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="e.g. State Bank of India, HDFC Bank, Google Pay"
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               />
             </div>
           </div>
@@ -545,7 +548,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-slate-700">
                   Transaction Reference / UTR Number
                 </label>
-                <span className="text-[10px] text-teal-800 font-semibold bg-teal-50 px-2 py-0.5 rounded">
+                <span className="text-[10px] text-[#176B58] font-semibold bg-[#E8F5EF] px-2 py-0.5 rounded">
                   Optional / Missing UTR Allowed
                 </span>
               </div>
@@ -554,7 +557,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 value={transactionRef}
                 onChange={(e) => setTransactionRef(e.target.value)}
                 placeholder="Leave blank if UTR is not yet available"
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 font-mono"
+                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] font-mono"
               />
               <p className="text-[11px] text-slate-500 mt-1">
                 If omitted, the complaint draft will explicitly indicate &quot;[UTR PENDING BANK STATEMENT]&quot; without fabricating numbers.
@@ -568,7 +571,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               <select
                 value={transferStatus}
                 onChange={(e) => setTransferStatus(e.target.value as any)}
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               >
                 <option value="COMPLETED">Completed (Amount already debited)</option>
                 <option value="PENDING">Pending / In-Transit (Dispute immediately)</option>
@@ -588,7 +591,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setWizardStep(3)}
-              className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-semibold text-xs flex items-center gap-2 cursor-pointer"
+              className="px-6 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold text-xs flex items-center gap-2 cursor-pointer"
             >
               Continue to Evidence & Timeline
               <ChevronRight className="w-4 h-4" />
@@ -601,8 +604,8 @@ export const GoldenHourRecoveryPage: React.FC = () => {
       {wizardStep === 3 && (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
           <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-            <Paperclip className="w-5 h-5 text-teal-800" />
-            Step 3: Evidence & Incident Timeline
+            <Paperclip className="w-5 h-5 text-[#176B58]" />
+            Step 3: Evidence &amp; Incident Timeline
           </h2>
 
           <div>
@@ -614,7 +617,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               value={suspectContact}
               onChange={(e) => setSuspectContact(e.target.value)}
               placeholder="e.g. +91 98201 98201, officer-cbi@ybl"
-              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 font-mono"
+              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] font-mono"
             />
           </div>
 
@@ -627,7 +630,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               value={messageTranscript}
               onChange={(e) => setMessageTranscript(e.target.value)}
               placeholder="Paste exact text received from scammer..."
-              className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 leading-relaxed"
+              className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] leading-relaxed"
             />
           </div>
 
@@ -658,7 +661,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 onChange={(e) => setNewTimelineEvent(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTimelineEvent())}
                 placeholder="Add milestone (e.g. 11:30 AM caller threatened arrest)..."
-                className="flex-1 py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                className="flex-1 py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               />
               <button
                 type="button"
@@ -683,7 +686,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               type="button"
               onClick={handleExecuteWizard}
               disabled={isGenerating}
-              className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-semibold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               {isGenerating ? 'Generating Structured Drafts...' : 'Generate Official Complaint Drafts'}
               <CheckCircle2 className="w-4 h-4" />
@@ -697,11 +700,11 @@ export const GoldenHourRecoveryPage: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm space-y-0">
           <div className="p-6 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 bg-teal-100 px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#176B58] bg-[#E8F5EF] px-2.5 py-0.5 rounded-full">
                 Step 4: Formal Recovery Dossier
               </span>
               <h2 className="text-lg font-bold text-slate-900 mt-1">
-                Review, Edit & Export Complaint Drafts
+                Review, Edit &amp; Export Complaint Drafts
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 Every detail is editable before submission. Do NOT auto-submit to police; review thoroughly first.
@@ -750,7 +753,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
           )}
 
           {/* Prototype Simulation Notice & Statutory Filing Guidance */}
-          <div className="mx-6 mt-6 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white flex flex-col gap-3 border border-teal-800/40 shadow-sm">
+          <div className="mx-6 mt-6 p-4 rounded-2xl bg-[#14243A] text-white flex flex-col gap-3 border border-slate-700/60 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-slate-950 uppercase tracking-wider">
@@ -874,7 +877,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 onClick={() => setActiveTab('PORTAL')}
                 className={`py-2.5 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer ${
                   activeTab === 'PORTAL'
-                    ? 'border-teal-800 text-teal-800'
+                    ? 'border-[#176B58] text-[#176B58]'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -885,7 +888,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 onClick={() => setActiveTab('BANK')}
                 className={`py-2.5 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer ${
                   activeTab === 'BANK'
-                    ? 'border-teal-800 text-teal-800'
+                    ? 'border-[#176B58] text-[#176B58]'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -896,7 +899,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 onClick={() => setActiveTab('POLICE')}
                 className={`py-2.5 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer ${
                   activeTab === 'POLICE'
-                    ? 'border-teal-800 text-teal-800'
+                    ? 'border-[#176B58] text-[#176B58]'
                     : 'border-transparent text-slate-500 hover:text-slate-800'
                 }`}
               >
@@ -937,7 +940,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                   else if (activeTab === 'BANK') setEditedBankText(e.target.value);
                   else setEditedPoliceText(e.target.value);
                 }}
-                className="w-full p-4 font-mono text-xs text-slate-800 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 leading-relaxed"
+                className="w-full p-4 font-mono text-xs text-slate-800 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] leading-relaxed"
               />
             ) : (
               <pre className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-xs whitespace-pre-wrap overflow-x-auto max-h-[500px] leading-relaxed border border-slate-800">
@@ -951,7 +954,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
 
             <div className="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
               <p className="font-semibold text-slate-800">Next Steps Under Golden Hour Protocol:</p>
-              <p>1. Copy Section 1 text and submit directly on <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="text-teal-800 underline font-bold">cybercrime.gov.in</a>.</p>
+              <p>1. Copy Section 1 text and submit directly on <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="text-[#176B58] underline font-bold">cybercrime.gov.in</a>.</p>
               <p>2. Email Section 2 text to your bank fraud dispute cell ({bankName}).</p>
               <p>3. Note complaint acknowledgement number and keep bank statement copy ready.</p>
             </div>
@@ -962,14 +965,14 @@ export const GoldenHourRecoveryPage: React.FC = () => {
       {/* Verified Indian Bank Desks Grid */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <Building2 className="w-5 h-5 text-teal-800" />
-          Verified Indian Bank 24x7 Emergency Hotlines & Freeze Desks
+          <Building2 className="w-5 h-5 text-[#176B58]" />
+          Verified Indian Bank 24x7 Emergency Hotlines &amp; Freeze Desks
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {helplines.map((b, idx) => (
             <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
               <h4 className="font-bold text-xs text-slate-900">{b.bank}</h4>
-              <p className="text-xs font-mono text-teal-900 font-bold mt-1">📞 {b.toll_free}</p>
+              <p className="text-xs font-mono text-[#176B58] font-bold mt-1">📞 {b.toll_free}</p>
               {b.sms_block && <p className="text-[11px] text-slate-600 mt-1 font-mono">{b.sms_block}</p>}
               {b.email && <p className="text-[11px] text-slate-500 mt-0.5 truncate">{b.email}</p>}
               {b.portal && (
@@ -977,7 +980,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                   href={b.portal}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-teal-800 font-semibold hover:underline mt-2"
+                  className="inline-flex items-center gap-1 text-[11px] text-[#176B58] font-semibold hover:underline mt-2"
                 >
                   Dispute Portal <ExternalLink className="w-3 h-3" />
                 </a>

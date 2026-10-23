@@ -10,7 +10,6 @@ import {
   Settings,
   Shield,
   PhoneCall,
-  CheckCircle2,
 } from 'lucide-react';
 import { DemoModeIndicator } from './DemoModeIndicator';
 import { useLanguage } from '../../context/LanguageContext';
@@ -26,38 +25,38 @@ const navItems: NavItem[] = [
   {
     name: 'Overview',
     to: '/',
-    icon: <LayoutDashboard className="w-4 h-4" />,
+    icon: <LayoutDashboard className="w-4 h-4 shrink-0" />,
   },
   {
     name: 'Scam Analyzer',
     to: '/scanner',
-    icon: <ScanSearch className="w-4 h-4" />,
+    icon: <ScanSearch className="w-4 h-4 shrink-0" />,
   },
   {
     name: 'Payment Checkpoint',
     to: '/payment-checkpoint',
-    icon: <CreditCard className="w-4 h-4" />,
+    icon: <CreditCard className="w-4 h-4 shrink-0" />,
   },
   {
     name: 'Family Shield',
     to: '/family-shield',
-    icon: <Users className="w-4 h-4" />,
+    icon: <Users className="w-4 h-4 shrink-0" />,
   },
   {
     name: 'Golden Hour Recovery',
     to: '/golden-hour',
-    icon: <LifeBuoy className="w-4 h-4" />,
+    icon: <LifeBuoy className="w-4 h-4 shrink-0" />,
     badge: '1930',
   },
   {
     name: 'Incident History',
     to: '/incident-history',
-    icon: <History className="w-4 h-4" />,
+    icon: <History className="w-4 h-4 shrink-0" />,
   },
   {
     name: 'Settings',
     to: '/settings',
-    icon: <Settings className="w-4 h-4" />,
+    icon: <Settings className="w-4 h-4 shrink-0" />,
   },
 ];
 
@@ -65,18 +64,18 @@ export const Sidebar: React.FC = () => {
   const { currentMeta } = useLanguage();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-[#0B132B] text-slate-100 min-h-screen select-none border-r border-slate-800 shrink-0">
+    <aside className="hidden md:flex flex-col w-64 bg-[#14243A] text-slate-100 min-h-screen select-none border-r border-[#1E334E] shrink-0">
       {/* Brand Header */}
-      <div className="p-5 border-b border-slate-800/80 bg-[#080E21]">
+      <div className="p-5 border-b border-[#1E334E] bg-[#0D1726]">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-teal-600 text-white flex items-center justify-center shadow-sm">
-            <Shield className="w-5 h-5 text-teal-100" />
+          <div className="w-9 h-9 rounded-lg bg-[#176B58] text-white flex items-center justify-center shadow-xs">
+            <Shield className="w-5 h-5 text-emerald-100" />
           </div>
           <div className="min-w-0">
             <h1 className="text-base font-bold text-white tracking-tight leading-none truncate">
               Satark Saathi
             </h1>
-            <p className="text-[11px] text-teal-400 font-semibold tracking-wide mt-1 truncate">
+            <p className="text-[11px] text-emerald-400 font-medium tracking-wide mt-1.5 truncate">
               {currentMeta.tagline}
             </p>
           </div>
@@ -94,19 +93,19 @@ export const Sidebar: React.FC = () => {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+              `flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
                 isActive
-                  ? 'bg-teal-700 text-white font-semibold shadow-sm'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+                  ? 'bg-[#176B58] text-white font-semibold shadow-xs'
+                  : 'text-slate-300 hover:bg-[#1E334E] hover:text-white'
               }`
             }
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2.5 min-w-0">
               {item.icon}
-              <span>{item.name}</span>
+              <span className="truncate">{item.name}</span>
             </div>
             {item.badge && (
-              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              <span className="px-1.5 py-0.5 text-[10px] font-bold rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 shrink-0">
                 {item.badge}
               </span>
             )}
@@ -117,7 +116,7 @@ export const Sidebar: React.FC = () => {
       {/* Golden Hour Helpline Quick Reference Box */}
       <div className="mx-3 mb-4 p-3 rounded-lg border border-amber-600/30 bg-amber-950/30 text-amber-200">
         <div className="flex items-center gap-2 font-bold text-xs mb-1 text-amber-300">
-          <PhoneCall className="w-3.5 h-3.5 text-amber-400" />
+          <PhoneCall className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <span>Cyber Crime: 1930</span>
         </div>
         <p className="text-[10px] text-amber-200/80 leading-relaxed">
@@ -126,7 +125,7 @@ export const Sidebar: React.FC = () => {
       </div>
 
       {/* Footer Status Section */}
-      <div className="p-3 border-t border-slate-800/80 bg-[#080E21]">
+      <div className="p-3 border-t border-[#1E334E] bg-[#0D1726]">
         <DemoModeIndicator />
       </div>
     </aside>

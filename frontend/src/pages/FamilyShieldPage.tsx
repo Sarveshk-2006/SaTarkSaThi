@@ -29,6 +29,7 @@ import { TrustedContact, FamilyAlert, AlertLevel } from '../api/types';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
+import { SimulationBanner } from '../components/common/SimulationBanner';
 import { useToast } from '../context/ToastContext';
 import { useNotification } from '../context/NotificationContext';
 
@@ -290,27 +291,29 @@ export const FamilyShieldPage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <SimulationBanner message="Family Shield Carrier SMS and multi-device alerts operate in an authenticated demonstration sandbox. High-risk alerts are broadcast in real time across verified guardian sessions without sending unauthorized telecom spam." />
+
       {/* 2-Device Demo & Session Switcher Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 rounded-2xl border border-indigo-800/40 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-[#14243A] text-white p-5 rounded-2xl border border-slate-700/60 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <span className="p-2.5 rounded-xl bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-            <Radio className="w-6 h-6 text-indigo-400 animate-pulse" />
+          <span className="p-2.5 rounded-xl bg-white/10 text-emerald-400 border border-white/10">
+            <Radio className="w-5 h-5 text-emerald-400 animate-pulse" />
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-300">
+              <span className="text-xs font-semibold uppercase tracking-wider text-slate-300">
                 2-Session Live Notification Demo
               </span>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
                 isWsConnected ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
               }`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${isWsConnected ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`} />
                 {isWsConnected ? 'WebSocket Live' : 'Connecting'}
               </span>
             </div>
-            <p className="text-xs text-slate-300 mt-0.5">
-              Current Session: <strong className="text-white">{activeProfileName}</strong> ({activeProfileRole})
+            <p className="text-xs text-slate-300 mt-1">
+              Current Session: <strong className="text-white font-semibold">{activeProfileName}</strong> ({activeProfileRole})
               &nbsp;&bull; Carrier SMS &amp; In-App Transport Active.
             </p>
           </div>
@@ -320,21 +323,21 @@ export const FamilyShieldPage: React.FC = () => {
           <button
             onClick={fetchCarrierLogs}
             disabled={isLoadingCarrierLogs}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white transition-all shadow-md flex items-center gap-2 cursor-pointer border border-slate-700"
+            className="px-3.5 py-2 rounded-xl text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors shadow-sm flex items-center gap-2 cursor-pointer border border-slate-700"
           >
             <Radio className="w-3.5 h-3.5 text-teal-400" />
             {isLoadingCarrierLogs ? 'Loading Carrier...' : 'DLT Carrier Logs'}
           </button>
           <button
             onClick={() => switchUser(activeUserId === '1' ? '2' : '1')}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition-all shadow-md flex items-center gap-2 cursor-pointer"
+            className="px-3.5 py-2 rounded-xl text-xs font-medium bg-[#176B58] hover:bg-[#125243] text-white transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             Switch to {activeUserId === '1' ? 'Aarav (Guardian)' : 'Rajesh (Protected)'}
           </button>
           <button
             onClick={() => setIsDispatchModalOpen(true)}
-            className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition-all shadow-md flex items-center gap-2 cursor-pointer"
+            className="px-3.5 py-2 rounded-xl text-xs font-medium bg-rose-600 hover:bg-rose-500 text-white transition-colors shadow-sm flex items-center gap-2 cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             Trigger Test Alert
@@ -346,7 +349,7 @@ export const FamilyShieldPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-            <Users className="w-6 h-6 text-teal-800" />
+            <Users className="w-6 h-6 text-[#176B58]" />
             Trusted Family Contacts
           </h1>
           <p className="text-sm text-slate-600 mt-1">
@@ -356,7 +359,7 @@ export const FamilyShieldPage: React.FC = () => {
 
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-teal-800 hover:bg-teal-900 text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#176B58] hover:bg-[#125243] text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer"
         >
           <UserPlus className="w-4 h-4" />
           Add Trusted Guardian
@@ -369,20 +372,20 @@ export const FamilyShieldPage: React.FC = () => {
           <div
             key={c.id}
             className={`bg-white rounded-2xl border p-5 transition-all shadow-sm flex flex-col justify-between ${
-              c.is_primary ? 'border-teal-600 ring-2 ring-teal-500/20' : 'border-slate-200'
+              c.is_primary ? 'border-[#176B58] ring-2 ring-[#176B58]/20' : 'border-slate-200'
             }`}
           >
             <div>
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 font-bold flex items-center justify-center text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-[#E8F5EF] border border-teal-200 text-[#176B58] font-bold flex items-center justify-center text-sm">
                     {c.name.charAt(0)}
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
                       {c.name}
                       {c.is_primary && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-teal-100 text-teal-800">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#E8F5EF] text-[#176B58]">
                           PRIMARY
                         </span>
                       )}
@@ -608,9 +611,9 @@ export const FamilyShieldPage: React.FC = () => {
       {verifyingContact && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
-            <div className="flex items-center gap-3 mb-4 text-teal-800">
-              <span className="p-2.5 rounded-xl bg-teal-50 border border-teal-200">
-                <KeyRound className="w-6 h-6 text-teal-800" />
+            <div className="flex items-center gap-3 mb-4 text-[#176B58]">
+              <span className="p-2.5 rounded-xl bg-[#E8F5EF] border border-teal-200">
+                <KeyRound className="w-6 h-6 text-[#176B58]" />
               </span>
               <div>
                 <h3 className="font-bold text-slate-900 text-base">Verify Guardian Phone</h3>
@@ -646,7 +649,7 @@ export const FamilyShieldPage: React.FC = () => {
                   value={verificationCodeInput}
                   onChange={(e) => setVerificationCodeInput(e.target.value.replace(/\D/g, ''))}
                   placeholder="e.g. 849201"
-                  className="w-full text-center text-xl font-mono tracking-widest py-2.5 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                  className="w-full text-center text-xl font-mono tracking-widest py-2.5 px-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                   autoFocus
                 />
               </div>
@@ -662,7 +665,7 @@ export const FamilyShieldPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={verificationCodeInput.length < 4 || isVerifying}
-                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-teal-800 hover:bg-teal-900 text-white cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#176B58] hover:bg-[#125243] text-white cursor-pointer disabled:opacity-50"
                 >
                   {isVerifying ? 'Verifying...' : 'Confirm Verification'}
                 </button>
@@ -688,7 +691,7 @@ export const FamilyShieldPage: React.FC = () => {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g. Aarav Sharma"
-                  className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                  className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
                 {formErrors.name && <p className="text-red-600 text-[11px] mt-1">{formErrors.name}</p>}
               </div>
@@ -699,7 +702,7 @@ export const FamilyShieldPage: React.FC = () => {
                   <select
                     value={formData.relationship}
                     onChange={(e) => setFormData({ ...formData, relationship: e.target.value })}
-                    className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                    className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                   >
                     <option value="Son">Son</option>
                     <option value="Daughter">Daughter</option>
@@ -716,7 +719,7 @@ export const FamilyShieldPage: React.FC = () => {
                     value={formData.phone_number}
                     onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
                     placeholder="+91 98101 23456"
-                    className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                    className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                   />
                   {formErrors.phone_number && <p className="text-red-600 text-[11px] mt-1">{formErrors.phone_number}</p>}
                 </div>
@@ -729,7 +732,7 @@ export const FamilyShieldPage: React.FC = () => {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="aarav@example.com"
-                  className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                  className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
@@ -738,7 +741,7 @@ export const FamilyShieldPage: React.FC = () => {
                 <select
                   value={formData.alert_level}
                   onChange={(e) => setFormData({ ...formData, alert_level: e.target.value as AlertLevel })}
-                  className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                  className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 >
                   <option value="HIGH_RISK_ONLY">High Risk & Critical Scams Only (Recommended)</option>
                   <option value="CRITICAL_ONLY">Critical Scams Only (Severe digital arrest)</option>
@@ -752,7 +755,7 @@ export const FamilyShieldPage: React.FC = () => {
                     type="checkbox"
                     checked={formData.consent_granted}
                     onChange={(e) => setFormData({ ...formData, consent_granted: e.target.checked })}
-                    className="mt-0.5 rounded text-teal-800 focus:ring-teal-700"
+                    className="mt-0.5 rounded text-[#176B58] focus:ring-[#176B58]"
                   />
                   <div>
                     <span className="text-xs text-slate-900 font-bold block">
@@ -768,7 +771,7 @@ export const FamilyShieldPage: React.FC = () => {
                     type="checkbox"
                     checked={formData.is_primary}
                     onChange={(e) => setFormData({ ...formData, is_primary: e.target.checked })}
-                    className="rounded text-teal-800 focus:ring-teal-700"
+                    className="rounded text-[#176B58] focus:ring-[#176B58]"
                   />
                   <span className="text-xs text-slate-700 font-medium">
                     Mark as Primary Guardian (First to be contacted in emergency).
@@ -786,7 +789,7 @@ export const FamilyShieldPage: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-teal-800 hover:bg-teal-900 text-white cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#176B58] hover:bg-[#125243] text-white cursor-pointer"
                 >
                   {editingContact ? 'Save Changes' : 'Add Guardian'}
                 </button>

@@ -4,17 +4,12 @@ import {
   ShieldCheck,
   ShieldAlert,
   AlertTriangle,
-  CheckSquare,
-  Square,
-  HelpCircle,
   Sparkles,
   ArrowRight,
-  RotateCcw,
   UserCheck,
   UserX,
   PhoneCall,
   History,
-  Lock,
   Info,
   CheckCircle2,
   AlertOctagon,
@@ -22,9 +17,10 @@ import {
   Save,
 } from 'lucide-react';
 import { api } from '../api/endpoints';
-import { PaymentSimulation, PaymentOutcome } from '../api/types';
+import { PaymentSimulation } from '../api/types';
 import { useToast } from '../context/ToastContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { SimulationBanner } from '../components/common/SimulationBanner';
 
 interface PresetSimulation {
   title: string;
@@ -119,7 +115,7 @@ export const PaymentCheckpointPage: React.FC = () => {
     try {
       const data = await api.getPaymentSimulations();
       setPastSimulations(data);
-    } catch (err) {
+    } catch {
       // Non-fatal
     }
   };
@@ -247,41 +243,29 @@ export const PaymentCheckpointPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Simulation Banner Notice (Mandatory Requirement) */}
-      <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-2xl p-4 flex items-center justify-between gap-4 text-amber-900">
-        <div className="flex items-center gap-3">
-          <span className="p-2 rounded-xl bg-amber-500/20 text-amber-700">
-            <Info className="w-5 h-5" />
-          </span>
-          <div>
-            <h4 className="font-bold text-xs uppercase tracking-wider text-amber-800">
-              Pre-Transaction Risk Sandbox
-            </h4>
-            <p className="text-xs text-amber-900 font-semibold mt-0.5">
-              SIMULATION ONLY: no real money has been moved or blocked.
-            </p>
-          </div>
-        </div>
-        <span className="text-[11px] font-mono bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg border border-amber-300">
-          Educational Sandbox
-        </span>
-      </div>
+    <div className="space-y-6">
+      {/* Simulation Banner Notice */}
+      <SimulationBanner
+        title="Pre-Transaction Risk Sandbox"
+        message="SIMULATION ONLY: No real banking transaction or UPI transfer will ever be executed. Test suspicious payment requests and evaluate coercion risk safely."
+        variant="amber"
+        badgeText="PROTOTYPE SIMULATION"
+      />
 
       {/* Page Title */}
-      <div className="border-b border-slate-200 pb-4">
-        <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-          <CreditCard className="w-6 h-6 text-teal-800" />
-          Payment Checkpoint
+      <div className="border-b border-[#E2E8F0] pb-4">
+        <h1 className="text-xl font-bold text-[#14243A] flex items-center gap-2">
+          <CreditCard className="w-5 h-5 text-[#176B58]" />
+          <span>Payment Checkpoint</span>
         </h1>
-        <p className="text-sm text-slate-600 mt-1">
+        <p className="text-xs text-[#64748B] mt-1">
           Evaluate high-risk transfer pressures before authorizing UPI debits. Identifies coercion, authority claims, and deceptive handles.
         </p>
       </div>
 
       {/* Preset Test Scenarios */}
       <div>
-        <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5 block">
+        <label className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2.5 block">
           Load Pre-Configured Test Simulations:
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -290,12 +274,12 @@ export const PaymentCheckpointPage: React.FC = () => {
               key={idx}
               type="button"
               onClick={() => handleApplyPreset(p)}
-              className="text-left p-3.5 rounded-xl border border-slate-200 hover:border-teal-700 hover:bg-teal-50/40 transition-all bg-white shadow-xs cursor-pointer group"
+              className="text-left p-3.5 rounded-2xl border border-[#E2E8F0] hover:border-[#176B58] hover:bg-[#E8F5EF]/40 transition-all bg-white shadow-card cursor-pointer group"
             >
-              <span className="text-xs font-bold text-slate-900 block group-hover:text-teal-900">
+              <span className="text-xs font-bold text-[#14243A] block group-hover:text-[#176B58]">
                 {p.title}
               </span>
-              <span className="text-[11px] font-mono text-slate-500 block mt-1">
+              <span className="text-[11px] font-mono text-[#64748B] block mt-1">
                 ₹{p.amount.toLocaleString()} &bull; {p.vpa}
               </span>
             </button>
@@ -303,19 +287,19 @@ export const PaymentCheckpointPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Simulation Input Form */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+        <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-card">
           <form onSubmit={handleSimulate} className="space-y-5">
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Sparkles className="w-4 h-4 text-teal-800" />
-              Hypothetical Payment Parameters
+            <h2 className="text-sm font-bold text-[#14243A] flex items-center gap-2 border-b border-[#F1F5F9] pb-3">
+              <Sparkles className="w-4 h-4 text-[#176B58]" />
+              <span>Hypothetical Payment Parameters</span>
             </h2>
 
             {/* Recipient VPA & Amount */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-[#182536] mb-1.5">
                   Recipient Identifier (UPI ID or Account) *
                 </label>
                 <input
@@ -324,12 +308,12 @@ export const PaymentCheckpointPage: React.FC = () => {
                   value={vpa}
                   onChange={(e) => setVpa(e.target.value)}
                   placeholder="e.g. officer.court@oksbi"
-                  className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 font-mono"
+                  className="w-full py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-[#E2E8F0] bg-[#F6F8FB] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] font-mono text-[#182536]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-[#182536] mb-1.5">
                   Requested Amount (INR) *
                 </label>
                 <input
@@ -340,7 +324,7 @@ export const PaymentCheckpointPage: React.FC = () => {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="e.g. 25000"
-                  className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700 font-mono font-bold"
+                  className="w-full py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-[#E2E8F0] bg-[#F6F8FB] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] font-mono font-bold text-[#182536]"
                 />
               </div>
             </div>
@@ -348,7 +332,7 @@ export const PaymentCheckpointPage: React.FC = () => {
             {/* Beneficiary Name & Beneficiary Type */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-[#182536] mb-1.5">
                   Claimed Beneficiary Name
                 </label>
                 <input
@@ -356,12 +340,12 @@ export const PaymentCheckpointPage: React.FC = () => {
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
                   placeholder="e.g. CBI Escrow Cell"
-                  className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                  className="w-full py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-[#E2E8F0] bg-[#F6F8FB] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#182536]"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                <label className="block text-xs font-semibold text-[#182536] mb-1.5">
                   Recipient Relationship
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -370,24 +354,24 @@ export const PaymentCheckpointPage: React.FC = () => {
                     onClick={() => setIsNewRecipient(true)}
                     className={`py-2 px-3 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       isNewRecipient
-                        ? 'bg-amber-50 text-amber-900 border-amber-300 shadow-xs'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-amber-50 text-amber-900 border-amber-300 shadow-subtle'
+                        : 'border-[#E2E8F0] text-[#64748B] hover:bg-[#F6F8FB]'
                     }`}
                   >
                     <UserX className="w-3.5 h-3.5 text-amber-600" />
-                    New Recipient
+                    <span>New Recipient</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsNewRecipient(false)}
                     className={`py-2 px-3 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       !isNewRecipient
-                        ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-xs'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-subtle'
+                        : 'border-[#E2E8F0] text-[#64748B] hover:bg-[#F6F8FB]'
                     }`}
                   >
                     <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    Existing Contact
+                    <span>Existing Contact</span>
                   </button>
                 </div>
               </div>
@@ -395,7 +379,7 @@ export const PaymentCheckpointPage: React.FC = () => {
 
             {/* Payment Purpose */}
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[#182536] mb-1.5">
                 Stated Payment Purpose
               </label>
               <input
@@ -403,30 +387,30 @@ export const PaymentCheckpointPage: React.FC = () => {
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 placeholder="e.g. Security deposit to avoid arrest warrant"
-                className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-700"
+                className="w-full py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-[#E2E8F0] bg-[#F6F8FB] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#182536]"
               />
             </div>
 
             {/* Social Engineering / Coercion Factors Section */}
-            <div className="pt-2 border-t border-slate-100">
-              <label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 block flex items-center gap-1.5">
-                <AlertOctagon className="w-4 h-4 text-rose-600" />
-                Coercion & Behavioral Risk Indicators (Check all that apply):
+            <div className="pt-2 border-t border-[#F1F5F9]">
+              <label className="text-xs font-bold uppercase tracking-wider text-[#14243A] mb-3 block flex items-center gap-1.5">
+                <AlertOctagon className="w-4 h-4 text-red-600" />
+                <span>Coercion & Behavioral Risk Indicators (Check all that apply):</span>
               </label>
 
-              <div className="space-y-2.5 bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <div className="space-y-2.5 bg-[#F6F8FB] p-4 rounded-xl border border-[#E2E8F0]">
                 <label className="flex items-start gap-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={authorityClaimed}
                     onChange={(e) => setAuthorityClaimed(e.target.checked)}
-                    className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
+                    className="mt-0.5 rounded text-red-600 focus:ring-red-500"
                   />
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">
+                    <span className="text-xs font-bold text-[#14243A] block">
                       Authority Claimed (Police, CBI, Customs, Court, Electricity Board)
                     </span>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-[#64748B]">
                       The caller or message author claims official law enforcement or utility power.
                     </span>
                   </div>
@@ -437,13 +421,13 @@ export const PaymentCheckpointPage: React.FC = () => {
                     type="checkbox"
                     checked={secrecyDemanded}
                     onChange={(e) => setSecrecyDemanded(e.target.checked)}
-                    className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
+                    className="mt-0.5 rounded text-red-600 focus:ring-red-500"
                   />
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">
+                    <span className="text-xs font-bold text-[#14243A] block">
                       Secrecy Demanded (&quot;Do not tell family, friends, or lawyer&quot;)
                     </span>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-[#64748B]">
                       Common isolation tactic designed to prevent family intervention.
                     </span>
                   </div>
@@ -454,13 +438,13 @@ export const PaymentCheckpointPage: React.FC = () => {
                     type="checkbox"
                     checked={pressurePresent}
                     onChange={(e) => setPressurePresent(e.target.checked)}
-                    className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
+                    className="mt-0.5 rounded text-red-600 focus:ring-red-500"
                   />
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">
+                    <span className="text-xs font-bold text-[#14243A] block">
                       Urgent Coercive Pressure (&quot;Pay within 15 minutes or face raid/disconnection&quot;)
                     </span>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-[#64748B]">
                       Artificial urgency induces panic and disables rational financial verification.
                     </span>
                   </div>
@@ -471,13 +455,13 @@ export const PaymentCheckpointPage: React.FC = () => {
                     type="checkbox"
                     checked={guaranteedReturns}
                     onChange={(e) => setGuaranteedReturns(e.target.checked)}
-                    className="mt-0.5 rounded text-rose-600 focus:ring-rose-500"
+                    className="mt-0.5 rounded text-red-600 focus:ring-red-500"
                   />
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">
+                    <span className="text-xs font-bold text-[#14243A] block">
                       Guaranteed Returns Promised (Prepaid Tasks, Crypto Trading, High Yield)
                     </span>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-[11px] text-[#64748B]">
                       Promise of unrealistic returns or instant cashback upon deposit.
                     </span>
                   </div>
@@ -489,14 +473,14 @@ export const PaymentCheckpointPage: React.FC = () => {
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-4 py-2 text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-[#64748B] hover:text-[#182536] hover:bg-[#F6F8FB] rounded-xl transition-colors cursor-pointer"
               >
                 Reset Inputs
               </button>
               <button
                 type="submit"
                 disabled={simulating}
-                className="px-6 py-2.5 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-semibold text-xs transition-all shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                className="px-6 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#135948] text-white font-bold text-xs transition-all shadow-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 {simulating ? 'Analyzing Risk...' : 'Run Sandbox Risk Assessment'}
                 <ArrowRight className="w-4 h-4" />
@@ -508,26 +492,26 @@ export const PaymentCheckpointPage: React.FC = () => {
         {/* Risk Assessment Result Card */}
         <div className="lg:col-span-5 space-y-6">
           {result ? (
-            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden shadow-card animate-in fade-in duration-200">
               {/* Outcome Header Banner */}
               <div
-                className={`p-6 text-white ${
+                className={`p-5 text-white ${
                   result.outcome === 'SEEK_TRUSTED_HELP'
-                    ? 'bg-gradient-to-r from-red-700 to-rose-700'
+                    ? 'bg-[#B91C1C]'
                     : result.outcome === 'PAUSE_AND_VERIFY'
-                    ? 'bg-gradient-to-r from-amber-600 to-yellow-600'
-                    : 'bg-gradient-to-r from-emerald-700 to-teal-700'
+                    ? 'bg-[#B45309]'
+                    : 'bg-[#176B58]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/20 border border-white/20">
+                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-black/20 border border-white/20">
                       SIMULATION #{result.simulation_id}
                     </span>
                     {result.policy_tier && (
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                      <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${
                         result.policy_tier === 'RED'
-                          ? 'bg-rose-950/80 text-rose-200 border border-rose-400/40'
+                          ? 'bg-red-950/80 text-red-200 border border-red-400/40'
                           : result.policy_tier === 'AMBER'
                           ? 'bg-amber-950/80 text-amber-200 border border-amber-400/40'
                           : 'bg-emerald-950/80 text-emerald-200 border border-emerald-400/40'
@@ -552,12 +536,12 @@ export const PaymentCheckpointPage: React.FC = () => {
                 {/* Evidence Factors */}
                 {result.evidence_factors && result.evidence_factors.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
                       Detected Coercion Factors:
                     </h4>
                     <ul className="space-y-1.5">
                       {result.evidence_factors.map((factor, idx) => (
-                        <li key={idx} className="text-xs text-slate-800 flex items-start gap-2 bg-red-50/70 p-2.5 rounded-xl border border-red-100">
+                        <li key={idx} className="text-xs text-red-950 flex items-start gap-2 bg-red-50/80 p-2.5 rounded-xl border border-red-200">
                           <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
                           <span>{factor}</span>
                         </li>
@@ -569,22 +553,22 @@ export const PaymentCheckpointPage: React.FC = () => {
                 {/* Verification Checklist */}
                 {result.verification_steps && result.verification_steps.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
                       Recommended Verification Protocol:
                     </h4>
                     <div className="space-y-2">
                       {result.verification_steps.map((step, idx) => (
                         <label
                           key={idx}
-                          className="flex items-start gap-2.5 text-xs text-slate-700 p-2.5 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer hover:bg-slate-100/70 transition-colors"
+                          className="flex items-start gap-2.5 text-xs text-[#182536] p-2.5 rounded-xl bg-[#F6F8FB] border border-[#E2E8F0] cursor-pointer hover:bg-slate-100/70 transition-colors"
                         >
                           <input
                             type="checkbox"
                             checked={Boolean(checkedChecklist[idx])}
                             onChange={(e) => setCheckedChecklist({ ...checkedChecklist, [idx]: e.target.checked })}
-                            className="mt-0.5 rounded text-teal-800 focus:ring-teal-700"
+                            className="mt-0.5 rounded text-[#176B58] focus:ring-[#176B58]"
                           />
-                          <span className={checkedChecklist[idx] ? 'line-through text-slate-400' : 'text-slate-800 font-medium'}>
+                          <span className={checkedChecklist[idx] ? 'line-through text-[#94A3B8]' : 'text-[#182536] font-medium'}>
                             {step}
                           </span>
                         </label>
@@ -594,14 +578,14 @@ export const PaymentCheckpointPage: React.FC = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="pt-2 border-t border-slate-100 flex flex-col gap-2.5">
+                <div className="pt-2 border-t border-[#F1F5F9] flex flex-col gap-2.5">
                   {result.outcome === 'SEEK_TRUSTED_HELP' && (
                     <button
                       onClick={() => navigate('/family-shield')}
-                      className="w-full py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                      className="w-full py-2.5 px-4 rounded-xl bg-red-700 hover:bg-red-800 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                     >
                       <PhoneCall className="w-4 h-4" />
-                      Contact Family Shield Guardian Now
+                      <span>Contact Family Shield Guardian Now</span>
                     </button>
                   )}
 
@@ -613,7 +597,7 @@ export const PaymentCheckpointPage: React.FC = () => {
                     className={`w-full py-2.5 px-4 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
                       savedIncidentId
                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 cursor-default'
-                        : 'bg-teal-800 hover:bg-teal-900 text-white shadow-sm'
+                        : 'bg-[#176B58] hover:bg-[#135948] text-white shadow-xs'
                     }`}
                   >
                     <Save className="w-4 h-4" />
@@ -640,23 +624,23 @@ export const PaymentCheckpointPage: React.FC = () => {
                           },
                         });
                       }}
-                      className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+                      className="w-full py-2.5 px-4 rounded-xl bg-[#14243A] hover:bg-[#1E334E] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                     >
                       <LifeBuoy className="w-4 h-4 text-amber-400" />
-                      Open Golden Hour Recovery Dossier &rarr;
+                      <span>Open Golden Hour Recovery Dossier &rarr;</span>
                     </button>
                   )}
-                  <p className="text-[11px] text-slate-400 text-center italic">
+                  <p className="text-[11px] text-[#94A3B8] text-center italic">
                     {result.disclaimer}
                   </p>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 p-8 text-center text-slate-500">
-              <ShieldAlert className="w-10 h-10 text-slate-400 mx-auto mb-3" />
-              <h4 className="font-bold text-slate-800 text-sm">No Simulation Run Yet</h4>
-              <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+            <div className="bg-white rounded-2xl border-2 border-dashed border-[#CBD5E1] p-8 text-center text-[#64748B]">
+              <ShieldAlert className="w-10 h-10 text-[#94A3B8] mx-auto mb-3" />
+              <h4 className="font-bold text-[#14243A] text-sm">No Simulation Run Yet</h4>
+              <p className="text-xs text-[#64748B] mt-1 max-w-xs mx-auto leading-relaxed">
                 Fill in the hypothetical transfer inputs or pick one of the test scenarios to test fraud risk scoring.
               </p>
             </div>
@@ -664,10 +648,10 @@ export const PaymentCheckpointPage: React.FC = () => {
 
           {/* Past Simulations Ledger */}
           {pastSimulations.length > 0 && (
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 mb-3 flex items-center gap-2">
-                <History className="w-4 h-4 text-teal-800" />
-                Past Simulation Runs ({pastSimulations.length})
+            <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-card">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#14243A] mb-3 flex items-center gap-2">
+                <History className="w-4 h-4 text-[#176B58]" />
+                <span>Past Simulation Runs ({pastSimulations.length})</span>
               </h4>
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                 {pastSimulations.slice(0, 5).map((sim) => (
@@ -677,22 +661,22 @@ export const PaymentCheckpointPage: React.FC = () => {
                       setResult(sim);
                       setCheckedChecklist({});
                     }}
-                    className="p-2.5 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors flex items-center justify-between cursor-pointer"
+                    className="p-2.5 rounded-xl border border-[#E2E8F0] hover:bg-[#F6F8FB] transition-colors flex items-center justify-between cursor-pointer"
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-xs font-bold text-slate-900">{sim.simulation_id}</span>
+                        <span className="font-mono text-xs font-bold text-[#14243A]">{sim.simulation_id}</span>
                         <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
                           sim.outcome === 'SEEK_TRUSTED_HELP' ? 'bg-red-100 text-red-800' : sim.outcome === 'PAUSE_AND_VERIFY' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
                         }`}>
                           {sim.outcome.replace(/_/g, ' ')}
                         </span>
                       </div>
-                      <span className="text-[11px] text-slate-500 font-mono block">
+                      <span className="text-[11px] text-[#64748B] font-mono block">
                         ₹{sim.requested_amount.toLocaleString()} &bull; {sim.vpa_or_account}
                       </span>
                     </div>
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-[#94A3B8]">
                       {new Date(sim.checked_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
