@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { getActiveUserId, setActiveUserId as setStorageActiveUserId } from '../api/client';
+import { getActiveUserId, setActiveUserId as setStorageActiveUserId, getAuthToken } from '../api/client';
 import { api } from '../api/endpoints';
 import { AlertTriangle, CheckCircle2, Bell, X, PhoneCall, ShieldAlert, Radio } from 'lucide-react';
 
@@ -104,7 +104,12 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const host = window.location.hostname || '127.0.0.1';
       const wsHost = window.location.port === '5173' ? `${host}:8000` : (window.location.host || `${host}:8000`);
-      const wsUrl = `${protocol}//${wsHost}/api/ws/alerts?user_id=${activeUserId}`;
+      const token = getAuthToken();
+      const queryParams = new URLSearchParams({ user_id: activeUserId });
+      if (token) {
+        queryParams.set('token', token);
+      }
+      const wsUrl = `${protocol}//${wsHost}/api/ws/alerts?${queryParams.toString()}`;
 
       try {
         ws = new WebSocket(wsUrl);

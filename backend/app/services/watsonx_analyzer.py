@@ -16,6 +16,7 @@ from backend.app.services.analysis_result import (
     AnalysisResult, AnalysisMode, InputType, RiskLevel,
     ConfidenceLabel, DetectedSignal
 )
+from backend.app.services.risk_policy import PolicyTier
 from backend.app.services.rule_analyzer import RuleBasedScamAnalyzer
 
 logger = logging.getLogger(__name__)
@@ -66,9 +67,11 @@ Respond ONLY with valid JSON in this exact format:
 class WatsonXScamAnalyzer(ScamAnalyzerInterface):
     """
     IBM watsonx.ai Granite Model Analyzer.
-    Operates in two explicit modes:
-    - IBM mode: Calls watsonx.ai when credentials are configured
-    - Fallback: Uses rule engine with clear labeling (NEVER pretends to be IBM)
+
+    Two explicit modes:
+    - IBM mode: Calls watsonx.ai when WATSONX_APIKEY and WATSONX_PROJECT_ID are configured.
+    - Fallback: Uses the deterministic rule engine with clear labelling.
+      The fallback result is NEVER presented as IBM output.
     """
 
     def __init__(self):
@@ -80,19 +83,11 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
         self._iam_token: Optional[str] = None
 
     def is_configured(self) -> bool:
-        """Check if IBM watsonx.ai credentials are properly configured or in simulator mode."""
-        if self.api_key and ("bob_prod_" in self.api_key or "bob-apikey" in self.api_key):
-            return True
-        if self.api_key in ("demo", "simulator") or settings.analysis_provider == "watsonx":
-            return True
-        return bool(self.api_key and self.project_id and self.base_url)
+        """True only when both API key and project ID are non-empty environment values."""
+        return settings.watsonx_configured
 
     async def _get_iam_token(self) -> Optional[str]:
         """Exchange API key for IAM bearer token."""
-        if self.api_key and ("bob_prod_" in self.api_key or "bob-apikey" in self.api_key):
-            return f"bob_bearer_{self.api_key[:24]}"
-        if self.api_key in ("demo", "simulator") or not self.api_key:
-            return "simulated_iam_token_granite"
         try:
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(
@@ -100,8 +95,8 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
                     headers={"Content-Type": "application/x-www-form-urlencoded"},
                     data={
                         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-                        "apikey": self.api_key
-                    }
+                        "apikey": self.api_key,
+                    },
                 )
                 if response.status_code == 200:
                     token_data = response.json()
@@ -119,56 +114,10 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
 
     async def _call_watsonx(self, text: str, input_type: str, channel: str) -> Optional[dict]:
         """
-        Call the IBM watsonx.ai text generation endpoint or high-fidelity Granite simulator.
-        Returns parsed JSON response or None on failure.
+        Call the IBM watsonx.ai text generation endpoint.
+        Returns parsed JSON response dict or None on any failure.
+        Called only when credentials are configured.
         """
-        is_bob_key = bool(self.api_key and ("bob_prod_" in self.api_key or "bob-apikey" in self.api_key))
-        if is_bob_key:
-            # Authenticated via IBM Bob Platform Granite-13b Neural Evaluation Pipeline
-            rule_res = await self.fallback.analyze_text(text, channel)
-            return {
-                "verdict": f"IBM Bob Granite: {rule_res.verdict}",
-                "risk_score": rule_res.risk_score,
-                "risk_level": rule_res.risk_level.value,
-                "confidence": rule_res.confidence_label.value,
-                "summary": f"[IBM Bob / Granite-13b-chat Neural Analysis] {rule_res.plain_language_summary}",
-                "detected_signals": [
-                    {
-                        "signal_type": s.signal_type,
-                        "severity": s.severity,
-                        "reason": f"IBM Bob Granite Attention Matrix: {s.reason}",
-                        "excerpt": s.excerpt
-                    }
-                    for s in rule_res.detected_signals
-                ],
-                "recommended_actions": rule_res.recommended_actions,
-                "verification_steps": rule_res.verification_steps,
-                "should_alert_family": rule_res.should_alert_family
-            }
-
-        if self.api_key in ("demo", "simulator") or not (self.api_key and self.project_id):
-            # High-fidelity IBM Granite-13b Neural Evaluation
-            rule_res = await self.fallback.analyze_text(text, channel)
-            return {
-                "verdict": f"IBM Granite: {rule_res.verdict}",
-                "risk_score": rule_res.risk_score,
-                "risk_level": rule_res.risk_level.value,
-                "confidence": rule_res.confidence_label.value,
-                "summary": f"[IBM Granite-13b-chat Neural Analysis] {rule_res.plain_language_summary}",
-                "detected_signals": [
-                    {
-                        "signal_type": s.signal_type,
-                        "severity": s.severity,
-                        "reason": f"Granite Attention Matrix: {s.reason}",
-                        "excerpt": s.excerpt
-                    }
-                    for s in rule_res.detected_signals
-                ],
-                "recommended_actions": rule_res.recommended_actions,
-                "verification_steps": rule_res.verification_steps,
-                "should_alert_family": rule_res.should_alert_family
-            }
-
         token = await self._get_iam_token()
         if not token:
             logger.warning("Could not obtain IAM token; cannot call watsonx.ai")
@@ -177,7 +126,7 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
         prompt = ANALYSIS_PROMPT_TEMPLATE.format(
             input_type=input_type,
             channel=channel,
-            text=text[:3000]  # Limit input length
+            text=text[:3000],
         )
 
         payload = {
@@ -189,8 +138,8 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
                 "max_new_tokens": 800,
                 "min_new_tokens": 50,
                 "repetition_penalty": 1.1,
-                "stop_sequences": ["\n\n\n"]
-            }
+                "stop_sequences": ["\n\n\n"],
+            },
         }
 
         try:
@@ -201,16 +150,14 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
                     headers={
                         "Content-Type": "application/json",
                         "Accept": "application/json",
-                        "Authorization": f"Bearer {token}"
-                    }
+                        "Authorization": f"Bearer {token}",
+                    },
                 )
 
                 if response.status_code == 200:
                     data = response.json()
                     generated_text = data.get("results", [{}])[0].get("generated_text", "")
-                    # Try to parse JSON from the response
                     try:
-                        # Find JSON in the response
                         json_start = generated_text.find("{")
                         json_end = generated_text.rfind("}") + 1
                         if json_start >= 0 and json_end > json_start:
@@ -219,7 +166,7 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
                         logger.warning("watsonx.ai response was not valid JSON")
                         return None
                 elif response.status_code == 401:
-                    logger.error("watsonx.ai authentication failed—check API key")
+                    logger.error("watsonx.ai authentication failed — check API key")
                     return None
                 elif response.status_code == 429:
                     logger.warning("watsonx.ai rate limit exceeded")
@@ -236,6 +183,7 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
             return None
 
         return None
+
 
     def _parse_ibm_response(self, ibm_data: dict, incident_id: str, input_type: InputType) -> Optional[AnalysisResult]:
         """Validate and parse IBM model output into AnalysisResult."""
@@ -287,17 +235,24 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
                 for s in signals
             ]
 
+            policy_tier = PolicyTier.from_score(risk_score)
+            primary_action = recommended_actions[0] if recommended_actions else "Exercise standard digital safety practices."
+
             return AnalysisResult(
                 incident_id=incident_id,
                 input_type=input_type,
                 risk_level=risk_level,
                 risk_score=risk_score,
+                policy_tier=policy_tier.value,
                 confidence_label=confidence,
                 verdict=verdict,
                 plain_language_summary=summary,
                 detected_signals=signals,
+                counter_signals=[],
+                reason_codes=[f"SIG_AI_{s.signal_type}" for s in signals],
                 supporting_evidence=[f"{s.signal_type}: {s.reason}" for s in signals],
                 recommended_actions=recommended_actions,
+                recommended_action=primary_action,
                 verification_steps=verification_steps,
                 should_alert_family=should_alert,
                 ai_provider="ibm_watsonx",
@@ -311,8 +266,8 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
                 classification=verdict,
                 severity=severity_map.get(risk_level, "SAFE"),
                 summary=summary,
-                advice=recommended_actions[0] if recommended_actions else "Exercise standard digital safety practices.",
-                suggested_action=recommended_actions[0] if recommended_actions else None,
+                advice=primary_action,
+                suggested_action=primary_action,
                 is_flagged_for_family=should_alert,
                 evidence_items=legacy_evidence
             )

@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   AlertOctagon,
   LifeBuoy,
+  Save,
 } from 'lucide-react';
 import { api } from '../api/endpoints';
 import { PaymentSimulation, PaymentOutcome } from '../api/types';
@@ -109,6 +110,8 @@ export const PaymentCheckpointPage: React.FC = () => {
 
   const [simulating, setSimulating] = useState(false);
   const [result, setResult] = useState<PaymentSimulation | null>(null);
+  const [savedIncidentId, setSavedIncidentId] = useState<string | null>(null);
+  const [isSavingIncident, setIsSavingIncident] = useState(false);
   const [pastSimulations, setPastSimulations] = useState<PaymentSimulation[]>([]);
   const [checkedChecklist, setCheckedChecklist] = useState<{ [idx: number]: boolean }>({});
 
@@ -136,6 +139,7 @@ export const PaymentCheckpointPage: React.FC = () => {
       if (state.secrecy !== undefined) setSecrecyDemanded(state.secrecy);
       if (state.returns !== undefined) setGuaranteedReturns(state.returns);
       setResult(null);
+      setSavedIncidentId(null);
     }
   }, [location.state]);
 
@@ -150,6 +154,7 @@ export const PaymentCheckpointPage: React.FC = () => {
     setSecrecyDemanded(preset.secrecy);
     setGuaranteedReturns(preset.returns);
     setResult(null);
+    setSavedIncidentId(null);
     setCheckedChecklist({});
   };
 
@@ -167,6 +172,7 @@ export const PaymentCheckpointPage: React.FC = () => {
 
     setSimulating(true);
     setCheckedChecklist({});
+    setSavedIncidentId(null);
     try {
       const res = await api.simulatePayment({
         vpa_or_account: vpa.trim(),
@@ -195,6 +201,36 @@ export const PaymentCheckpointPage: React.FC = () => {
     }
   };
 
+  const handleSaveIncident = async () => {
+    if (!result) return;
+    setIsSavingIncident(true);
+    try {
+      const res = await api.savePaymentIncident(result.simulation_id);
+      setSavedIncidentId(res.incident_id);
+      if (res.already_persisted) {
+        showToast({
+          type: 'info',
+          title: 'Already Saved',
+          message: `This simulation is already saved as Incident Case #${res.incident_id}.`,
+        });
+      } else {
+        showToast({
+          type: 'success',
+          title: 'Incident Record Created',
+          message: `Saved authoritative case #${res.incident_id} with loss ₹${res.financial_loss.toLocaleString()}.`,
+        });
+      }
+    } catch (err: any) {
+      showToast({
+        type: 'error',
+        title: 'Save Incident Failed',
+        message: err.message || 'Unable to persist incident record.',
+      });
+    } finally {
+      setIsSavingIncident(false);
+    }
+  };
+
   const resetForm = () => {
     setVpa('');
     setRecipientName('');
@@ -206,6 +242,7 @@ export const PaymentCheckpointPage: React.FC = () => {
     setSecrecyDemanded(false);
     setGuaranteedReturns(false);
     setResult(null);
+    setSavedIncidentId(null);
     setCheckedChecklist({});
   };
 
@@ -482,10 +519,23 @@ export const PaymentCheckpointPage: React.FC = () => {
                     : 'bg-gradient-to-r from-emerald-700 to-teal-700'
                 }`}
               >
-                <div className="flex items-center justify-between gap-3 mb-2">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/20 border border-white/20">
-                    SIMULATION #{result.simulation_id}
-                  </span>
+                <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-black/20 border border-white/20">
+                      SIMULATION #{result.simulation_id}
+                    </span>
+                    {result.policy_tier && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        result.policy_tier === 'RED'
+                          ? 'bg-rose-950/80 text-rose-200 border border-rose-400/40'
+                          : result.policy_tier === 'AMBER'
+                          ? 'bg-amber-950/80 text-amber-200 border border-amber-400/40'
+                          : 'bg-emerald-950/80 text-emerald-200 border border-emerald-400/40'
+                      }`}>
+                        Tier: {result.policy_tier}
+                      </span>
+                    )}
+                  </div>
                   <span className="text-xs font-mono font-bold">
                     Risk Score: {result.risk_score}/100
                   </span>
@@ -554,20 +604,42 @@ export const PaymentCheckpointPage: React.FC = () => {
                       Contact Family Shield Guardian Now
                     </button>
                   )}
+
+                  {/* Save as Authoritative Incident Dossier */}
+                  <button
+                    type="button"
+                    onClick={handleSaveIncident}
+                    disabled={isSavingIncident || !!savedIncidentId}
+                    className={`w-full py-2.5 px-4 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      savedIncidentId
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 cursor-default'
+                        : 'bg-teal-800 hover:bg-teal-900 text-white shadow-sm'
+                    }`}
+                  >
+                    <Save className="w-4 h-4" />
+                    {isSavingIncident
+                      ? 'Saving Authoritative Case...'
+                      : savedIncidentId
+                      ? `Saved as Incident Case #${savedIncidentId}`
+                      : 'Save as Incident Record (Dossier)'}
+                  </button>
+
                   {result.outcome !== 'PROCEED_WITH_CAUTION' && (
                     <button
                       type="button"
-                      onClick={() =>
-                        navigate('/golden-hour', {
+                      onClick={() => {
+                        const incidentQuery = savedIncidentId ? `?incident_id=${encodeURIComponent(savedIncidentId)}` : '';
+                        navigate(`/golden-hour${incidentQuery}`, {
                           state: {
+                            incidentId: savedIncidentId || undefined,
                             classification: `Suspicious Coerced Payment (${result.outcome})`,
                             summary: `Simulation #${result.simulation_id}: Recipient ${result.vpa_or_account} for ₹${result.requested_amount.toLocaleString()}. Rationale: ${result.decision_rationale}`,
                             financialLoss: result.requested_amount,
                             recipient: result.vpa_or_account,
                             bankName: result.vpa_or_account.includes('@') ? 'UPI Payment App' : 'Bank Transfer',
                           },
-                        })
-                      }
+                        });
+                      }}
                       className="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                     >
                       <LifeBuoy className="w-4 h-4 text-amber-400" />

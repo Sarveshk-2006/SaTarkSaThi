@@ -6,12 +6,13 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
-from backend.app.models import PaymentSimulation, AuditEvent, TrustedContact
+from backend.app.models import PaymentSimulation, AuditEvent, TrustedContact, Incident
 from backend.app.dependencies import get_current_user_id
 from backend.app.schemas import (
     PaymentSimulationRequest,
     PaymentSimulationResponse,
-    PaymentCheckRequest
+    PaymentCheckRequest,
+    IncidentResponse
 )
 
 router = APIRouter(prefix="/payment", tags=["Payment Checkpoint Sandbox"])
@@ -31,12 +32,13 @@ def get_past_simulations(
         .filter(PaymentSimulation.user_id == current_user_id)\
         .order_by(PaymentSimulation.checked_at.desc())\
         .all()
-    
+
     # Parse json fields for response
     results = []
     for s in sims:
         factors = json.loads(s.evidence_factors) if s.evidence_factors else []
         steps = json.loads(s.verification_steps) if s.verification_steps else []
+        tier = "RED" if s.outcome == "SEEK_TRUSTED_HELP" else ("AMBER" if s.outcome == "PAUSE_AND_VERIFY" else "GREEN")
         results.append(PaymentSimulationResponse(
             id=s.id,
             simulation_id=s.simulation_id,
@@ -50,6 +52,7 @@ def get_past_simulations(
             secrecy_demanded=s.secrecy_demanded,
             guaranteed_returns=s.guaranteed_returns,
             outcome=s.outcome,
+            policy_tier=tier,
             risk_score=s.risk_score,
             severity=s.severity,
             decision_rationale=s.decision_rationale,
@@ -196,6 +199,8 @@ def simulate_payment_risk(
     db.add(audit)
     db.commit()
 
+    policy_tier = "RED" if outcome == "SEEK_TRUSTED_HELP" else ("AMBER" if outcome == "PAUSE_AND_VERIFY" else "GREEN")
+
     return PaymentSimulationResponse(
         id=sim_record.id,
         simulation_id=sim_record.simulation_id,
@@ -209,6 +214,7 @@ def simulate_payment_risk(
         secrecy_demanded=sim_record.secrecy_demanded,
         guaranteed_returns=sim_record.guaranteed_returns,
         outcome=sim_record.outcome,
+        policy_tier=policy_tier,
         risk_score=sim_record.risk_score,
         severity=sim_record.severity,
         decision_rationale=sim_record.decision_rationale,
@@ -218,6 +224,97 @@ def simulate_payment_risk(
         disclaimer=SIMULATION_DISCLAIMER,
         checked_at=sim_record.checked_at
     )
+
+
+@router.post("/simulations/{simulation_id}/save-incident", response_model=IncidentResponse, status_code=status.HTTP_201_CREATED)
+def save_payment_simulation_as_incident(
+    simulation_id: str,
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Explicit user action to convert a high-risk sandbox payment simulation into an authoritative
+    incident record for Golden Hour recovery and audit tracking.
+    Prevents duplicate creation.
+    """
+    sim = db.query(PaymentSimulation).filter(
+        PaymentSimulation.simulation_id == simulation_id
+    ).first()
+    if not sim:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Payment simulation '{simulation_id}' not found."
+        )
+
+    if sim.user_id != current_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: You cannot convert another user's simulation."
+        )
+
+    # Check for existing incident already linked to this simulation
+    existing_incident = db.query(Incident).filter(
+        Incident.user_id == current_user_id,
+        Incident.transaction_ref == sim.vpa_or_account,
+        Incident.financial_loss == sim.requested_amount
+    ).first()
+
+    if existing_incident:
+        return existing_incident
+
+    now = datetime.now(timezone.utc)
+    incident_id_str = f"SA-{random.randint(100000, 999999)}"
+    while db.query(Incident).filter(Incident.incident_id == incident_id_str).first():
+        incident_id_str = f"SA-{random.randint(100000, 999999)}"
+
+    factors = []
+    try:
+        factors = json.loads(sim.evidence_factors) if sim.evidence_factors else []
+    except Exception:
+        pass
+
+    incident = Incident(
+        incident_id=incident_id_str,
+        user_id=current_user_id,
+        title=f"Coerced Payment Alert: ₹{sim.requested_amount:,.2f} to {sim.vpa_or_account}",
+        scam_type="Suspicious Coerced Payment",
+        description=(
+            f"Payment Checkpoint flagged suspicious transfer of ₹{sim.requested_amount:,.2f} to recipient {sim.vpa_or_account}. "
+            f"Outcome: {sim.outcome}. Rationale: {sim.decision_rationale}"
+        ),
+        financial_loss=sim.requested_amount,
+        currency="INR",
+        bank_name="UPI Payment App" if "@" in sim.vpa_or_account else "Bank Transfer",
+        transaction_ref=sim.vpa_or_account,
+        suspect_contact=sim.vpa_or_account,
+        incident_date=now,
+        status="UNDER_REVIEW",
+        severity=sim.severity,
+        risk_level="HIGH" if sim.outcome == "SEEK_TRUSTED_HELP" else ("MEDIUM" if sim.outcome == "PAUSE_AND_VERIFY" else "LOW"),
+        risk_score=sim.risk_score,
+        evidence_metadata=json.dumps({
+            "simulation_id": sim.simulation_id,
+            "evidence_factors": factors,
+            "decision_rationale": sim.decision_rationale
+        }),
+        is_seed_data=False
+    )
+    db.add(incident)
+    db.commit()
+    db.refresh(incident)
+
+    audit = AuditEvent(
+        user_id=current_user_id,
+        event_type="INCIDENT_CREATED_FROM_PAYMENT",
+        entity_type="incident",
+        entity_id=incident.incident_id,
+        description=f"Created incident #{incident.incident_id} from payment simulation #{sim.simulation_id}."
+    )
+    db.add(audit)
+    db.commit()
+
+    return incident
+
 
 # Legacy alias endpoint for backward compatibility with Prompt 1 / 2 tests
 @router.post("/check", response_model=PaymentSimulationResponse)

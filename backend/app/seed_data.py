@@ -66,7 +66,7 @@ def seed_default_data(db: Session, force: bool = False):
     if db.query(TrustedContact).count() == 0 or force:
         if force:
             db.query(TrustedContact).delete()
-        
+
         now = datetime.now(timezone.utc)
         contacts = [
             TrustedContact(
@@ -124,7 +124,7 @@ def seed_default_data(db: Session, force: bool = False):
             db.query(ScamAnalysis).delete()
 
         now = datetime.now(timezone.utc)
-        
+
         # Seed Analysis 1: Digital Arrest Scam
         analysis1 = ScamAnalysis(
             incident_id="SA-202610-001",
@@ -371,4 +371,3 @@ def seed_default_data(db: Session, force: bool = False):
         )
         db.add(audit)
         db.commit()
-

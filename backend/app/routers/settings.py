@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
 from backend.app.database import get_db, Base, engine
 from backend.app.config import settings
+from backend.app.dependencies import get_current_user_id
 from backend.app.models import (
     UserProfile,
     TrustedContact,
@@ -56,20 +57,27 @@ def update_system_settings(update_in: SystemSettingsUpdate):
     )
 
 @router.get("/profile", response_model=UserProfileResponse)
-def get_user_profile(db: Session = Depends(get_db)):
-    profile = db.query(UserProfile).first()
+def get_user_profile(
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    profile = db.query(UserProfile).filter(UserProfile.id == current_user_id).first()
     if not profile:
-        profile = UserProfile()
+        profile = UserProfile(id=current_user_id)
         db.add(profile)
         db.commit()
         db.refresh(profile)
     return profile
 
 @router.put("/profile", response_model=UserProfileResponse)
-def update_user_profile(profile_in: UserProfileUpdate, db: Session = Depends(get_db)):
-    profile = db.query(UserProfile).first()
+def update_user_profile(
+    profile_in: UserProfileUpdate,
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    profile = db.query(UserProfile).filter(UserProfile.id == current_user_id).first()
     if not profile:
-        profile = UserProfile()
+        profile = UserProfile(id=current_user_id)
         db.add(profile)
         db.commit()
         db.refresh(profile)
@@ -87,7 +95,14 @@ def reset_database(req: ResetDbRequest, db: Session = Depends(get_db)):
     """
     Resets the database tables. If seed_demo_data is True, loads realistic seed data.
     If False, leaves all tables empty to demonstrate a brand-new user experience.
+    Strictly forbidden in production environments.
     """
+    if settings.is_production:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Production security policy: Database reset is strictly forbidden in production environments."
+        )
+
     db.query(RecoveryDraft).delete()
     db.query(Incident).delete()
     db.query(FamilyAlert).delete()

@@ -2,32 +2,58 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from backend.app.database import get_db
+from backend.app.dependencies import get_current_user_id
 from backend.app.models import ScamAnalysis, FamilyAlert, TrustedContact, Incident
 from backend.app.schemas import OverviewStatsResponse
 
 router = APIRouter(prefix="/stats", tags=["Statistics & Overview"])
 
 @router.get("/overview", response_model=OverviewStatsResponse)
-def get_overview_stats(db: Session = Depends(get_db)):
+def get_overview_stats(
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
     """
-    Computes real summary metrics derived solely from stored records in the local database.
+    Computes real summary metrics derived solely from stored records for the authenticated user.
     Does not invent fabricated threat counts.
     """
-    total_analyses = db.query(ScamAnalysis).count()
-    high_risk_analyses = db.query(ScamAnalysis).filter(ScamAnalysis.severity == "HIGH_RISK").count()
-    caution_analyses = db.query(ScamAnalysis).filter(ScamAnalysis.severity == "CAUTION").count()
-    safe_analyses = db.query(ScamAnalysis).filter(ScamAnalysis.severity == "SAFE").count()
+    total_analyses = db.query(ScamAnalysis).filter(ScamAnalysis.user_id == current_user_id).count()
+    high_risk_analyses = db.query(ScamAnalysis).filter(
+        ScamAnalysis.user_id == current_user_id,
+        ScamAnalysis.severity == "HIGH_RISK"
+    ).count()
+    caution_analyses = db.query(ScamAnalysis).filter(
+        ScamAnalysis.user_id == current_user_id,
+        ScamAnalysis.severity == "CAUTION"
+    ).count()
+    safe_analyses = db.query(ScamAnalysis).filter(
+        ScamAnalysis.user_id == current_user_id,
+        ScamAnalysis.severity == "SAFE"
+    ).count()
 
-    total_family_alerts = db.query(FamilyAlert).count()
-    active_trusted_contacts = db.query(TrustedContact).filter(TrustedContact.is_active == True).count()
-    
-    total_incidents = db.query(Incident).count()
-    recovery_cases_created = db.query(Incident).filter(Incident.financial_loss > 0).count()
+    total_family_alerts = db.query(FamilyAlert).filter(FamilyAlert.user_id == current_user_id).count()
+    active_trusted_contacts = db.query(TrustedContact).filter(
+        TrustedContact.user_id == current_user_id,
+        TrustedContact.is_active == True
+    ).count()
 
-    total_loss_recorded = db.query(func.coalesce(func.sum(Incident.financial_loss), 0.0)).scalar()
+    total_incidents = db.query(Incident).filter(Incident.user_id == current_user_id).count()
+    recovery_cases_created = db.query(Incident).filter(
+        Incident.user_id == current_user_id,
+        Incident.financial_loss > 0
+    ).count()
 
-    recent_incidents = db.query(Incident).order_by(Incident.created_at.desc()).limit(5).all()
-    recent_analyses = db.query(ScamAnalysis).order_by(ScamAnalysis.created_at.desc()).limit(5).all()
+    total_loss_recorded = db.query(
+        func.coalesce(func.sum(Incident.financial_loss), 0.0)
+    ).filter(Incident.user_id == current_user_id).scalar()
+
+    recent_incidents = db.query(Incident).filter(
+        Incident.user_id == current_user_id
+    ).order_by(Incident.created_at.desc()).limit(5).all()
+
+    recent_analyses = db.query(ScamAnalysis).filter(
+        ScamAnalysis.user_id == current_user_id
+    ).order_by(ScamAnalysis.created_at.desc()).limit(5).all()
 
     return OverviewStatsResponse(
         total_analyses=total_analyses,

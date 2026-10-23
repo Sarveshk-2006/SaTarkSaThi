@@ -58,28 +58,34 @@ class AudioAnalyzeRequest(BaseModel):
 
 class DetectedSignalResponse(BaseModel):
     """A single detected risk signal with justification."""
+    reason_code: str = ""
     signal_type: str
     severity: str
     reason: str
     excerpt: Optional[str] = None
     weight: float = 1.0
+    category: Optional[str] = None
 
 
 class AnalysisResponse(BaseModel):
     """
     Full structured analysis response.
-    Every detected signal includes a reason and supporting evidence.
+    Every detected signal includes a reason, excerpt, and machine-readable code.
     """
     incident_id: str
     input_type: str
     risk_level: str = Field(description="LOW, MEDIUM, HIGH, or CRITICAL")
     risk_score: int = Field(ge=0, le=100, description="Heuristic risk score, not a calibrated probability")
+    policy_tier: str = Field(default="GREEN", description="Centralized policy tier: GREEN, AMBER, or RED")
     confidence_label: str = Field(description="LOW, MEDIUM, or HIGH")
     verdict: str
     plain_language_summary: str
     detected_signals: List[DetectedSignalResponse] = []
+    counter_signals: List[DetectedSignalResponse] = []
+    reason_codes: List[str] = []
     supporting_evidence: List[str] = []
     recommended_actions: List[str] = []
+    recommended_action: Optional[str] = None
     verification_steps: List[str] = []
     should_alert_family: bool = False
     ai_provider: str = "none"

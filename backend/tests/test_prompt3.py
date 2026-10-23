@@ -127,7 +127,7 @@ def test_complaint_fields_are_not_fabricated():
 def test_invalid_amounts_are_rejected():
     """Test: Invalid payment simulation amounts (<= 0) are strictly rejected with 422."""
     headers = {"X-User-Id": "1"}
-    
+
     # Zero amount
     resp_zero = client.post("/api/payment/simulate", json={
         "vpa_or_account": "merchant@okhdfc",
@@ -146,12 +146,14 @@ def test_invalid_amounts_are_rejected():
 
 
 def test_users_cannot_access_another_users_incidents():
-    """Test: Ownership enforcement prevents User 1 from accessing User 3's incidents."""
+    """Test: Ownership enforcement prevents User 1 from accessing User 99's or User 2's private incidents."""
+    import uuid
+    unique_id = f"SA-OTHER-USER-{uuid.uuid4().hex[:8].upper()}"
     db = SessionLocal()
     try:
-        # Create an incident directly owned by User 99 (another user)
+        # Insert directly via SQLAlchemy to simulate a record owned by a non-demo user
         other_incident = Incident(
-            incident_id="SA-OTHER-USER-99",
+            incident_id=unique_id,
             user_id=99,
             title="Private Incident of User 99",
             scam_type="Job Task Fraud",
@@ -161,14 +163,33 @@ def test_users_cannot_access_another_users_incidents():
             severity="HIGH_RISK"
         )
         db.add(other_incident)
+
+        # Also create a private incident belonging to demo User 2
+        user2_inc_id = f"SA-USER2-PRIV-{uuid.uuid4().hex[:8].upper()}"
+        user2_incident = Incident(
+            incident_id=user2_inc_id,
+            user_id=2,
+            title="Private Incident of User 2",
+            scam_type="Personal Loan Fraud",
+            description="Private case of user 2.",
+            financial_loss=5000.0,
+            status="UNDER_REVIEW",
+            severity="MEDIUM"
+        )
+        db.add(user2_incident)
         db.commit()
     finally:
         db.close()
 
-    # User 1 tries to access User 99's incident
-    resp = client.get("/api/incidents/SA-OTHER-USER-99", headers={"X-User-Id": "1"})
+    # User 1 tries to access User 99's incident — must get 403
+    resp = client.get(f"/api/incidents/{unique_id}", headers={"X-User-Id": "1"})
     assert resp.status_code == 403
     assert "forbidden" in resp.json()["detail"].lower()
+
+    # User 1 tries to access User 2's incident — must get 403
+    resp2 = client.get(f"/api/incidents/{user2_inc_id}", headers={"X-User-Id": "1"})
+    assert resp2.status_code == 403
+    assert "forbidden" in resp2.json()["detail"].lower()
 
 
 def test_notification_failures_do_not_destroy_incident_record():

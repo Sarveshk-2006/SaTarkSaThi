@@ -1,13 +1,13 @@
 import random
 import logging
-from typing import List, Optional
+from typing import List, Optional, Set
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Response
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from backend.app.database import get_db
-from backend.app.models import Incident, RecoveryDraft, FamilyAlert, TrustedContact, AuditEvent
-from backend.app.dependencies import get_current_user_id
+from backend.app.models import Incident, RecoveryDraft, FamilyAlert, TrustedContact, AuditEvent, UserProfile
+from backend.app.dependencies import get_current_user_id, get_authorized_incident_user_ids
 from backend.app.schemas import (
     IncidentCreate,
     IncidentUpdate,
@@ -21,6 +21,7 @@ logger = logging.getLogger("satark_saathi.incidents")
 
 router = APIRouter(prefix="/incidents", tags=["Incident History & Management"])
 
+
 @router.get("", response_model=List[IncidentResponse])
 def get_incidents(
     search: Optional[str] = Query(None, description="Search by Incident ID, title, or description"),
@@ -33,17 +34,14 @@ def get_incidents(
     db: Session = Depends(get_db)
 ):
     """
-    List, search, and filter incidents with strict ownership checks.
-    Guardian profile (User 2) can view linked family member incidents.
-    All records retrieved dynamically from the database.
+    List, search, and filter incidents with strict dynamic relationship-based ownership checks.
+    Consented guardians can view linked family member incidents based on active consent.
     """
     query = db.query(Incident)
 
-    # Ownership check: User 1 sees own incidents; User 2 (Guardian) sees User 1 & 2
-    if current_user_id != 2:
-        query = query.filter(Incident.user_id == current_user_id)
-    else:
-        query = query.filter(Incident.user_id.in_([1, 2]))
+    # Dynamic ownership and guardian access check
+    authorized_uids = get_authorized_incident_user_ids(current_user_id, db)
+    query = query.filter(Incident.user_id.in_(authorized_uids))
 
     # Search filter
     if search and search.strip():
@@ -155,8 +153,16 @@ async def create_incident(
             db.commit()
             db.refresh(alert)
 
-            # Broadcast live notification to connected browser sessions
+            # Broadcast live notification strictly to authorized user sessions
             try:
+                target_uids = {incident.user_id}
+                matched_user = db.query(UserProfile).filter(
+                    (UserProfile.phone_number == contact.phone_number) |
+                    ((UserProfile.email.isnot(None)) & (UserProfile.email == contact.email))
+                ).first()
+                if matched_user:
+                    target_uids.add(matched_user.id)
+
                 await alert_broadcaster.broadcast_alert({
                     "type": "FAMILY_ALERT_NOTIFICATION",
                     "alert_id": alert.id,
@@ -167,8 +173,9 @@ async def create_incident(
                     "recommended_action": alert.recommended_action,
                     "contact_id": alert.contact_id,
                     "delivered_at": alert.delivered_at.isoformat() if alert.delivered_at else None,
-                    "delivery_channel": "IN_APP_SIMULATION"
-                })
+                    "delivery_channel": "IN_APP_SIMULATION",
+                    "user_id": alert.user_id
+                }, target_user_ids=target_uids)
             except Exception as e:
                 logger.warning(f"Notification broadcast failure: {e}")
 
@@ -212,8 +219,9 @@ def get_incident_detail(
     if not incident:
         raise HTTPException(status_code=404, detail="Incident record not found")
 
-    # Ownership check
-    if current_user_id != 2 and incident.user_id != current_user_id:
+    # Ownership / guardian relationship authorization check
+    authorized_uids = get_authorized_incident_user_ids(current_user_id, db)
+    if incident.user_id not in authorized_uids:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access forbidden: You do not have permission to view this incident record."
@@ -246,7 +254,7 @@ def update_incident(
     db: Session = Depends(get_db)
 ):
     """
-    Update incident status or details with ownership check.
+    Update incident status or details with strict owner check.
     """
     query = db.query(Incident)
     if incident_id.isdigit():
@@ -258,7 +266,7 @@ def update_incident(
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
 
-    if current_user_id != 2 and incident.user_id != current_user_id:
+    if incident.user_id != current_user_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access forbidden: You cannot modify incidents belonging to another user."

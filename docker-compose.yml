@@ -16,10 +16,14 @@ services:
       - PORT=8000
       - HOST=0.0.0.0
       - DATABASE_URL=sqlite:///./satark_saathi.db
-      - ANALYSIS_PROVIDER=watsonx
-      - WATSONX_APIKEY=bob_prod_bob-apikey_3jL8vHQCvrWzrrCPjvyjMpoQFGgPwVhUPAUFugdvxvsxxQ4M4hQkk5QU6yS3fwqVmCGmijZaPmoLXV37qo2e6dx4_5B6scRNgiXLqbpPNQ2AjL3ZcEgHXgghruGvNEjZPEBtA
-      - BOB_API_KEY=bob_prod_bob-apikey_3jL8vHQCvrWzrrCPjvyjMpoQFGgPwVhUPAUFugdvxvsxxQ4M4hQkk5QU6yS3fwqVmCGmijZaPmoLXV37qo2e6dx4_5B6scRNgiXLqbpPNQ2AjL3ZcEgHXgghruGvNEjZPEBtA
-      - BOBSHELL_API_KEY=bob_prod_bob-apikey_3jL8vHQCvrWzrrCPjvyjMpoQFGgPwVhUPAUFugdvxvsxxQ4M4hQkk5QU6yS3fwqVmCGmijZaPmoLXV37qo2e6dx4_5B6scRNgiXLqbpPNQ2AjL3ZcEgHXgghruGvNEjZPEBtA
+      # AI Engine — set to "rule_based" by default.
+      # Set ANALYSIS_PROVIDER=watsonx and supply WATSONX_APIKEY + WATSONX_PROJECT_ID
+      # to enable IBM watsonx.ai inference. Never hardcode credentials here;
+      # use a .env file or a secrets manager instead.
+      - ANALYSIS_PROVIDER=rule_based
+      - WATSONX_APIKEY=
+      - WATSONX_PROJECT_ID=
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
     volumes:
       - satark_data:/app
     restart: unless-stopped

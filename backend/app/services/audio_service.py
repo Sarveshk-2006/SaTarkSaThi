@@ -1,59 +1,111 @@
 """
 Audio Transcription Service.
-Transcribes voice notes, threatening extortion call recordings, and audio evidence.
-Integrates IBM Watson Speech-to-Text format and resilient in-process transcript generation.
+Provides genuine local offline speech-to-text transcription using OpenAI Whisper (tiny model).
+Ensures safe temporary file handling, offline operation, and strict separation between
+speech recognition and scam-risk policy evaluation.
 """
 
+import os
+import shutil
+import tempfile
 import logging
 from typing import Tuple, Optional
 
 logger = logging.getLogger("satark_saathi.audio")
 
+# Maximum permitted audio file size (25 MB)
+MAX_AUDIO_BYTES = 25 * 1024 * 1024
+
+
 class AudioTranscriptionService:
     def __init__(self):
-        self.watson_stt_available = False
+        self._model = None
+        self._model_load_attempted = False
+        self._whisper_available = False
+        self._ffmpeg_available = bool(shutil.which("ffmpeg"))
+
+        # Check if whisper is installed
+        try:
+            import whisper  # noqa: F401
+            self._whisper_available = True
+        except ImportError:
+            self._whisper_available = False
+            logger.info("OpenAI Whisper package is not installed.")
+
+    def _get_model(self):
+        """Lazy loader for the Whisper model to avoid slow application startup."""
+        if self._model is None and not self._model_load_attempted:
+            self._model_load_attempted = True
+            if self._whisper_available and self._ffmpeg_available:
+                try:
+                    import whisper
+                    # Loads tiny model from local cache (~/.cache/whisper/tiny.pt)
+                    self._model = whisper.load_model("tiny")
+                    logger.info("Local Whisper tiny model loaded successfully.")
+                except Exception as e:
+                    logger.warning(f"Failed to load Whisper model: {e}")
+                    self._model = None
+        return self._model
 
     def is_available(self) -> bool:
-        return True
+        """Returns True only if genuine speech recognition is available."""
+        if not (self._whisper_available and self._ffmpeg_available):
+            return False
+        model = self._get_model()
+        return model is not None
 
-    def transcribe_audio(self, audio_bytes: bytes, filename: str = "audio.mp3") -> Tuple[str, str]:
+    def transcribe_audio(self, audio_bytes: bytes, filename: str = "audio.wav") -> Tuple[Optional[str], str]:
         """
-        Transcribes audio bytes into text.
+        Transcribes audio bytes into text using local Whisper engine.
         Returns: (transcript_text, method_used)
+
+        Strict safety rules:
+        - Never infers spoken content from filenames or extensions.
+        - Returns (None, reason) if speech recognition is unavailable, silent, or failed.
         """
-        fn_lower = filename.lower()
+        if not audio_bytes or len(audio_bytes) < 32:
+            return None, "empty_or_truncated_audio"
 
-        # If audio relates to arrest / police / customs threats
-        if any(k in fn_lower for k in ["arrest", "cbi", "police", "customs", "trai", "court"]):
-            return (
-                "Spoken Audio Transcript: 'This is Sub-Inspector Vikram Rathore from Mumbai Cyber Cell. "
-                "A parcel containing contraband and fake passports under your Aadhaar number was intercepted at international airport. "
-                "A non-bailable warrant has been issued by magistrate court. You are placed under digital arrest. "
-                "Stay on this video call, do not inform family, and transfer clearance deposit of Rs 50,000 for verification.'",
-                "watson_stt_neural_pipeline"
-            )
+        if len(audio_bytes) > MAX_AUDIO_BYTES:
+            return None, "file_too_large"
 
-        if any(k in fn_lower for k in ["bill", "electric", "power", "disconnection"]):
-            return (
-                "Spoken Audio Transcript: 'Dear electricity consumer, this is power discom verification desk. "
-                "Your connection is scheduled for permanent disconnection tonight at 9:30 PM. "
-                "To stop immediate power disconnection, call officer right now and complete verification over UPI.'",
-                "watson_stt_neural_pipeline"
-            )
+        if not self.is_available():
+            return None, "stt_unavailable"
 
-        if any(k in fn_lower for k in ["loan", "nude", "blackmail", "recovery"]):
-            return (
-                "Spoken Audio Transcript: 'Listen carefully, your loan of Rs 15,000 is overdue. "
-                "We have all photos and phone contact list from your phone. "
-                "If you do not transfer money within 30 minutes, we will send morphed photos to your parents and friends.'",
-                "watson_stt_neural_pipeline"
-            )
+        model = self._get_model()
+        if model is None:
+            return None, "stt_model_unavailable"
 
-        # General audio transcript template for suspicious voice note
-        return (
-            f"Spoken Voice Note ({filename}): 'Urgent security alert regarding your bank account. "
-            "Unusual activity detected. Do not disconnect this call. Please verify identity and authorize security transfer immediately.'",
-            "watson_stt_neural_pipeline"
-        )
+        # Determine extension safely
+        ext = os.path.splitext(filename)[1].lower()
+        if ext not in [".wav", ".mp3", ".ogg", ".webm", ".m4a"]:
+            ext = ".wav"
+
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as temp_file:
+                temp_path = temp_file.name
+                temp_file.write(audio_bytes)
+                temp_file.flush()
+
+            # Execute local offline transcription
+            result = model.transcribe(temp_path, fp16=False)
+            text = (result.get("text") or "").strip()
+
+            if not text:
+                return None, "silent_or_unintelligible"
+
+            return text, "openai_whisper_local_tiny"
+
+        except Exception as e:
+            logger.warning(f"Audio transcription error on file {filename}: {e}")
+            return None, "transcription_failed"
+        finally:
+            if temp_path and os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except Exception as e:
+                    logger.debug(f"Failed to delete temp audio file {temp_path}: {e}")
+
 
 audio_service = AudioTranscriptionService()

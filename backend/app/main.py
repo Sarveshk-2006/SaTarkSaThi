@@ -9,6 +9,7 @@ from backend.app.config import settings
 from backend.app.database import init_db
 from backend.app.routers import (
     health,
+    auth,
     scanner,
     contacts,
     alerts,
@@ -43,10 +44,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Enable CORS for all local frontend clients
+# CORS: use the configured origin list from settings.cors_origin_list.
+# Set CORS_ORIGINS in .env to a comma-separated list of allowed origins.
+# The wildcard "*" is intentionally NOT used; add your frontend URL to .env.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.cors_origin_list,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,9 +75,23 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
     )
 
+# Safe Unhandled Exception Handler: prevents stack trace and secret leakage
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(request: Request, exc: Exception):
+    logger.exception(f"Unhandled server error on {request.method} {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "status": "error",
+            "error_code": "INTERNAL_SERVER_ERROR",
+            "message": "An internal error occurred while processing the request. Details logged safely."
+        }
+    )
+
 # Include API Routers under /api
 api_prefix = "/api"
 app.include_router(health.router, prefix=api_prefix)
+app.include_router(auth.router, prefix=api_prefix)
 app.include_router(scanner.router, prefix=api_prefix)
 app.include_router(contacts.router, prefix=api_prefix)
 app.include_router(alerts.router, prefix=api_prefix)
@@ -87,18 +104,51 @@ app.include_router(analyze_v1.router, prefix=api_prefix)
 app.include_router(evaluation.router, prefix=api_prefix)
 
 from backend.app.services.alert_broadcaster import alert_broadcaster
-from fastapi import WebSocket, WebSocketDisconnect
+from fastapi import WebSocket, WebSocketDisconnect, Query
+from typing import Optional
+
+# DEMO IDENTITY BOUNDARY — fallback for dev/demo only.
+DEMO_USER_IDS = {1, 2}
 
 @app.websocket("/api/ws/alerts")
-async def websocket_alerts_alias(websocket: WebSocket, user_id: int = 1):
-    await alert_broadcaster.connect(websocket, user_id)
+async def websocket_alerts_alias(
+    websocket: WebSocket,
+    token: Optional[str] = Query(None),
+    user_id: Optional[int] = Query(None)
+):
+    """
+    WebSocket transport for real-time live notification delivery.
+    Supports cryptographic JWT authentication (?token=<jwt>).
+    In production, token authentication is strictly required.
+    In development mode, falls back to demo persona user_id if token is omitted.
+    """
+    resolved_uid: Optional[int] = None
+    if token:
+        try:
+            from backend.app.services.auth_service import decode_access_token
+            payload = decode_access_token(token)
+            resolved_uid = int(payload.get("user_id") or payload.get("sub"))
+        except Exception:
+            await websocket.close(code=4001, reason="Invalid or expired authentication token")
+            return
+    elif settings.is_production or not settings.allow_demo_header_auth:
+        await websocket.close(code=4001, reason="Authentication token required in production")
+        return
+    else:
+        effective_uid = user_id if user_id is not None else 1
+        if effective_uid not in DEMO_USER_IDS:
+            await websocket.close(code=4003, reason="Invalid demo user ID")
+            return
+        resolved_uid = effective_uid
+
+    await alert_broadcaster.connect(websocket, resolved_uid)
     try:
         while True:
             await websocket.receive_text()
     except WebSocketDisconnect:
-        alert_broadcaster.disconnect(websocket, user_id)
+        alert_broadcaster.disconnect(websocket, resolved_uid)
     except Exception:
-        alert_broadcaster.disconnect(websocket, user_id)
+        alert_broadcaster.disconnect(websocket, resolved_uid)
 
 import os
 from fastapi.staticfiles import StaticFiles
@@ -128,11 +178,11 @@ def root(request: Request):
 def serve_spa_page(full_path: str, request: Request):
     if full_path.startswith("api") or full_path.startswith("docs") or full_path == "openapi.json":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not Found")
-    
+
     direct_file = os.path.join(FRONTEND_DIST_DIR, full_path)
     if os.path.isfile(direct_file):
         return FileResponse(direct_file)
-        
+
     index_file = os.path.join(FRONTEND_DIST_DIR, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)

@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, getAuthHeaders } from './client';
 import {
   UserProfile,
   TrustedContact,
@@ -20,6 +20,9 @@ import {
   AudioUploadResult,
   BankFreezeResponse,
   CybercrimePortalSubmitResponse,
+  RecoveryCaseContextResponse,
+  SavePaymentIncidentResponse,
+  TokenResponse,
 } from './types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
@@ -59,6 +62,7 @@ export const api = {
     try {
       const response = await fetch(url, {
         method: 'POST',
+        headers: getAuthHeaders(false),
         body: formData,
         signal: controller.signal,
       });
@@ -90,6 +94,7 @@ export const api = {
     try {
       const response = await fetch(url, {
         method: 'POST',
+        headers: getAuthHeaders(false),
         body: formData,
         signal: controller.signal,
       });
@@ -145,6 +150,8 @@ export const api = {
     guaranteed_returns?: boolean;
   }) => apiClient.post<PaymentSimulation>('/payment/simulate', data),
   getPaymentSimulations: () => apiClient.get<PaymentSimulation[]>('/payment/simulations'),
+  savePaymentIncident: (simulationId: string) =>
+    apiClient.post<SavePaymentIncidentResponse>(`/payment/simulations/${simulationId}/save-incident`),
   // Legacy alias
   checkPayment: (data: {
     vpa_or_account: string;
@@ -181,6 +188,8 @@ export const api = {
 
   // Golden Hour Recovery
   getHelplines: () => apiClient.get<HelplinesResponse>('/recovery/helplines'),
+  getRecoveryCase: (incidentId: string) =>
+    apiClient.get<RecoveryCaseContextResponse>(`/recovery/cases/${incidentId}`),
   executeRecoveryWizard: (data: RecoveryWizardRequest) =>
     apiClient.post<RecoveryDraft>('/recovery/wizard', data),
   updateRecoveryDraft: (draftId: number, data: { portal_complaint_text?: string; bank_complaint_text?: string; police_complaint_text?: string; status?: string }) =>
@@ -219,4 +228,12 @@ export const api = {
   // Benchmark Evaluation
   getEvaluationMetrics: () => apiClient.get<any>('/evaluation/metrics'),
   runEvaluation: () => apiClient.post<any>('/evaluation/run'),
+
+  // Authentication & Session
+  login: (identifier: string, passcode: string) =>
+    apiClient.post<TokenResponse>('/auth/login', { identifier, passcode }),
+  getDemoToken: (userId: number = 1) =>
+    apiClient.post<TokenResponse>('/auth/demo-token', { user_id: userId }),
+  getCurrentUser: () => apiClient.get<UserProfile>('/auth/me'),
+  logout: () => apiClient.post<{ status: string; message: string }>('/auth/logout'),
 };

@@ -11,6 +11,7 @@ from backend.app.database import get_db
 from backend.app.models import ScamAnalysis, ScamEvidence, AuditEvent
 from backend.app.schemas import AnalyzeRequest, ScamAnalysisResponse, PresetSample
 from backend.app.services.factory import get_analyzer_service
+from backend.app.dependencies import get_current_user_id
 
 router = APIRouter(prefix="/scanner", tags=["Scam Scanner"])
 
@@ -121,16 +122,21 @@ def get_presets():
     return PRESETS
 
 @router.post("/analyze", response_model=ScamAnalysisResponse)
-async def analyze_message(request: AnalyzeRequest, db: Session = Depends(get_db)):
+async def analyze_message(
+    request: AnalyzeRequest,
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
     """
     Analyzes a suspicious communication using the active analysis engine.
-    Persists analysis and evidence in SQLite.
+    Persists analysis and evidence in SQLite tied to the authenticated user.
     """
     analyzer = get_analyzer_service()
     result = await analyzer.analyze(request.text, request.channel)
 
     # Save analysis in database
     db_analysis = ScamAnalysis(
+        user_id=current_user_id,
         input_text=request.text,
         channel=request.channel,
         classification=result.classification or result.verdict,
@@ -159,6 +165,7 @@ async def analyze_message(request: AnalyzeRequest, db: Session = Depends(get_db)
 
     # Log audit event
     audit = AuditEvent(
+        user_id=current_user_id,
         event_type="SCAN_EXECUTED",
         entity_id=str(db_analysis.id),
         description=f"Analyzed {request.channel} message. Classification: '{result.classification}' with Risk Score {result.risk_score}/100."
@@ -170,13 +177,27 @@ async def analyze_message(request: AnalyzeRequest, db: Session = Depends(get_db)
     return db_analysis
 
 @router.get("/history", response_model=List[ScamAnalysisResponse])
-def get_analysis_history(limit: int = 50, db: Session = Depends(get_db)):
-    """Fetches analysis history ordered by most recent."""
-    return db.query(ScamAnalysis).order_by(ScamAnalysis.created_at.desc()).limit(limit).all()
+def get_analysis_history(
+    limit: int = 50,
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """Fetches analysis history for current user ordered by most recent."""
+    return db.query(ScamAnalysis)\
+        .filter(ScamAnalysis.user_id == current_user_id)\
+        .order_by(ScamAnalysis.created_at.desc())\
+        .limit(limit).all()
 
 @router.get("/{analysis_id}", response_model=ScamAnalysisResponse)
-def get_analysis_detail(analysis_id: int, db: Session = Depends(get_db)):
-    analysis = db.query(ScamAnalysis).filter(ScamAnalysis.id == analysis_id).first()
+def get_analysis_detail(
+    analysis_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    analysis = db.query(ScamAnalysis).filter(
+        ScamAnalysis.id == analysis_id,
+        ScamAnalysis.user_id == current_user_id
+    ).first()
     if not analysis:
-        raise HTTPException(status_code=404, detail="Analysis record not found")
+        raise HTTPException(status_code=404, detail="Analysis record not found or access denied")
     return analysis

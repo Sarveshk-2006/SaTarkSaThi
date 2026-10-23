@@ -40,7 +40,7 @@ export const IncidentHistoryPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Filter States
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || searchParams.get('search') || '');
   const [scamTypeFilter, setScamTypeFilter] = useState('');
   const [riskLevelFilter, setRiskLevelFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -50,6 +50,13 @@ export const IncidentHistoryPage: React.FC = () => {
   const [auditEvents, setAuditEvents] = useState<AuditEvent[]>([]);
   const [loadingAudit, setLoadingAudit] = useState(false);
   const [incidentToDelete, setIncidentToDelete] = useState<Incident | null>(null);
+
+  useEffect(() => {
+    const q = searchParams.get('q') || searchParams.get('search');
+    if (q && q !== searchQuery) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
 
   const fetchIncidents = async () => {
     try {
@@ -374,6 +381,18 @@ export const IncidentHistoryPage: React.FC = () => {
               <p className="text-xs text-slate-700 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
                 {selectedIncident.description}
               </p>
+            </div>
+
+            {/* Quick Link to Golden Hour Recovery */}
+            <div>
+              <button
+                type="button"
+                onClick={() => navigate(`/golden-hour?incident_id=${encodeURIComponent(selectedIncident.incident_id)}`)}
+                className="w-full py-2.5 px-3 rounded-xl bg-teal-800 hover:bg-teal-900 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              >
+                <LifeBuoy className="w-4 h-4 text-amber-400" />
+                Open Golden Hour Recovery Desk for this Case &rarr;
+              </button>
             </div>
 
             {/* Recovery Progress & Status Controller */}

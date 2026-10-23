@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import {
   LifeBuoy,
   PhoneCall,
@@ -17,6 +17,8 @@ import {
   Zap,
   Send,
   ShieldAlert,
+  AlertOctagon,
+  RotateCcw,
 } from 'lucide-react';
 import { api } from '../api/endpoints';
 import {
@@ -32,10 +34,13 @@ import { useToast } from '../context/ToastContext';
 
 export const GoldenHourRecoveryPage: React.FC = () => {
   const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { showToast } = useToast();
 
   const [helplines, setHelplines] = useState<BankHelpline[]>([]);
   const [loading, setLoading] = useState(true);
+  const [caseLoading, setCaseLoading] = useState(false);
+  const [caseLoadError, setCaseLoadError] = useState<string | null>(null);
 
   // 4-Step Wizard State
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4>(1);
@@ -76,24 +81,66 @@ export const GoldenHourRecoveryPage: React.FC = () => {
   const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   useEffect(() => {
-    // Check if navigated from scanner or checkpoint with pre-filled state
+    const qId = searchParams.get('incident_id') || searchParams.get('incidentId');
     const state = location.state as any;
-    if (state?.incidentId) {
-      setLinkedIncidentId(state.incidentId);
+    const effectiveIncidentId = qId || state?.incidentId;
+
+    if (state?.incidentId && !qId) {
+      setSearchParams({ incident_id: state.incidentId }, { replace: true });
     }
-    if (state?.classification) {
-      setScamType(state.classification);
-      setDescription(state.summary || '');
-      if (state.extractedText) setMessageTranscript(state.extractedText);
-    }
-    if (state?.financialLoss) {
-      setFinancialLoss(state.financialLoss.toString());
-    }
-    if (state?.recipient) {
-      setSuspectContact(state.recipient);
-    }
-    if (state?.bankName) {
-      setBankName(state.bankName);
+
+    if (effectiveIncidentId) {
+      setLinkedIncidentId(effectiveIncidentId);
+      setCaseLoading(true);
+      setCaseLoadError(null);
+      api.getRecoveryCase(effectiveIncidentId)
+        .then((caseData) => {
+          setLinkedIncidentId(caseData.incident_id);
+          if (caseData.scam_type) setScamType(caseData.scam_type);
+          if (caseData.description) setDescription(caseData.description);
+          if (caseData.financial_loss !== undefined && caseData.financial_loss !== null) {
+            setFinancialLoss(caseData.financial_loss.toString());
+          }
+          if (caseData.bank_name) setBankName(caseData.bank_name);
+          if (caseData.transaction_ref) setTransactionRef(caseData.transaction_ref);
+          if (caseData.suspect_contact) setSuspectContact(caseData.suspect_contact);
+          if (caseData.incident_date) setIncidentDate(caseData.incident_date.slice(0, 16));
+          if (caseData.timeline_events && caseData.timeline_events.length > 0) {
+            setTimelineEvents(caseData.timeline_events);
+          }
+          if (caseData.message_transcript) {
+            setMessageTranscript(caseData.message_transcript);
+          }
+          if (caseData.latest_draft) {
+            setGeneratedDraft(caseData.latest_draft);
+            setEditedPortalText(caseData.latest_draft.portal_complaint_text);
+            setEditedBankText(caseData.latest_draft.bank_complaint_text);
+            setEditedPoliceText(caseData.latest_draft.police_complaint_text);
+            setWizardStep(4);
+          }
+        })
+        .catch((err: any) => {
+          const detail = err?.message || 'Unauthorized or incident not found';
+          setCaseLoadError(`Failed to load incident record (${effectiveIncidentId}): ${detail}`);
+        })
+        .finally(() => {
+          setCaseLoading(false);
+        });
+    } else {
+      if (state?.classification) {
+        setScamType(state.classification);
+        setDescription(state.summary || '');
+        if (state.extractedText) setMessageTranscript(state.extractedText);
+      }
+      if (state?.financialLoss) {
+        setFinancialLoss(state.financialLoss.toString());
+      }
+      if (state?.recipient) {
+        setSuspectContact(state.recipient);
+      }
+      if (state?.bankName) {
+        setBankName(state.bankName);
+      }
     }
 
     api.getHelplines()
@@ -104,7 +151,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
         showToast({ type: 'error', title: 'Failed to load recovery resources', message: err.message });
       })
       .finally(() => setLoading(false));
-  }, [location.state]);
+  }, [searchParams, location.state]);
 
   const handleAddTimelineEvent = () => {
     if (newTimelineEvent.trim()) {
@@ -302,13 +349,20 @@ export const GoldenHourRecoveryPage: React.FC = () => {
       </div>
 
       {/* Step Wizard Progress Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
           <div>
-            <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-              <LifeBuoy className="w-5 h-5 text-teal-800" />
-              Golden Hour Incident Recovery Wizard
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <LifeBuoy className="w-5 h-5 text-teal-800" />
+                Golden Hour Incident Recovery Wizard
+              </h1>
+              {linkedIncidentId && (
+                <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-teal-100 text-teal-900 border border-teal-200">
+                  Case #{linkedIncidentId}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-500 mt-0.5">
               Compile non-fabricated, structured dispute drafts for cyber authorities and bank nodal desks.
             </p>
@@ -317,6 +371,28 @@ export const GoldenHourRecoveryPage: React.FC = () => {
             Step {wizardStep} of 4
           </span>
         </div>
+
+        {/* Case Hydration Loading State */}
+        {caseLoading && (
+          <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl text-xs text-teal-800 flex items-center gap-2">
+            <RotateCcw className="w-4 h-4 text-teal-600 animate-spin" />
+            <span>Retrieving authoritative incident dossier from backend...</span>
+          </div>
+        )}
+
+        {/* Case Hydration Error State */}
+        {caseLoadError && (
+          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900 flex items-start gap-2.5">
+            <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">Record Access Alert</p>
+              <p className="mt-0.5 text-[11px]">{caseLoadError}</p>
+              <p className="mt-1 text-[10px] text-slate-500">
+                You can continue entering details manually. Note that only authorized owners or consented guardians may link official recovery cases.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-4 gap-2 text-center text-xs">
           {[
@@ -673,40 +749,48 @@ export const GoldenHourRecoveryPage: React.FC = () => {
             </div>
           )}
 
-          {/* Emergency Gateway Electronic Dispatch Actions */}
-          <div className="mx-6 mt-6 p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-teal-950 text-white flex flex-col md:flex-row items-center justify-between gap-4 border border-teal-800/40 shadow-sm">
-            <div>
+          {/* Prototype Simulation Notice & Statutory Filing Guidance */}
+          <div className="mx-6 mt-6 p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-teal-950 text-white flex flex-col gap-3 border border-teal-800/40 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-slate-950 uppercase tracking-wider">
-                  Automated Gateways Active
+                  Prototype Sandbox Simulation
                 </span>
-                <span className="text-xs text-teal-300 font-mono">NPCI / CFCFRMS & MHA 1930</span>
+                <span className="text-xs text-amber-200 font-mono">No Live External Integration</span>
               </div>
-              <h3 className="text-sm font-bold mt-1 text-slate-100">
-                Direct Statutory Dispatch & Bank Account Freeze
+              <span className="text-[11px] text-slate-300">
+                Official filing requires calling 1930 or visiting cybercrime.gov.in
+              </span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-100">
+                Statutory Reporting Workflow Demonstration
               </h3>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Dispatch electronic freeze requests to the beneficiary bank and register formal complaint.
+              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                Satark Saathi prepares compliant dispute documentation. In this demonstration environment, the actions below simulate how electronic lien requests and e-filings would be formatted for beneficiary banks and the National Cyber Crime Reporting Portal.
+                <strong className="text-amber-300 block mt-1">
+                  DISCLAIMER: These sandbox actions do NOT freeze actual bank accounts or create police FIR records. To stop fund movement in real emergencies, immediately dial 1930 and contact your bank's fraud desk.
+                </strong>
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-700">
               <button
                 type="button"
                 onClick={handleDispatchBankFreeze}
                 disabled={isFreezingBank || !!bankFreezeReceipt}
                 className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
                   bankFreezeReceipt
-                    ? 'bg-emerald-600 text-white cursor-default'
+                    ? 'bg-emerald-700 text-white cursor-default'
                     : 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-md'
                 }`}
               >
                 <Zap className="w-4 h-4" />
                 {isFreezingBank
-                  ? 'Dispatching Lien Request...'
+                  ? 'Simulating Gateway Dispatch...'
                   : bankFreezeReceipt
-                  ? `Lien Marked: ${bankFreezeReceipt.freeze_reference}`
-                  : '⚡ Dispatch Interbank Freeze (NPCI)'}
+                  ? `Simulation Ref: ${bankFreezeReceipt.freeze_reference}`
+                  : '⚡ Simulate Interbank Freeze (Sandbox)'}
               </button>
 
               <button
@@ -715,16 +799,16 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 disabled={isSubmittingPortal || !!cybercrimeAckReceipt}
                 className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
                   cybercrimeAckReceipt
-                    ? 'bg-teal-600 text-white cursor-default'
-                    : 'bg-teal-500 hover:bg-teal-400 text-white shadow-md'
+                    ? 'bg-teal-700 text-white cursor-default'
+                    : 'bg-teal-600 hover:bg-teal-500 text-white shadow-md'
                 }`}
               >
                 <Send className="w-4 h-4" />
                 {isSubmittingPortal
-                  ? 'Registering e-Filing...'
+                  ? 'Simulating 1930 Filing...'
                   : cybercrimeAckReceipt
-                  ? `Ack: ${cybercrimeAckReceipt.portal_ack_number}`
-                  : '🚀 1-Click e-Filing (1930 Portal)'}
+                  ? `Simulated Ack: ${cybercrimeAckReceipt.portal_ack_number}`
+                  : '🚀 Simulate 1930 e-Filing (Sandbox)'}
               </button>
             </div>
           </div>
@@ -733,40 +817,50 @@ export const GoldenHourRecoveryPage: React.FC = () => {
           {(bankFreezeReceipt || cybercrimeAckReceipt) && (
             <div className="mx-6 mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
               {bankFreezeReceipt && (
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-950">
+                <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-300 text-xs text-amber-950">
                   <div className="flex items-center justify-between font-bold">
-                    <span className="flex items-center gap-1.5 text-emerald-800">
-                      <CheckCircle2 className="w-4 h-4" /> Interbank Freeze Dispatched
+                    <span className="flex items-center gap-1.5 text-amber-900">
+                      <CheckCircle2 className="w-4 h-4 text-amber-700" /> [PROTOTYPE SIMULATION] Freeze Request
                     </span>
-                    <span className="font-mono bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded">
+                    <span className="font-mono bg-amber-200 text-amber-950 px-2 py-0.5 rounded text-[11px]">
                       {bankFreezeReceipt.freeze_reference}
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-emerald-800">
+                  <p className="mt-1 text-[11px] text-amber-900">
                     {bankFreezeReceipt.action_summary}
                   </p>
-                  <p className="mt-1 text-[10px] text-emerald-600 font-mono">
-                    Desk: {bankFreezeReceipt.nodal_desk_assigned}
+                  <p className="mt-1 text-[10px] text-amber-800 font-mono">
+                    Desk: {bankFreezeReceipt.nodal_desk_assigned} (Demonstration Model)
                   </p>
+                  {bankFreezeReceipt.simulation_notice && (
+                    <p className="mt-2 text-[10px] text-amber-800 bg-white/70 p-2 rounded border border-amber-200">
+                      {bankFreezeReceipt.simulation_notice}
+                    </p>
+                  )}
                 </div>
               )}
 
               {cybercrimeAckReceipt && (
-                <div className="p-4 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-950">
+                <div className="p-4 rounded-xl bg-teal-50/90 border border-teal-300 text-xs text-teal-950">
                   <div className="flex items-center justify-between font-bold">
-                    <span className="flex items-center gap-1.5 text-teal-800">
-                      <ShieldAlert className="w-4 h-4" /> Cybercrime Portal Registered
+                    <span className="flex items-center gap-1.5 text-teal-900">
+                      <ShieldAlert className="w-4 h-4 text-teal-700" /> [PROTOTYPE SIMULATION] 1930 Portal Filing
                     </span>
-                    <span className="font-mono bg-teal-100 text-teal-900 px-2 py-0.5 rounded">
+                    <span className="font-mono bg-teal-200 text-teal-950 px-2 py-0.5 rounded text-[11px]">
                       {cybercrimeAckReceipt.portal_ack_number}
                     </span>
                   </div>
-                  <p className="mt-1 text-[11px] text-teal-800">
+                  <p className="mt-1 text-[11px] text-teal-900">
                     Jurisdiction: {cybercrimeAckReceipt.jurisdiction}
                   </p>
-                  <p className="mt-1 text-[10px] text-teal-600">
-                    Status: {cybercrimeAckReceipt.status} &bull; Transmitted to District Cyber Cell.
+                  <p className="mt-1 text-[10px] text-teal-800">
+                    Status: {cybercrimeAckReceipt.status} (Simulated Dispatch)
                   </p>
+                  {cybercrimeAckReceipt.simulation_notice && (
+                    <p className="mt-2 text-[10px] text-teal-800 bg-white/70 p-2 rounded border border-teal-200">
+                      {cybercrimeAckReceipt.simulation_notice}
+                    </p>
+                  )}
                 </div>
               )}
             </div>

@@ -7,14 +7,15 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.models import Incident, RecoveryDraft, UserProfile, AuditEvent
-from backend.app.dependencies import get_current_user_id
+from backend.app.dependencies import get_current_user_id, get_authorized_incident_user_ids
 from backend.app.schemas import (
     RecoveryDraftResponse,
     RecoveryWizardRequest,
     BankFreezeRequest,
     BankFreezeResponse,
     CybercrimePortalSubmitRequest,
-    CybercrimePortalSubmitResponse
+    CybercrimePortalSubmitResponse,
+    RecoveryCaseContextResponse
 )
 
 router = APIRouter(prefix="/recovery", tags=["Golden Hour Recovery"])
@@ -90,6 +91,91 @@ def get_helplines():
             "4. FREEZE CARDS & NETBANKING: Disable UPI services immediately via bank mobile app or SMS hotlist."
         ]
     }
+
+
+@router.get("/cases/{incident_id}", response_model=RecoveryCaseContextResponse)
+def get_recovery_case(
+    incident_id: str,
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    Load authoritative recovery case context for Golden Hour hydration.
+    Supports browser refresh and navigation from Scanner or Payment Checkpoint.
+    Verifies owner or consented guardian authorization.
+    """
+    query = db.query(Incident)
+    if incident_id.isdigit():
+        query = query.filter(Incident.id == int(incident_id))
+    else:
+        query = query.filter(Incident.incident_id == incident_id)
+
+    incident = query.first()
+    if not incident:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Recovery case for incident '{incident_id}' not found."
+        )
+
+    authorized_uids = get_authorized_incident_user_ids(current_user_id, db)
+    if incident.user_id not in authorized_uids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: You do not have permission to access this recovery case."
+        )
+
+    timeline_events = []
+    channel = None
+    if incident.evidence_metadata:
+        try:
+            meta = json.loads(incident.evidence_metadata)
+            if isinstance(meta, dict):
+                timeline_events = meta.get("timeline", []) or []
+                channel = meta.get("channel")
+        except Exception:
+            pass
+
+    latest_draft_rec = db.query(RecoveryDraft).filter(
+        RecoveryDraft.incident_id == incident.id
+    ).order_by(RecoveryDraft.generated_at.desc()).first()
+
+    latest_draft_resp = None
+    if latest_draft_rec:
+        latest_draft_resp = RecoveryDraftResponse(
+            id=latest_draft_rec.id,
+            incident_id=latest_draft_rec.incident_id,
+            user_id=latest_draft_rec.user_id,
+            incident_datetime=latest_draft_rec.incident_datetime,
+            scam_category=latest_draft_rec.scam_category,
+            financial_loss=latest_draft_rec.financial_loss or 0.0,
+            transaction_reference=latest_draft_rec.transaction_reference,
+            bank_or_app=latest_draft_rec.bank_or_app,
+            transfer_status=latest_draft_rec.transfer_status,
+            portal_complaint_text=latest_draft_rec.portal_complaint_text,
+            bank_complaint_text=latest_draft_rec.bank_complaint_text,
+            police_complaint_text=latest_draft_rec.police_complaint_text,
+            status=latest_draft_rec.status,
+            generated_at=latest_draft_rec.generated_at,
+            incident_reference=incident.incident_id
+        )
+
+    return RecoveryCaseContextResponse(
+        incident_id=incident.incident_id,
+        scam_type=incident.scam_type,
+        description=incident.description,
+        financial_loss=incident.financial_loss or 0.0,
+        currency=incident.currency or "INR",
+        bank_name=incident.bank_name,
+        transaction_ref=incident.transaction_ref,
+        suspect_contact=incident.suspect_contact,
+        incident_date=incident.incident_date,
+        status=incident.status,
+        risk_score=incident.risk_score or 70,
+        risk_level=incident.risk_level or "HIGH",
+        timeline_events=timeline_events,
+        communication_channel=channel,
+        latest_draft=latest_draft_resp
+    )
 
 def build_complaint_drafts(
     victim_name: str,
@@ -249,9 +335,19 @@ def execute_recovery_wizard(
     incident = None
     if req.incident_id:
         incident = db.query(Incident).filter(
-            Incident.incident_id == req.incident_id,
-            Incident.user_id == current_user_id
+            (Incident.incident_id == req.incident_id) | (Incident.id == (int(req.incident_id) if req.incident_id.isdigit() else -1))
         ).first()
+        if not incident:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Incident '{req.incident_id}' not found."
+            )
+        authorized_uids = get_authorized_incident_user_ids(current_user_id, db)
+        if incident.user_id not in authorized_uids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access forbidden: You cannot execute recovery for an incident owned by another user."
+            )
 
     if incident:
         incident.financial_loss = req.financial_loss
@@ -487,40 +583,48 @@ def submit_bank_freeze(
     db: Session = Depends(get_db)
 ):
     """
-    Submits an automated emergency bank freeze request to the interbank dispute switch
-    (simulating the NPCI / CFCFRMS - Citizen Financial Cyber Fraud Reporting System).
-    Issues an official Freeze Reference Token and marks funds lien status.
+    Submits a sandbox simulation bank freeze request (prototyping the NPCI / CFCFRMS workflow).
+    Issues a Simulation Reference Token and records simulation status.
+    No actual interbank transaction lien is applied.
     """
     now = datetime.now(timezone.utc)
-    bank_code = "".join(filter(str.isalpha, payload.bank_name[:4])).upper() or "BANK"
-    ref_token = f"BF-{bank_code}-{now.strftime('%Y')}-{random.randint(100000, 999999)}"
+    ref_token = f"BF-STAT-SIM-{now.strftime('%Y')}-{random.randint(100000, 999999)}"
 
-    # If linked to an incident, update its status
+    # If linked to an incident, check authorization and update its status
     if payload.incident_id:
         incident = db.query(Incident).filter(
             (Incident.incident_id == payload.incident_id) | (Incident.id == (int(payload.incident_id) if payload.incident_id.isdigit() else -1))
         ).first()
-        if incident:
-            incident.status = "BANK_FREEZE_REQUESTED"
-            incident.updated_at = now
-            db.commit()
-
-            audit = AuditEvent(
-                user_id=current_user_id,
-                event_type="BANK_FREEZE_REQUESTED",
-                entity_type="incident",
-                entity_id=str(incident.id),
-                description=f"Automated interbank freeze dispatched to {payload.bank_name} for ₹{payload.transaction_amount:,.2f} [Ref: {ref_token}]."
+        if not incident:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Incident '{payload.incident_id}' not found."
             )
-            db.add(audit)
-            db.commit()
+        authorized_uids = get_authorized_incident_user_ids(current_user_id, db)
+        if incident.user_id not in authorized_uids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access forbidden: You cannot submit actions for an incident owned by another user."
+            )
 
-    is_bob = any(term in payload.bank_name.upper() for term in ["BARODA", "BOB"])
-    nodal_desk = f"{payload.bank_name} Central Fraud Monitoring Cell (Production Switch)" if is_bob else f"{payload.bank_name} Cyber Fraud & Chargeback Desk"
+        incident.status = "BANK_FREEZE_REQUESTED"
+        incident.updated_at = now
+        db.commit()
+
+        audit = AuditEvent(
+            user_id=current_user_id,
+            event_type="BANK_FREEZE_REQUESTED",
+            entity_type="incident",
+            entity_id=str(incident.id),
+            description=f"[PROTOTYPE SIMULATION] Interbank freeze simulated for {payload.bank_name} for ₹{payload.transaction_amount:,.2f} [Ref: {ref_token}]."
+        )
+        db.add(audit)
+        db.commit()
+
+    nodal_desk = f"{payload.bank_name} Cyber Fraud Desk (Sandbox Switch)"
     action_summary = (
-        f"Emergency debit lien locked for beneficiary {payload.suspect_vpa_or_account} via Bank of Baroda Production Gateway."
-        if is_bob else
-        f"Emergency lien request flagged for beneficiary {payload.suspect_vpa_or_account}. Debit transactions locked under Golden Hour protocol."
+        f"[PROTOTYPE SIMULATION] Interbank lien workflow simulated for beneficiary {payload.suspect_vpa_or_account}. "
+        f"No actual bank account lien was placed. To effect real lien, contact {payload.bank_name} helpline or dial 1930."
     )
 
     return BankFreezeResponse(
@@ -531,7 +635,9 @@ def submit_bank_freeze(
         timestamp=now,
         nodal_desk_assigned=nodal_desk,
         action_summary=action_summary,
-        gateway_protocol="NPCI / CFCFRMS Citizen Financial Cyber Fraud Reporting System"
+        gateway_protocol="NPCI / CFCFRMS Sandbox Simulation Protocol",
+        is_simulation=True,
+        simulation_notice="PROTOTYPE SIMULATION ONLY: No actual bank lien was placed. In a real emergency, call 1930 and contact your bank nodal officer immediately."
     )
 
 
@@ -542,40 +648,54 @@ def submit_cybercrime_portal(
     db: Session = Depends(get_db)
 ):
     """
-    Simulates electronic 1-click filing into the National Cyber Crime Reporting Portal (cybercrime.gov.in / 1930 Helpline).
-    Issues a formal Acknowledgement Token and moves the incident to REPORTED_1930.
+    Simulates electronic 1-click filing rehearsal into the National Cyber Crime Reporting Portal (cybercrime.gov.in / 1930 Helpline).
+    Issues a Simulation Acknowledgement Token and updates incident status.
+    This complaint draft is NOT automatically submitted to police or government authorities.
     """
     now = datetime.now(timezone.utc)
-    ack_token = f"MHA-1930-{now.strftime('%Y')}-{random.randint(100000, 999999)}"
+    ack_token = f"MHA-1930-SIM-{now.strftime('%Y')}-{random.randint(100000, 999999)}"
 
     if payload.incident_id:
         incident = db.query(Incident).filter(
             (Incident.incident_id == payload.incident_id) | (Incident.id == (int(payload.incident_id) if payload.incident_id.isdigit() else -1))
         ).first()
-        if incident:
-            incident.status = "REPORTED_1930"
-            incident.updated_at = now
-            db.commit()
-
-            audit = AuditEvent(
-                user_id=current_user_id,
-                event_type="1930_PORTAL_FILED",
-                entity_type="incident",
-                entity_id=str(incident.id),
-                description=f"Complaint e-filed with National Cyber Crime Reporting Portal [Ack: {ack_token}]."
+        if not incident:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Incident '{payload.incident_id}' not found."
             )
-            db.add(audit)
-            db.commit()
+        authorized_uids = get_authorized_incident_user_ids(current_user_id, db)
+        if incident.user_id not in authorized_uids:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access forbidden: You cannot submit actions for an incident owned by another user."
+            )
+
+        incident.status = "REPORTED_1930"
+        incident.updated_at = now
+        db.commit()
+
+        audit = AuditEvent(
+            user_id=current_user_id,
+            event_type="1930_PORTAL_FILED",
+            entity_type="incident",
+            entity_id=str(incident.id),
+            description=f"[PROTOTYPE SIMULATION] Complaint e-filing simulated with National Cyber Crime Portal [Ack: {ack_token}]."
+        )
+        db.add(audit)
+        db.commit()
 
     return CybercrimePortalSubmitResponse(
         success=True,
         portal_ack_number=ack_token,
         filing_timestamp=now,
-        jurisdiction="National Cyber Crime Reporting Portal (MHA / I4C)",
+        jurisdiction="National Cyber Crime Reporting Portal (Sandbox Prototype)",
         status="REGISTERED_FOR_INVESTIGATION",
         next_steps=[
-            "Keep the Acknowledgement Number (1930 Ack) safe for police follow-up.",
-            "A police officer from the State Cyber Crime Cell will review the digital evidence within 24 hours.",
-            "Submit the Acknowledgement Number to your bank branch within 3 days for chargeback processing."
-        ]
+            "PROTOTYPE SIMULATION NOTICE: This complaint draft has NOT been transmitted to the Ministry of Home Affairs or State Police.",
+            "To officially file this complaint, dial 1930 immediately or navigate to https://cybercrime.gov.in.",
+            "Export the Golden Hour recovery dossier from Satark Saathi and upload the signed statement and transaction statement."
+        ],
+        is_simulation=True,
+        simulation_notice="SANDBOX SIMULATION ONLY: This draft has not been filed with police. Export the dossier and submit formally at cybercrime.gov.in."
     )

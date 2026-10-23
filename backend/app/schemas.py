@@ -39,7 +39,8 @@ class TrustedContactBase(BaseModel):
     is_active: bool = True
     is_primary: bool = False
     is_verified: bool = False
-    consent_granted: bool = True
+    # Explicit user consent for incident sharing must be deliberately granted; never assumed.
+    consent_granted: bool = False
 
 class TrustedContactCreate(BaseModel):
     name: str
@@ -49,7 +50,8 @@ class TrustedContactCreate(BaseModel):
     alert_level: str = "HIGH_RISK_ONLY"
     is_active: bool = True
     is_primary: bool = False
-    consent_granted: bool = True
+    # Explicit user consent default is False — creating a contact does NOT grant consent automatically.
+    consent_granted: bool = False
 
 class TrustedContactUpdate(BaseModel):
     name: Optional[str] = None
@@ -179,6 +181,7 @@ class PaymentSimulationResponse(BaseModel):
     secrecy_demanded: bool
     guaranteed_returns: bool
     outcome: str  # "PROCEED_WITH_CAUTION", "PAUSE_AND_VERIFY", "SEEK_TRUSTED_HELP"
+    policy_tier: str = "GREEN"  # "GREEN", "AMBER", "RED" aligned with centralized risk policy
     risk_score: int
     severity: str
     decision_rationale: str
@@ -247,13 +250,13 @@ class RecoveryWizardRequest(BaseModel):
     scam_type: str = Field(..., min_length=2)
     communication_channel: str = Field(default="Phone Call / SMS")
     description: str = Field(..., min_length=5)
-    
+
     # Step 2: Financial Info (Missing UTR explicitly allowed!)
     financial_loss: float = Field(default=0.0, ge=0)
     transaction_ref: Optional[str] = None
     bank_name: Optional[str] = None
     transfer_status: str = Field(default="COMPLETED")  # "PENDING" or "COMPLETED"
-    
+
     # Step 3: Evidence & Timeline
     suspect_contact: Optional[str] = None
     message_transcript: Optional[str] = None
@@ -278,6 +281,8 @@ class BankFreezeResponse(BaseModel):
     nodal_desk_assigned: str
     action_summary: str
     gateway_protocol: str
+    is_simulation: bool = True
+    simulation_notice: str = "PROTOTYPE SIMULATION ONLY: No actual bank lien was placed. In a real emergency, call 1930 and contact your bank nodal officer immediately."
 
 class CybercrimePortalSubmitRequest(BaseModel):
     incident_id: Optional[str] = None
@@ -293,6 +298,25 @@ class CybercrimePortalSubmitResponse(BaseModel):
     jurisdiction: str
     status: str
     next_steps: List[str]
+    is_simulation: bool = True
+    simulation_notice: str = "SANDBOX SIMULATION ONLY: This draft has not been filed with police. Export the dossier and submit formally at cybercrime.gov.in."
+
+class RecoveryCaseContextResponse(BaseModel):
+    incident_id: str
+    scam_type: str
+    description: str
+    financial_loss: float = 0.0
+    currency: str = "INR"
+    bank_name: Optional[str] = None
+    transaction_ref: Optional[str] = None
+    suspect_contact: Optional[str] = None
+    incident_date: Optional[datetime] = None
+    status: str
+    risk_score: int
+    risk_level: str
+    timeline_events: List[str] = []
+    communication_channel: Optional[str] = None
+    latest_draft: Optional[RecoveryDraftResponse] = None
 
 class IncidentResponse(BaseModel):
     id: int
@@ -355,3 +379,22 @@ class SystemSettingsUpdate(BaseModel):
     analysis_provider: Optional[str] = None
     watsonx_apikey: Optional[str] = None
     watsonx_project_id: Optional[str] = None
+
+
+# --- Authentication Schemas ---
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int
+    user_id: int
+    role: str
+    full_name: str
+
+
+class LoginRequest(BaseModel):
+    identifier: str = Field(..., description="Phone number (+91...) or email address")
+    passcode: str = Field(..., description="User numeric or text passcode")
+
+
+class DemoTokenRequest(BaseModel):
+    user_id: int = Field(1, description="Demo identity ID: 1 (Rajesh Sharma) or 2 (Aarav Sharma)")

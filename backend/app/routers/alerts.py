@@ -1,11 +1,12 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, Set
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status, Query
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
-from backend.app.models import FamilyAlert, TrustedContact, Incident, AuditEvent
-from backend.app.dependencies import get_current_user_id
+from backend.app.models import FamilyAlert, TrustedContact, Incident, AuditEvent, UserProfile
+from backend.app.dependencies import get_current_user_id, DEMO_USER_IDS
 from backend.app.services.alert_broadcaster import alert_broadcaster
 from backend.app.services.sms_service import sms_service
 from backend.app.schemas import CreateAlertRequest, FamilyAlertResponse
@@ -14,36 +15,115 @@ logger = logging.getLogger("satark_saathi.alerts")
 
 router = APIRouter(prefix="/alerts", tags=["Family Shield Alerts"])
 
+
+def resolve_alert_recipient_user_ids(db: Session, alert: FamilyAlert) -> Set[int]:
+    """
+    Resolves all demo user IDs that are authorized to receive WebSocket updates or acknowledge this alert.
+    Includes:
+    1. The alert owner/creator (alert.user_id)
+    2. Any registered demo user whose profile phone/email matches the recipient contact (alert.contact_id)
+    """
+    authorized_uids: Set[int] = {alert.user_id}
+    if alert.contact_id:
+        contact = db.query(TrustedContact).filter(TrustedContact.id == alert.contact_id).first()
+        if contact:
+            matched_user = db.query(UserProfile).filter(
+                (UserProfile.phone_number == contact.phone_number) |
+                ((UserProfile.email.isnot(None)) & (UserProfile.email == contact.email))
+            ).first()
+            if matched_user:
+                authorized_uids.add(matched_user.id)
+    return authorized_uids
+
+
+def get_authorized_alerts_query(current_user_id: int, db: Session):
+    """
+    Returns SQLAlchemy query for alerts that the current demo identity is authorized to view.
+
+    Authorization rules:
+    - User is authorized to view alerts they own (alert.user_id == current_user_id).
+    - User is authorized to view alerts where they are the designated recipient contact
+      (matched via the contact's phone_number or email associated with current_user).
+    - User CANNOT view another user's private alerts dispatched to other contacts.
+    """
+    current_user = db.query(UserProfile).filter(UserProfile.id == current_user_id).first()
+    if not current_user:
+        return db.query(FamilyAlert).filter(FamilyAlert.user_id == current_user_id)
+
+    recipient_contact_ids = select(TrustedContact.id).filter(
+        (TrustedContact.phone_number == current_user.phone_number) |
+        ((TrustedContact.email.isnot(None)) & (TrustedContact.email == current_user.email))
+    )
+
+    return db.query(FamilyAlert).filter(
+        or_(
+            FamilyAlert.user_id == current_user_id,
+            FamilyAlert.contact_id.in_(recipient_contact_ids)
+        )
+    )
+
+
 @router.websocket("/ws")
-async def websocket_alert_endpoint(websocket: WebSocket, user_id: int = Query(default=1)):
+async def websocket_alert_endpoint(
+    websocket: WebSocket,
+    token: Optional[str] = Query(None),
+    user_id: Optional[int] = Query(None)
+):
     """
-    WebSocket transport for real-time live notification delivery to a second browser/device session.
-    Simulates instantaneous in-app delivery without requiring external telecom/SMS carrier setup.
+    WebSocket transport for real-time live notification delivery to connected client sessions.
+    Supports cryptographic JWT authentication (?token=<jwt>).
+    In production mode, token authentication is required.
+    In development mode, falls back to demo persona user_id when token is omitted.
     """
-    await alert_broadcaster.connect(websocket, user_id)
+    from backend.app.config import settings
+
+    resolved_uid: Optional[int] = None
+    if token:
+        try:
+            from backend.app.services.auth_service import decode_access_token
+            payload = decode_access_token(token)
+            resolved_uid = int(payload.get("user_id") or payload.get("sub"))
+        except Exception:
+            await websocket.close(code=4001, reason="Invalid or expired authentication token")
+            return
+    elif settings.is_production or not settings.allow_demo_header_auth:
+        await websocket.close(code=4001, reason="Authentication token required in production")
+        return
+    else:
+        effective_uid = user_id if user_id is not None else 1
+        if effective_uid not in DEMO_USER_IDS:
+            await websocket.close(code=4003, reason="Invalid demo user ID")
+            return
+        resolved_uid = effective_uid
+
+    await alert_broadcaster.connect(websocket, resolved_uid)
     try:
         while True:
             # Keep connection open; receive ping or client acknowledge messages
             data = await websocket.receive_text()
-            logger.info(f"WebSocket client message received from user {user_id}: {data}")
+            logger.info(f"WebSocket client message received from user {resolved_uid}: {data}")
     except WebSocketDisconnect:
-        alert_broadcaster.disconnect(websocket, user_id)
+        alert_broadcaster.disconnect(websocket, resolved_uid)
     except Exception as e:
         logger.warning(f"WebSocket error: {e}")
-        alert_broadcaster.disconnect(websocket, user_id)
+        alert_broadcaster.disconnect(websocket, resolved_uid)
+
 
 @router.get("", response_model=List[FamilyAlertResponse])
 def get_alerts(
+    user_id: Optional[int] = Query(None, description="Optional filter, strictly constrained by user authorization"),
     current_user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
     """
-    Get audit trail of all family safety alerts for the current user or guardian session.
+    Get audit trail of family safety alerts for the current authenticated demo session.
+    Returns only alerts that the current demo identity is authorized to view (as creator or recipient).
+    Cannot be bypassed by query parameters or identifier manipulation.
     """
-    return db.query(FamilyAlert)\
-        .filter((FamilyAlert.user_id == current_user_id) | (current_user_id == 2))\
-        .order_by(FamilyAlert.delivered_at.desc())\
-        .all()
+    query = get_authorized_alerts_query(current_user_id, db)
+    if user_id is not None:
+        query = query.filter(FamilyAlert.user_id == user_id)
+    return query.order_by(FamilyAlert.delivered_at.desc()).all()
 
 @router.post("/dispatch", response_model=List[FamilyAlertResponse], status_code=status.HTTP_201_CREATED)
 async def dispatch_alert(
@@ -53,8 +133,36 @@ async def dispatch_alert(
 ):
     """
     Dispatches alerts to selected Family Shield contacts with consent and threshold verification.
-    Broadcasts live WebSockets to secondary devices/sessions with incident details.
+    Broadcasts live WebSockets strictly to authorized recipient connections.
     """
+    # Cross-user incident ownership check: cannot dispatch alerts for another user's incident
+    if req.incident_id:
+        incident_record = db.query(Incident).filter(Incident.incident_id == req.incident_id).first()
+        if incident_record:
+            if incident_record.user_id != current_user_id:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Access forbidden: You cannot dispatch alerts for an incident owned by another user."
+                )
+        else:
+            # Auto-persist incident record for current user to guarantee authoritative persistence
+            incident_record = Incident(
+                incident_id=req.incident_id,
+                user_id=current_user_id,
+                title=req.threat_title,
+                scam_type="Suspicious Threat",
+                description=req.message_content,
+                financial_loss=0.0,
+                status="UNDER_REVIEW",
+                severity=req.risk_level or "HIGH",
+                risk_level=req.risk_level or "HIGH",
+                risk_score=85.0 if (req.risk_level or "HIGH") in ("HIGH", "CRITICAL") else 50.0,
+                is_seed_data=False,
+            )
+            db.add(incident_record)
+            db.commit()
+            db.refresh(incident_record)
+
     created_alerts = []
     now = datetime.now(timezone.utc)
     incident_id_str = req.incident_id or f"SA-{int(now.timestamp())}"
@@ -128,8 +236,9 @@ async def dispatch_alert(
         )
         db.add(audit)
 
-        # Broadcast live push over WebSockets to second device / guardian view
+        # Broadcast live push over WebSockets strictly to authorized user channels
         try:
+            target_users = resolve_alert_recipient_user_ids(db, alert)
             await alert_broadcaster.broadcast_alert({
                 "type": "FAMILY_ALERT_NOTIFICATION",
                 "alert_id": alert.id,
@@ -140,8 +249,9 @@ async def dispatch_alert(
                 "recommended_action": alert.recommended_action,
                 "contact_id": alert.contact_id,
                 "delivered_at": alert.delivered_at.isoformat() if alert.delivered_at else None,
-                "delivery_channel": alert.delivery_channel
-            })
+                "delivery_channel": alert.delivery_channel,
+                "user_id": alert.user_id
+            }, target_user_ids=target_users)
         except Exception as e:
             logger.warning(f"Live broadcast notification failure (does not affect incident): {e}")
 
@@ -168,15 +278,24 @@ def acknowledge_alert(
     db: Session = Depends(get_db)
 ):
     """
-    Mark an active family alert as acknowledged by the trusted family guardian.
+    Mark an active family alert as acknowledged by the authorized family guardian or alert owner.
     """
     alert = db.query(FamilyAlert).filter(FamilyAlert.id == alert_id).first()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert record not found")
 
+    # Authorization check: only alert owner or designated recipient contact may acknowledge
+    authorized_uids = resolve_alert_recipient_user_ids(db, alert)
+    if current_user_id not in authorized_uids:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: You are not authorized to acknowledge this alert."
+        )
+
     alert.status = "ACKNOWLEDGED"
     alert.acknowledged_at = datetime.now(timezone.utc)
-    alert.acknowledged_by = "Aarav Sharma" if current_user_id == 2 else "Family Guardian"
+    current_user = db.query(UserProfile).filter(UserProfile.id == current_user_id).first()
+    alert.acknowledged_by = current_user.full_name if current_user else f"User {current_user_id}"
     db.commit()
     db.refresh(alert)
 
@@ -200,11 +319,18 @@ async def retry_alert(
 ):
     """
     Retry dispatching a previously failed or pending alert.
-    Increments retry count and records audit trail.
+    Only the alert owner/creator is authorized to retry.
     """
     alert = db.query(FamilyAlert).filter(FamilyAlert.id == alert_id).first()
     if not alert:
         raise HTTPException(status_code=404, detail="Alert record not found")
+
+    # Authorization check: only the creator of the alert can retry it
+    if alert.user_id != current_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access forbidden: Only the alert owner may retry delivery."
+        )
 
     alert.retry_count += 1
     alert.status = "DELIVERED"
@@ -213,8 +339,9 @@ async def retry_alert(
     db.commit()
     db.refresh(alert)
 
-    # Broadcast live update
+    # Broadcast live update strictly to authorized users
     try:
+        target_users = resolve_alert_recipient_user_ids(db, alert)
         await alert_broadcaster.broadcast_alert({
             "type": "FAMILY_ALERT_RETRY",
             "alert_id": alert.id,
@@ -223,8 +350,9 @@ async def retry_alert(
             "risk_level": alert.risk_level,
             "message_content": alert.message_content,
             "recommended_action": alert.recommended_action,
-            "retry_count": alert.retry_count
-        })
+            "retry_count": alert.retry_count,
+            "user_id": alert.user_id
+        }, target_user_ids=target_users)
     except Exception as e:
         logger.warning(f"Broadcast failure on retry: {e}")
 

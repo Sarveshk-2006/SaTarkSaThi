@@ -342,4 +342,3 @@ async def test_ibm_watsonx_invalid_response_fallback():
         assert result.ai_provider == "none"
         assert result.analysis_mode == AnalysisMode.RULE_BASED
         assert result.risk_score >= 30
-

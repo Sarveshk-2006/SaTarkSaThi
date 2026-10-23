@@ -105,7 +105,7 @@ export const OverviewPage: React.FC = () => {
     ? [
         { name: 'High Risk Threats', count: stats.high_risk_analyses, color: '#DC2626' },
         { name: 'Caution / Unverified', count: stats.caution_analyses, color: '#D97706' },
-        { name: 'Verified Safe', count: stats.safe_analyses, color: '#059669' },
+        { name: 'Standard / Low Risk', count: stats.safe_analyses, color: '#059669' },
       ]
     : [];
 

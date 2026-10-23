@@ -267,24 +267,28 @@ export const ScannerPage: React.FC = () => {
         }
       } else {
         // Voice / Audio evidence
-        if (!audioTranscript.trim()) {
+        if (!audioTranscript.trim() && !audioFile) {
           showToast({
             type: 'warning',
-            title: 'Transcript required',
-            message: 'Speech recognition is unavailable. Please enter or paste the voice/call transcript to analyze.',
+            title: 'Audio evidence required',
+            message: 'Please upload an audio recording or enter the spoken transcript to analyze.',
           });
           setAnalyzing(false);
           return;
         }
 
-        const audioRes = await api.analyzeAudio(audioFile, audioTranscript.trim());
+        const audioRes = await api.analyzeAudio(audioFile, audioTranscript.trim() || undefined);
+        if (audioRes.transcript && !audioTranscript) {
+          setAudioTranscript(audioRes.transcript);
+        }
+
         if (audioRes.analysis) {
           result = audioRes.analysis;
         } else {
           showToast({
             type: 'warning',
-            title: 'Audio analysis note',
-            message: audioRes.message || 'Please provide transcript text.',
+            title: 'Transcription note',
+            message: audioRes.message || 'Please provide spoken transcript text to complete risk analysis.',
           });
           setAnalyzing(false);
           return;
@@ -343,7 +347,8 @@ export const ScannerPage: React.FC = () => {
   // Escalate to Golden Hour recovery
   const handleEscalateToRecovery = () => {
     if (!currentAnalysis) return;
-    navigate('/golden-hour', {
+    const search = currentAnalysis.incident_id ? `?incident_id=${encodeURIComponent(currentAnalysis.incident_id)}` : '';
+    navigate(`/golden-hour${search}`, {
       state: {
         incidentId: currentAnalysis.incident_id,
         classification: currentAnalysis.verdict,
@@ -807,7 +812,7 @@ ${currentAnalysis.limitations.join('\n')}
                       <span>Speech Recognition Capability Notice:</span>
                     </div>
                     <p className="text-blue-800 leading-relaxed text-[11px]">
-                      Automated voice transcription is currently disabled. Live telephone calls are never monitored. Please enter or paste the spoken transcript below to perform forensic scam analysis on the caller's words.
+                      Local offline speech recognition (OpenAI Whisper) is attempted for uploaded audio files. Live phone calls are never tapped or recorded. You can also paste or edit the spoken transcript below for scam-risk analysis.
                     </p>
                   </div>
 
@@ -910,10 +915,21 @@ ${currentAnalysis.limitations.join('\n')}
                   <div className={`p-4 border-b ${colors.border} ${colors.bg}`}>
                     <div className="flex items-start justify-between gap-2">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className={`px-2 py-0.5 text-xs font-black uppercase tracking-wider rounded text-white ${colors.badgeBg}`}>
                             {currentAnalysis.risk_level} RISK
                           </span>
+                          {currentAnalysis.policy_tier && (
+                            <span className={`px-2 py-0.5 text-[11px] font-bold uppercase rounded border ${
+                              currentAnalysis.policy_tier === 'RED'
+                                ? 'bg-red-50 text-red-700 border-red-300'
+                                : currentAnalysis.policy_tier === 'AMBER'
+                                ? 'bg-amber-50 text-amber-700 border-amber-300'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                            }`}>
+                              Tier: {currentAnalysis.policy_tier}
+                            </span>
+                          )}
                           <span className="text-[11px] font-mono text-slate-500">
                             Confidence: {currentAnalysis.confidence_label}
                           </span>
@@ -956,7 +972,25 @@ ${currentAnalysis.limitations.join('\n')}
                   <p className="text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-200 text-xs">
                     {currentAnalysis.plain_language_summary}
                   </p>
+                  {currentAnalysis.policy_tier === 'GREEN' && (
+                    <p className="mt-2 text-[11px] text-emerald-800 bg-emerald-50 border border-emerald-200 rounded p-2 leading-relaxed">
+                      <strong>Tier GREEN Advisory:</strong> No sufficiently strong threat indicators were detected in this message. This does <em>not</em> guarantee that the communication or sender is safe or authentic. Always exercise digital vigilance and never disclose OTPs, PINs, or credentials.
+                    </p>
+                  )}
                 </div>
+
+                {/* Recommended Proportionate Action */}
+                {currentAnalysis.recommended_action && (
+                  <div className="p-3 rounded-lg bg-teal-50 border border-teal-200">
+                    <div className="flex items-center gap-1.5 font-bold text-teal-900 text-[11px] uppercase tracking-wider mb-0.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-teal-700 flex-shrink-0" />
+                      <span>Recommended Next Step</span>
+                    </div>
+                    <p className="text-teal-950 font-medium text-xs leading-relaxed">
+                      {currentAnalysis.recommended_action}
+                    </p>
+                  </div>
+                )}
 
                 {/* Detected Manipulation Tactics */}
                 {currentAnalysis.detected_signals.length > 0 && (
@@ -1033,6 +1067,30 @@ ${currentAnalysis.limitations.join('\n')}
                     )}
                   </div>
                 </div>
+
+                {/* Counter-Signals & Legitimacy Indicators */}
+                {currentAnalysis.counter_signals && currentAnalysis.counter_signals.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-emerald-900 uppercase tracking-wider mb-2 text-[11px] flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Observed Legitimacy Indicators ({currentAnalysis.counter_signals.length})</span>
+                      </span>
+                    </h4>
+                    <div className="space-y-1.5">
+                      {currentAnalysis.counter_signals.map((cs, i) => (
+                        <div key={i} className="p-2 rounded bg-emerald-50/70 border border-emerald-200 text-xs text-emerald-950">
+                          <p className="font-medium text-[11px]">{cs.reason}</p>
+                          {cs.excerpt && (
+                            <p className="mt-1 font-mono text-[10px] text-emerald-800 bg-white/70 p-1 rounded border border-emerald-100 truncate">
+                              "{cs.excerpt}"
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Immediate Protective Actions */}
                 {currentAnalysis.recommended_actions.length > 0 && (
@@ -1143,6 +1201,20 @@ ${currentAnalysis.limitations.join('\n')}
                       <div>
                         <span className="text-slate-400">AI Provider: </span>
                         <span className="text-slate-800">{currentAnalysis.ai_provider}</span>
+                      </div>
+                      {currentAnalysis.reason_codes && currentAnalysis.reason_codes.length > 0 && (
+                        <div>
+                          <span className="text-slate-400">Stable Reason Codes: </span>
+                          <span className="text-slate-800 text-[10px] font-mono break-all">
+                            {currentAnalysis.reason_codes.join(', ')}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-slate-400">Verification Boundary: </span>
+                        <span className="text-slate-700 font-sans text-[10px] block mt-0.5">
+                          Deterministic content heuristics only. External live telecom registries, bank payee lookups, and cybercrime portal filings were not queried.
+                        </span>
                       </div>
 
                       <div className="pt-1.5 border-t border-slate-200 font-sans text-slate-500 space-y-1">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   UserPlus,
@@ -32,6 +33,7 @@ import { useToast } from '../context/ToastContext';
 import { useNotification } from '../context/NotificationContext';
 
 export const FamilyShieldPage: React.FC = () => {
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const { activeUserId, switchUser, activeProfileName, activeProfileRole, isWsConnected, manualTriggerDemoNotification } = useNotification();
 
@@ -49,7 +51,7 @@ export const FamilyShieldPage: React.FC = () => {
     email: '',
     alert_level: 'HIGH_RISK_ONLY' as AlertLevel,
     is_primary: false,
-    consent_granted: true,
+    consent_granted: false,
   });
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
@@ -101,7 +103,7 @@ export const FamilyShieldPage: React.FC = () => {
       email: '',
       alert_level: 'HIGH_RISK_ONLY',
       is_primary: contacts.length === 0,
-      consent_granted: true,
+      consent_granted: false,
     });
     setFormErrors({});
     setIsModalOpen(true);
@@ -116,7 +118,7 @@ export const FamilyShieldPage: React.FC = () => {
       email: c.email || '',
       alert_level: c.alert_level,
       is_primary: c.is_primary,
-      consent_granted: c.consent_granted !== false,
+      consent_granted: Boolean(c.consent_granted),
     });
     setFormErrors({});
     setIsModalOpen(true);
@@ -425,9 +427,13 @@ export const FamilyShieldPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Incident Sharing Consent:</span>
-                  <span className={`font-semibold text-[10px] ${c.consent_granted ? 'text-emerald-700' : 'text-rose-700'}`}>
-                    {c.consent_granted ? 'Explicit Consent Active' : 'Consent Withheld'}
+                  <span className="text-slate-500">Sharing Consent:</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    c.consent_granted
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-rose-100 text-rose-800'
+                  }`}>
+                    {c.consent_granted ? 'Consent Granted' : 'Consent Pending (Alerts Disabled)'}
                   </span>
                 </div>
               </div>
@@ -505,7 +511,18 @@ export const FamilyShieldPage: React.FC = () => {
               {alerts.map((alert) => (
                 <tr key={alert.id} className="hover:bg-slate-50/60 transition-colors">
                   <td className="py-3.5 px-4 font-mono font-bold text-slate-900">
-                    {alert.incident_id || `SA-ALERT-${alert.id}`}
+                    {alert.incident_id ? (
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/incidents?q=${encodeURIComponent(alert.incident_id!)}`)}
+                        className="text-teal-800 hover:text-teal-900 hover:underline cursor-pointer"
+                        title="View Incident Dossier in Incident History"
+                      >
+                        {alert.incident_id}
+                      </button>
+                    ) : (
+                      `SA-ALERT-${alert.id}`
+                    )}
                   </td>
                   <td className="py-3.5 px-4 max-w-xs">
                     <p className="font-semibold text-slate-900 truncate">{alert.threat_title}</p>
@@ -729,19 +746,24 @@ export const FamilyShieldPage: React.FC = () => {
                 </select>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 space-y-2">
-                <label className="flex items-center gap-2 cursor-pointer">
+              <div className="pt-2 border-t border-slate-100 space-y-2.5">
+                <label className="flex items-start gap-2.5 cursor-pointer p-2.5 rounded-xl border border-slate-200 bg-slate-50/60 hover:bg-slate-50">
                   <input
                     type="checkbox"
                     checked={formData.consent_granted}
                     onChange={(e) => setFormData({ ...formData, consent_granted: e.target.checked })}
-                    className="rounded text-teal-800 focus:ring-teal-700"
+                    className="mt-0.5 rounded text-teal-800 focus:ring-teal-700"
                   />
-                  <span className="text-xs text-slate-700 font-medium">
-                    Explicit Consent: I authorize Satark Saathi to dispatch scam alerts to this contact.
-                  </span>
+                  <div>
+                    <span className="text-xs text-slate-900 font-bold block">
+                      Explicit Guardian Consent Authorization
+                    </span>
+                    <span className="text-[11px] text-slate-600 block mt-0.5 leading-relaxed">
+                      I confirm I have informed this guardian and obtained their consent to receive scam alerts and access emergency incident dossiers. Alerts remain disabled until consent is granted.
+                    </span>
+                  </div>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer px-1">
                   <input
                     type="checkbox"
                     checked={formData.is_primary}

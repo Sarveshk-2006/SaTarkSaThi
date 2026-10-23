@@ -36,11 +36,13 @@ class AnalysisMode(str, Enum):
 
 class DetectedSignal(BaseModel):
     """A single detected manipulation tactic or risk indicator."""
+    reason_code: str = Field(default="", description="Stable machine-readable code, e.g. SIG_DIGITAL_ARREST")
     signal_type: str = Field(..., description="Category: e.g. AUTHORITY_IMPERSONATION, ARTIFICIAL_URGENCY")
     severity: str = Field(default="MEDIUM", description="LOW, MEDIUM, or HIGH")
     reason: str = Field(..., description="Why this signal was flagged")
     excerpt: Optional[str] = Field(default=None, description="Supporting text from the input")
     weight: float = Field(default=1.0, description="Contribution weight to overall risk score")
+    category: Optional[str] = Field(default=None, description="Primary scam category title if matched from a specific category pattern")
 
 
 class AnalysisResult(BaseModel):
@@ -52,12 +54,16 @@ class AnalysisResult(BaseModel):
     input_type: InputType = Field(..., description="What type of input was analyzed")
     risk_level: RiskLevel = Field(..., description="Overall risk classification")
     risk_score: int = Field(..., ge=0, le=100, description="Heuristic risk score (0-100). Not a calibrated probability.")
+    policy_tier: str = Field(default="GREEN", description="Centralized policy tier: GREEN, AMBER, or RED")
     confidence_label: ConfidenceLabel = Field(..., description="Confidence in the assessment")
     verdict: str = Field(..., description="Short classification label")
     plain_language_summary: str = Field(..., description="Easy-to-understand explanation for the user")
     detected_signals: List[DetectedSignal] = Field(default_factory=list, description="All detected manipulation tactics")
+    counter_signals: List[DetectedSignal] = Field(default_factory=list, description="Mitigating legitimacy indicators detected")
+    reason_codes: List[str] = Field(default_factory=list, description="Machine-readable stable reason codes")
     supporting_evidence: List[str] = Field(default_factory=list, description="Key evidence items supporting the verdict")
     recommended_actions: List[str] = Field(default_factory=list, description="What the user should do immediately")
+    recommended_action: Optional[str] = Field(default=None, description="Primary proportionate recommended action")
     verification_steps: List[str] = Field(default_factory=list, description="How to independently verify legitimacy")
     should_alert_family: bool = Field(default=False, description="Whether trusted contacts should be notified")
     ai_provider: str = Field(default="none", description="Which AI provider was used, if any")
@@ -65,8 +71,9 @@ class AnalysisResult(BaseModel):
     limitations: List[str] = Field(
         default_factory=lambda: [
             "This is a heuristic risk assessment, not a definitive fraud determination.",
-            "A low-risk result does not guarantee the communication is safe.",
-            "Always verify through official channels before sharing personal or financial information."
+            "A low-risk (GREEN) result does not guarantee the communication is safe.",
+            "Always verify through official channels before sharing personal or financial information.",
+            "Automated external bank account/URL reputation lookups were not performed."
         ],
         description="Known limitations the user should be aware of"
     )

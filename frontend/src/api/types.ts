@@ -73,7 +73,10 @@ export interface ScamAnalysis {
   evidence_items: ScamEvidence[];
 }
 
+export type PolicyTier = 'GREEN' | 'AMBER' | 'RED';
+
 export interface DetectedSignal {
+  reason_code?: string;
   signal_type: string;
   severity: string;
   reason: string;
@@ -86,12 +89,16 @@ export interface AnalysisResult {
   input_type: InputType;
   risk_level: RiskLevel;
   risk_score: number;
+  policy_tier?: PolicyTier;
   confidence_label: ConfidenceLabel;
   verdict: string;
   plain_language_summary: string;
   detected_signals: DetectedSignal[];
+  counter_signals?: DetectedSignal[];
+  reason_codes?: string[];
   supporting_evidence: string[];
   recommended_actions: string[];
+  recommended_action?: string;
   verification_steps: string[];
   should_alert_family: boolean;
   ai_provider: string;
@@ -179,6 +186,7 @@ export interface PaymentSimulation {
   decision_rationale: string;
   evidence_factors: string[];
   verification_steps: string[];
+  policy_tier?: PolicyTier;
   is_simulation: boolean;
   disclaimer: string;
   checked_at: string;
@@ -186,6 +194,14 @@ export interface PaymentSimulation {
 
 // Legacy alias
 export type PaymentCheck = PaymentSimulation;
+
+export interface SavePaymentIncidentResponse {
+  status: string;
+  incident_id: string;
+  title: string;
+  financial_loss: number;
+  already_persisted: boolean;
+}
 
 export interface RecoveryDraft {
   id: number;
@@ -216,6 +232,8 @@ export interface BankFreezeResponse {
   nodal_desk_assigned: string;
   action_summary: string;
   gateway_protocol: string;
+  is_simulation?: boolean;
+  simulation_notice?: string;
 }
 
 export interface CybercrimePortalSubmitResponse {
@@ -225,6 +243,28 @@ export interface CybercrimePortalSubmitResponse {
   jurisdiction: string;
   status: string;
   next_steps: string[];
+  is_simulation?: boolean;
+  simulation_notice?: string;
+}
+
+export interface RecoveryCaseContextResponse {
+  incident_id: string;
+  analysis_id?: number;
+  title: string;
+  scam_type: string;
+  description: string;
+  financial_loss: number;
+  bank_name?: string;
+  transaction_ref?: string;
+  suspect_contact?: string;
+  incident_date?: string;
+  status: string;
+  severity: string;
+  risk_level: string;
+  risk_score: number;
+  timeline_events: string[];
+  message_transcript?: string;
+  latest_draft?: RecoveryDraft;
 }
 
 export interface RecoveryWizardRequest {
@@ -320,4 +360,18 @@ export interface HelplinesResponse {
     golden_hour_timeline: string;
   };
   golden_hour_protocol: string[];
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  user_id: number;
+  role: string;
+  full_name: string;
+}
+
+export interface LoginCredentials {
+  identifier: string;
+  passcode: string;
 }

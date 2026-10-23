@@ -29,10 +29,10 @@ def migrate_db():
     """
     from backend.app import models  # Ensure all models are registered
     Base.metadata.create_all(bind=engine)
-    
+
     inspector = inspect(engine)
     existing_tables = set(inspector.get_table_names())
-    
+
     with engine.connect() as conn:
         for table_name, table in Base.metadata.tables.items():
             if table_name in existing_tables:
@@ -66,4 +66,3 @@ def init_db(seed_if_empty: bool = True):
             seed_default_data(db)
         finally:
             db.close()
-

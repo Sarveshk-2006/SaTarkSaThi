@@ -41,16 +41,16 @@ class TrustedContact(Base):
     alert_level = Column(String(30), default="HIGH_RISK_ONLY")  # "ALL", "HIGH_RISK_ONLY", "CRITICAL_ONLY"
     is_active = Column(Boolean, default=True)
     is_primary = Column(Boolean, default=False)
-    
+
     # Contact verification
     is_verified = Column(Boolean, default=False)
     verification_code = Column(String(10), nullable=True)
     verification_sent_at = Column(DateTime(timezone=True), nullable=True)
     verified_at = Column(DateTime(timezone=True), nullable=True)
-    
+
     # Explicit user consent for incident sharing
-    consent_granted = Column(Boolean, default=True)
-    
+    consent_granted = Column(Boolean, default=False)  # Must be explicitly granted; never assumed.
+
     created_at = Column(DateTime(timezone=True), default=utc_now)
 
     # Relationships
@@ -107,7 +107,7 @@ class Incident(Base):
     incident_id = Column(String(50), unique=True, index=True, nullable=False)  # Standardized SA-XXXXXX
     user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False, default=1, index=True)
     analysis_id = Column(Integer, ForeignKey("scam_analyses.id"), nullable=True, index=True)
-    
+
     title = Column(String(150), nullable=False)
     scam_type = Column(String(80), nullable=False)
     description = Column(Text, nullable=False)
@@ -116,13 +116,13 @@ class Incident(Base):
     bank_name = Column(String(80), nullable=True)
     transaction_ref = Column(String(100), nullable=True)  # UTR / UPI Ref (nullable for missing UTR)
     suspect_contact = Column(String(100), nullable=True)  # Suspect phone / UPI / account
-    
+
     incident_date = Column(DateTime(timezone=True), default=utc_now)
     status = Column(String(30), default="DRAFT", index=True)  # "DRAFT", "UNDER_REVIEW", "REPORTED_1930", "BANK_FREEZE_REQUESTED", "RESOLVED"
     severity = Column(String(20), default="HIGH_RISK")
     risk_level = Column(String(20), default="HIGH")  # "LOW", "MEDIUM", "HIGH", "CRITICAL"
     risk_score = Column(Integer, default=70)
-    
+
     evidence_metadata = Column(Text, nullable=True)  # JSON timeline / attachment references
     is_seed_data = Column(Boolean, default=False)
     created_at = Column(DateTime(timezone=True), default=utc_now, index=True)
@@ -142,18 +142,18 @@ class FamilyAlert(Base):
     analysis_id = Column(Integer, ForeignKey("scam_analyses.id"), nullable=True)
     contact_id = Column(Integer, ForeignKey("trusted_contacts.id"), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False, default=1, index=True)
-    
+
     threat_title = Column(String(120), nullable=False)
     message_content = Column(Text, nullable=False)
     risk_level = Column(String(20), default="HIGH")  # "HIGH", "CRITICAL"
     recommended_action = Column(String(255), nullable=True)
     delivery_channel = Column(String(40), default="IN_APP_SIMULATION")  # "IN_APP_SIMULATION", "WHATSAPP_SIMULATION", "SMS_SIMULATION"
     status = Column(String(30), default="PENDING", index=True)  # "PENDING", "SENT", "DELIVERED", "ACKNOWLEDGED", "FAILED"
-    
+
     failure_reason = Column(String(255), nullable=True)
     retry_count = Column(Integer, default=0)
     is_seed_data = Column(Boolean, default=False)
-    
+
     delivered_at = Column(DateTime(timezone=True), default=utc_now)
     acknowledged_at = Column(DateTime(timezone=True), nullable=True)
     acknowledged_by = Column(String(100), nullable=True)
@@ -169,19 +169,19 @@ class PaymentSimulation(Base):
     id = Column(Integer, primary_key=True, index=True)
     simulation_id = Column(String(50), unique=True, index=True, nullable=False)  # SIM-XXXXXX
     user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False, default=1, index=True)
-    
+
     vpa_or_account = Column(String(120), nullable=False)
     recipient_name = Column(String(120), nullable=True)
     is_new_recipient = Column(Boolean, default=True)
     requested_amount = Column(Float, nullable=False)
     purpose = Column(String(120), nullable=True)
-    
+
     # Coercion / Social engineering factors
     pressure_present = Column(Boolean, default=False)
     authority_claimed = Column(Boolean, default=False)
     secrecy_demanded = Column(Boolean, default=False)
     guaranteed_returns = Column(Boolean, default=False)
-    
+
     # Outcome: PROCEED_WITH_CAUTION, PAUSE_AND_VERIFY, SEEK_TRUSTED_HELP
     outcome = Column(String(40), nullable=False, index=True)
     risk_score = Column(Integer, nullable=False)  # 0 to 100
@@ -189,7 +189,7 @@ class PaymentSimulation(Base):
     decision_rationale = Column(Text, nullable=False)
     evidence_factors = Column(Text, nullable=True)  # JSON array
     verification_steps = Column(Text, nullable=True)  # JSON array
-    
+
     # Strictly marked simulation
     is_simulation = Column(Boolean, default=True)
     checked_at = Column(DateTime(timezone=True), default=utc_now, index=True)
@@ -208,7 +208,7 @@ class RecoveryDraft(Base):
     id = Column(Integer, primary_key=True, index=True)
     incident_id = Column(Integer, ForeignKey("incidents.id"), nullable=False, index=True)
     user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False, default=1)
-    
+
     # Wizard details
     incident_datetime = Column(DateTime(timezone=True), nullable=True)
     scam_category = Column(String(80), nullable=True)
@@ -220,11 +220,11 @@ class RecoveryDraft(Base):
     transfer_status = Column(String(30), default="COMPLETED")  # "PENDING", "COMPLETED"
     evidence_attachments = Column(Text, nullable=True)  # JSON array
     timeline_events = Column(Text, nullable=True)  # JSON array
-    
+
     portal_complaint_text = Column(Text, nullable=False)  # For cybercrime.gov.in / 1930 Helpline
     bank_complaint_text = Column(Text, nullable=False)    # Bank Nodal Officer freeze dispute
     police_complaint_text = Column(Text, nullable=False)  # Formal police station format
-    
+
     status = Column(String(30), default="DRAFT")  # "DRAFT", "REVIEWED", "EXPORTED"
     generated_at = Column(DateTime(timezone=True), default=utc_now)
     last_edited_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)

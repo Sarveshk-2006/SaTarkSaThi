@@ -48,7 +48,7 @@ export const PresenterControlModal: React.FC<PresenterControlModalProps> = ({ is
       api.checkHealth()
         .then(() => setBackendPing(Math.round(performance.now() - startPing)))
         .catch(() => setBackendPing(null));
-      
+
       api.getEvaluationMetrics()
         .then((data) => setEvalReport(data))
         .catch(() => {});

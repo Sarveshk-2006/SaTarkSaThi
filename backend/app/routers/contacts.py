@@ -37,6 +37,13 @@ def create_contact(
     """
     Add a new trusted family contact to the Family Shield network.
     Automatically generates a 6-digit verification code.
+
+    CONSENT MODEL & LIMITATION:
+    Creating a contact does NOT automatically grant consent (consent_granted defaults to False).
+    Consent must be deliberately granted by the user. Note that Satark Saathi's current design
+    implements a unilateral (one-sided) consent grant: the primary user grants permission to
+    dispatch alerts to this contact. It does NOT establish bilateral / two-sided cryptographic
+    consent from the recipient party.
     """
     # If set as primary, unmark others for this user
     if contact_in.is_primary:
@@ -132,9 +139,18 @@ def request_verification_code(
 
     return {
         "status": "success",
-        "message": f"Verification code sent to {contact.phone_number} (In-App Demo Simulation)",
-        "demo_verification_code": v_code,  # Provided for seamless hackathon evaluation
-        "channel": "IN_APP_SIMULATION"
+        "message": (
+            f"[DEMO SIMULATION — No real SMS was sent] "
+            f"A verification code has been generated for {contact.phone_number}. "
+            f"In a production deployment, this would be delivered via an SMS gateway."
+        ),
+        "demo_verification_code": v_code,  # Returned only because this is a demo environment
+        "demo_mode": True,
+        "channel": "IN_APP_SIMULATION_ONLY",
+        "disclaimer": (
+            "This code is returned in the API response for evaluation convenience. "
+            "It does NOT represent real OTP delivery or real identity verification."
+        ),
     }
 
 @router.post("/{contact_id}/verify/confirm", response_model=TrustedContactResponse)

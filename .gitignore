@@ -47,4 +47,10 @@ pnpm-debug.log*
 lerna-debug.log*
 *.log
 
+# Deployment & Local State
 .vercel
+*.pem
+*.key
+
+# Independent Evaluation Governance (Keep local, exclude from release)
+evaluation_governance/

@@ -1,12 +1,13 @@
 # Satark Saathi (सतर्क साथी)
-> **Stop. Verify. Stay Safe.**  
+> **Stop. Verify. Stay Safe.**
 > *AI-Assisted Digital Scam Prevention, Family Protection & Golden Hour Fraud Recovery for Indian Families*
 
-[![Tests](https://img.shields.io/badge/pytest-49%2F49%20passed-emerald)](backend/tests/)
+[![Tests](https://img.shields.io/badge/pytest-236%2F236%20passed-emerald)](backend/tests/)
 [![Frontend Tests](https://img.shields.io/badge/vitest-8%2F8%20passed-teal)](frontend/src/tests/)
 [![TypeScript](https://img.shields.io/badge/typescript-strict%20build%20passing-blue)](frontend/)
 [![Architecture](https://img.shields.io/badge/FastAPI%20%2B%20React%2019-Vite%20%7C%20Tailwind-indigo)]()
-[![AI Engine](https://img.shields.io/badge/IBM%20watsonx.ai-Granite%2013B%20%7C%20Heuristic%20Fallback-teal)]()
+[![Security](https://img.shields.io/badge/Auth-Cryptographic%20JWT%20%2B%20PBKDF2-blueviolet)]()
+
 
 Satark Saathi is a cybersecurity and fraud-recovery product designed to protect Indian citizens—especially senior citizens, students, and first-time digital payment users—against high-impact digital extortion attacks, social engineering, and financial cyberfraud.
 
@@ -166,7 +167,10 @@ Satark Saathi features an automated, repeatable evaluation module (`backend/app/
 | **Family Alert Transport** | **PASSED** | 100% Delivery | ✅ Verified |
 | **Recovery Dossier Generation** | **PASSED** | Valid Drafts | ✅ Verified |
 
-> **Methodology & Limitation Notice**: Measurements are executed programmatically via `backend/app/evaluation/evaluator.py`. Results reflect performance on the benchmark dataset spanning Indian fraud vectors. Synthetic test metrics are indicative and do not represent an absolute guarantee against novel, unseen social engineering attacks.
+> **Engine and Methodology Notice**: These metrics are produced by running the **Satark deterministic rule engine** against the synthetic evaluation dataset.
+> The rule engine is the default and active engine unless `ANALYSIS_PROVIDER=watsonx` is set with valid IBM credentials.
+> When IBM watsonx.ai Granite is active, the evaluation runner will report `LIVE_IBM_CONNECTED` in the `provider_status` field.
+> Measurements are executed via `backend/app/evaluation/evaluator.py` and reflect performance on the 30-sample benchmark. Synthetic performance is indicative; it does not guarantee detection of novel attacks.
 
 ---
 
@@ -180,25 +184,28 @@ Satark Saathi features an automated, repeatable evaluation module (`backend/app/
 ### 1. Backend Setup & Startup
 ```powershell
 # Navigate to repository root
-cd Competition\IBMNational
+cd satark-saathi
 
-# Activate Python virtual environment (or create: python -m venv backend/venv)
-.\backend\venv\Scripts\Activate.ps1
+# Create and activate a virtual environment (recommended)
+python -m venv backend/venv
+.\backend\venv\Scripts\Activate.ps1   # Windows PowerShell
+# source backend/venv/bin/activate    # Linux / macOS
 
-# Install dependencies
+# Install dependencies (Starlette version is pinned — see requirements.txt)
 pip install -r backend/requirements.txt
 
 # Start FastAPI backend with hot-reload
 python -m uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-*Backend API runs at: `http://127.0.0.1:8000` (Interactive Swagger Docs: `http://127.0.0.1:8000/docs`)*
+*Backend API runs at: `http://127.0.0.1:8000` (Swagger Docs: `http://127.0.0.1:8000/docs`)*
 
 ### 2. Frontend Setup & Startup
 ```powershell
 # Open a second terminal window
-cd Competition\IBMNational\frontend
+cd frontend
 
 # Install dependencies (if first time)
+
 npm install
 
 # Start Vite development server
@@ -231,7 +238,9 @@ WATSONX_MODEL_ID="ibm/granite-13b-chat-v2"
 ```
 
 ### Deterministic Local Fallback Guarantee
-If IBM credentials are not configured or the IBM Cloud endpoint is unreachable, Satark Saathi **gracefully switches to the internal heuristic rule engine**. The interface **never fabricates IBM credentials** and explicitly displays `Satark Rule Engine (watsonx ready)` to preserve transparency.
+If IBM credentials are not configured or the IBM Cloud endpoint is unreachable, Satark Saathi **gracefully falls back to the internal deterministic rule engine**.
+
+The fallback is **always clearly labelled** — API responses carry `ai_provider: "none"` and `analysis_mode: "rule_based"`. The `/api/health` endpoint reports `watsonx_configured: false`. No response will claim to be from IBM when the rule engine is active.
 
 ---
 
@@ -268,24 +277,27 @@ If IBM credentials are not configured or the IBM Cloud endpoint is unreachable, 
 
 ## 🧪 Automated Testing & Verification
 
-Every test in this repository has been physically executed and verified:
+Every test in this repository has been physically executed and verified.
+
+**Runtime**: Python 3.14.0 · FastAPI 0.115.0 · Starlette 0.38.6 (pinned in `requirements.txt`)
 
 ```powershell
-# Run full backend test suite (49 tests)
-.\backend\venv\Scripts\python -m pytest
+# Run full backend test suite (236 tests across 21 test suites)
+python -m pytest backend/tests/ -v
 
 # Run frontend Vitest test suite (8 tests)
 cd frontend
-npm test
+npm test -- --run
 
 # Run frontend production bundle validation
 npm run build
 ```
 
 ### Verified Test Results Summary:
-- **Pytest**: `49 passed in 6.38s` (Analyzer heuristics, Watsonx fallback, API endpoints, Prompt 3 workflows, Evaluation suite, Database schema).
-- **Vitest**: `8 passed in 58.00s` (4 test suites: navigation, components, api client, scanner workspace).
-- **TypeScript & Vite Build**: `✓ built in 28.68s` with `0 errors`.
+- **Pytest**: `236 passed in ~11s` (Risk engine, context-aware signals, Devanagari/Hinglish detection, cryptographic auth, ownership & consent guards, evaluation suites, gateways).
+- **Vitest**: `8 passed in ~2s` (4 test suites: navigation, components, api client, scanner workspace).
+- **TypeScript & Vite Build**: `✓ built in 1.87s` with `0 errors`.
+
 
 ---
 

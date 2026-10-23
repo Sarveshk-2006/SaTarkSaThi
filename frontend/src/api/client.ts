@@ -12,6 +12,39 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Token management: tokens are stored in sessionStorage (tab-scoped)
+ * to prevent long-lived credential leakage in persistent browser storage.
+ */
+export function getAuthToken(): string | null {
+  try {
+    return sessionStorage.getItem('satark_auth_token');
+  } catch {
+    return null;
+  }
+}
+
+export function setAuthToken(token: string | null): void {
+  try {
+    if (token) {
+      sessionStorage.setItem('satark_auth_token', token);
+    } else {
+      sessionStorage.removeItem('satark_auth_token');
+    }
+  } catch {
+    // SessionStorage may be restricted in some sandboxed environments
+  }
+}
+
+export function clearAuth(): void {
+  try {
+    sessionStorage.removeItem('satark_auth_token');
+    sessionStorage.removeItem('satark_auth_user');
+  } catch {
+    // ignore
+  }
+}
+
 export function getActiveUserId(): string {
   return localStorage.getItem('satark_active_user_id') || '1';
 }
@@ -21,14 +54,34 @@ export function setActiveUserId(userId: string | number): void {
   window.dispatchEvent(new CustomEvent('satark-profile-changed', { detail: { userId: String(userId) } }));
 }
 
+export function getAuthHeaders(includeContentType: boolean = true): Record<string, string> {
+  const token = getAuthToken();
+  const activeUserId = getActiveUserId();
+
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+  };
+
+  if (includeContentType) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  } else {
+    // Development/demo persona fallback
+    headers['X-User-Id'] = activeUserId;
+  }
+
+  return headers;
+}
+
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${BASE_URL}${endpoint}`;
-  const activeUserId = getActiveUserId();
-  
+  const baseHeaders = getAuthHeaders(true);
+
   const headers = {
-    'Content-Type': 'application/json',
-    Accept: 'application/json',
-    'X-User-Id': activeUserId,
+    ...baseHeaders,
     ...options.headers,
   };
 
@@ -51,6 +104,11 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     const data = await response.json().catch(() => null);
 
     if (!response.ok) {
+      // If unauthorized and a token was used, clear the invalid/expired token
+      if (response.status === 401 && getAuthToken()) {
+        clearAuth();
+      }
+
       const message =
         data?.message ||
         data?.detail ||
