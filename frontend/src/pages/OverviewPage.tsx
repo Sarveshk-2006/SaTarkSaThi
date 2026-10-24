@@ -113,41 +113,60 @@ export const OverviewPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Top Operational Action Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <h2 className="text-xs font-bold text-[#142A36] tracking-wider uppercase">
-              Operational Threat Prevention Desk
-            </h2>
+      {/* Top Operational Command Desk with Quick Scanner */}
+      <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-card space-y-4">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <h2 className="text-xs font-bold text-[#142A36] tracking-wider uppercase">
+                Digital Safety Perimeter &amp; Family Defense Desk
+              </h2>
+            </div>
+            <p className="text-xs text-[#64748B] mt-1 max-w-xl leading-relaxed">
+              {currentMeta.tagline} — Verify suspicious messages, protect family accounts before sending money, and initiate immediate 1930 recovery.
+            </p>
           </div>
-          <p className="text-xs text-[#64748B] mt-1 max-w-xl leading-relaxed">
-            {currentMeta.tagline} — Verify suspicious messages, protect family accounts before sending money, and initiate immediate 1930 recovery after unauthorized debits.
-          </p>
+
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              onClick={() => navigate('/payment-checkpoint')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#142A36] bg-[#F7F8F4] hover:bg-[#EEF2F6] border border-[#E2E8F0] rounded-xl transition-all cursor-pointer"
+            >
+              <CreditCard className="w-3.5 h-3.5 text-[#176B58]" />
+              <span>UPI Checkpoint</span>
+            </button>
+            <button
+              onClick={() => navigate('/golden-hour')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl transition-all cursor-pointer"
+            >
+              <LifeBuoy className="w-3.5 h-3.5 text-amber-700" />
+              <span>1930 Recovery Desk</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => navigate('/payment-checkpoint')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#142A36] bg-[#F7F8F4] hover:bg-[#EEF2F6] border border-[#E2E8F0] rounded-lg transition-colors cursor-pointer"
-          >
-            <CreditCard className="w-3.5 h-3.5 text-[#176B58]" />
-            <span>Check Payment VPA</span>
-          </button>
-          <button
-            onClick={() => navigate('/golden-hour')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-amber-900 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg transition-colors cursor-pointer"
-          >
-            <LifeBuoy className="w-3.5 h-3.5 text-amber-700" />
-            <span>1930 Recovery Desk</span>
-          </button>
+        {/* Quick Scan Input Bar */}
+        <div className="pt-3 border-t border-[#F1F5F9] flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <ScanSearch className="w-4 h-4 text-[#64748B] absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Paste suspicious SMS, WhatsApp message, or URL to inspect right now..."
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                  navigate('/scanner', { state: { text: e.currentTarget.value.trim() } });
+                }
+              }}
+              className="w-full py-2.5 pl-10 pr-4 text-xs sm:text-sm rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#142A36] transition-colors"
+            />
+          </div>
           <button
             onClick={() => navigate('/scanner')}
-            className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-[#176B58] hover:bg-[#135948] rounded-lg shadow-xs transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#176B58]"
+            className="px-5 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#135948] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-subtle cursor-pointer transition-all shrink-0"
           >
-            <ScanSearch className="w-4 h-4" />
-            <span>Analyse Suspicious Content</span>
+            <span>Scan Threat Now</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>

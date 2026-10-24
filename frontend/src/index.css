@@ -64,6 +64,55 @@
   background: #94A3B8;
 }
 
+/* Linear & Stripe Component Patterns */
+@layer components {
+  .stripe-surface {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px 0 rgba(20, 42, 54, 0.05), 0 1px 2px -1px rgba(20, 42, 54, 0.03);
+    border-radius: 16px;
+    transition: all 0.15s ease-in-out;
+  }
+
+  .stripe-surface-interactive {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px 0 rgba(20, 42, 54, 0.04);
+    border-radius: 16px;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .stripe-surface-interactive:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 12px 0 rgba(20, 42, 54, 0.07), 0 2px 4px -1px rgba(20, 42, 54, 0.04);
+    transform: translateY(-1px);
+  }
+
+  .linear-segmented-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #EAECE6;
+    padding: 3px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+  }
+
+  .linear-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    color: #94A3B8;
+    background: #1C3341;
+    border: 1px solid #284455;
+    border-radius: 5px;
+  }
+}
+
 /* Reduced motion preference respect */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
