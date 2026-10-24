@@ -14,5 +14,11 @@ frontend/node_modules/
 .idea/
 .vscode/
 
+# Private evaluation and env files
+evaluation_governance/
+.env
+.env.local
+.env.*.local
+
 # Keep database file for seeding Vercel serverless
 !satark_saathi.db

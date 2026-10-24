@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,12 +6,25 @@
 
 @layer base {
   :root {
-    --bg-main: #F6F8FB;
-    --text-primary: #182536;
-    --text-secondary: #64748B;
-    --border-color: #E2E8F0;
-    --brand-teal: #176B58;
-    --brand-navy: #14243A;
+    /* Master Design Tokens */
+    --color-midnight: #142A36;
+    --color-trust: #176B58;
+    --color-ivory: #F7F8F4;
+    --color-white: #FFFFFF;
+    --color-sage: #DCEDE5;
+    --color-secondary-text: #64748B;
+    --color-border: #E2E8F0;
+    --color-amber: #D69B36;
+    --color-red: #B91C1C;
+    --color-blue: #1D4ED8;
+
+    /* Semantic Application Roles */
+    --bg-main: var(--color-ivory);
+    --bg-surface: var(--color-white);
+    --text-primary: var(--color-midnight);
+    --text-secondary: var(--color-secondary-text);
+    --border-color: var(--color-border);
+    --brand-trust: var(--color-trust);
   }
 
   body {
@@ -22,9 +35,10 @@
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
     margin: 0;
+    line-height: 1.5;
   }
 
-  /* Accessible, restrained focus indicators */
+  /* Accessible, restrained focus indicators inspired by Linear / Stripe */
   :focus-visible {
     outline: 2px solid #176B58;
     outline-offset: 2px;
@@ -38,7 +52,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #F1F5F9;
+  background: #F1F3EE;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -48,4 +62,14 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94A3B8;
+}
+
+/* Reduced motion preference respect */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

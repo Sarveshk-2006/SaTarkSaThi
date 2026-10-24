@@ -295,7 +295,7 @@ export const FamilyShieldPage: React.FC = () => {
       <SimulationBanner message="Family Shield Carrier SMS and multi-device alerts operate in an authenticated demonstration sandbox. High-risk alerts are broadcast in real time across verified guardian sessions without sending unauthorized telecom spam." />
 
       {/* 2-Device Demo & Session Switcher Banner */}
-      <div className="bg-[#14243A] text-white p-5 rounded-2xl border border-slate-700/60 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-[#142A36] text-white p-5 rounded-2xl border border-slate-700/60 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <span className="p-2.5 rounded-xl bg-white/10 text-emerald-400 border border-white/10">
             <Radio className="w-5 h-5 text-emerald-400 animate-pulse" />
@@ -378,14 +378,14 @@ export const FamilyShieldPage: React.FC = () => {
             <div>
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-10 h-10 rounded-xl bg-[#E8F5EF] border border-teal-200 text-[#176B58] font-bold flex items-center justify-center text-sm">
+                  <div className="w-10 h-10 rounded-xl bg-[#DCEDE5] border border-teal-200 text-[#176B58] font-bold flex items-center justify-center text-sm">
                     {c.name.charAt(0)}
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
                       {c.name}
                       {c.is_primary && (
-                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#E8F5EF] text-[#176B58]">
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#DCEDE5] text-[#176B58]">
                           PRIMARY
                         </span>
                       )}
@@ -612,7 +612,7 @@ export const FamilyShieldPage: React.FC = () => {
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200">
             <div className="flex items-center gap-3 mb-4 text-[#176B58]">
-              <span className="p-2.5 rounded-xl bg-[#E8F5EF] border border-teal-200">
+              <span className="p-2.5 rounded-xl bg-[#DCEDE5] border border-teal-200">
                 <KeyRound className="w-6 h-6 text-[#176B58]" />
               </span>
               <div>

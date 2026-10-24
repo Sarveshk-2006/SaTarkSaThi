@@ -255,7 +255,7 @@ export const SettingsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsSeedModalOpen(true)}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-[#176B58] bg-[#E8F5EF] hover:bg-teal-100/70 border border-teal-200 rounded-xl transition-colors cursor-pointer"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-[#176B58] bg-[#DCEDE5] hover:bg-teal-100/70 border border-teal-200 rounded-xl transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Restore Realistic Demo Data</span>
@@ -281,7 +281,7 @@ export const SettingsPage: React.FC = () => {
               <span>AI Analysis Engine &amp; IBM watsonx.ai Bridge</span>
             </div>
 
-            <div className="p-3.5 bg-[#E8F5EF] rounded-xl border border-teal-200 text-xs text-[#176B58] leading-relaxed">
+            <div className="p-3.5 bg-[#DCEDE5] rounded-xl border border-teal-200 text-xs text-[#176B58] leading-relaxed">
               <span className="font-bold block mb-0.5 text-slate-900">Injectable IBM watsonx.ai Granite Architecture</span>
               The platform implements an injectable analysis adapter interface. The default high-speed Indian heuristic engine requires no API keys. Enter your IBM watsonx.ai credentials below to bridge IBM Granite foundation models in the next evaluation phase.
             </div>

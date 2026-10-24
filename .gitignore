@@ -54,3 +54,6 @@ lerna-debug.log*
 
 # Independent Evaluation Governance (Keep local, exclude from release)
 evaluation_governance/
+
+.vercel
+.env*

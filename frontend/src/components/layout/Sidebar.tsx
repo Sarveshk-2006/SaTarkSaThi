@@ -64,18 +64,18 @@ export const Sidebar: React.FC = () => {
   const { currentMeta } = useLanguage();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-[#14243A] text-slate-100 min-h-screen select-none border-r border-[#1E334E] shrink-0">
+    <aside className="hidden md:flex flex-col w-64 bg-[#142A36] text-slate-100 min-h-screen select-none border-r border-[#1E3A4B] shrink-0">
       {/* Brand Header */}
-      <div className="p-5 border-b border-[#1E334E] bg-[#0D1726]">
+      <div className="p-5 border-b border-[#1E3A4B] bg-[#0E1E27]">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-lg bg-[#176B58] text-white flex items-center justify-center shadow-xs">
-            <Shield className="w-5 h-5 text-emerald-100" />
+          <div className="w-9 h-9 rounded-xl bg-[#176B58] text-white flex items-center justify-center shadow-subtle border border-[#23806B]">
+            <Shield className="w-5 h-5 text-[#DCEDE5]" />
           </div>
           <div className="min-w-0">
             <h1 className="text-base font-bold text-white tracking-tight leading-none truncate">
               Satark Saathi
             </h1>
-            <p className="text-[11px] text-emerald-400 font-medium tracking-wide mt-1.5 truncate">
+            <p className="text-[11px] text-[#DCEDE5] font-medium tracking-wide mt-1.5 truncate">
               {currentMeta.tagline}
             </p>
           </div>
@@ -93,10 +93,10 @@ export const Sidebar: React.FC = () => {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium transition-all ${
+              `flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-all ${
                 isActive
-                  ? 'bg-[#176B58] text-white font-semibold shadow-xs'
-                  : 'text-slate-300 hover:bg-[#1E334E] hover:text-white'
+                  ? 'bg-[#176B58] text-white font-semibold shadow-subtle'
+                  : 'text-slate-300 hover:bg-[#1A3342] hover:text-white'
               }`
             }
           >
@@ -114,18 +114,18 @@ export const Sidebar: React.FC = () => {
       </nav>
 
       {/* Golden Hour Helpline Quick Reference Box */}
-      <div className="mx-3 mb-4 p-3 rounded-lg border border-amber-600/30 bg-amber-950/30 text-amber-200">
+      <div className="mx-3 mb-4 p-3 rounded-xl border border-amber-500/30 bg-[#251E14] text-amber-200">
         <div className="flex items-center gap-2 font-bold text-xs mb-1 text-amber-300">
           <PhoneCall className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <span>Cyber Crime: 1930</span>
         </div>
         <p className="text-[10px] text-amber-200/80 leading-relaxed">
-          National citizen financial fraud helpline. Call within 2 hours of fraud to freeze recipient bank accounts.
+          National citizen financial fraud helpline. Call immediately to freeze recipient bank accounts.
         </p>
       </div>
 
       {/* Footer Status Section */}
-      <div className="p-3 border-t border-[#1E334E] bg-[#0D1726]">
+      <div className="p-3 border-t border-[#1E3A4B] bg-[#0E1E27]">
         <DemoModeIndicator />
       </div>
     </aside>

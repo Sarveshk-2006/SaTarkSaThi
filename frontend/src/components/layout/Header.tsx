@@ -4,13 +4,11 @@ import {
   Search,
   Bell,
   Globe,
-  Shield,
   ChevronDown,
   Sparkles,
 } from 'lucide-react';
 import { PresenterControlModal } from '../demo/PresenterControlModal';
 import { useLanguage, LANGUAGES } from '../../context/LanguageContext';
-import { useDemoMode } from '../../context/DemoModeContext';
 import { useNotification } from '../../context/NotificationContext';
 import { api } from '../../api/endpoints';
 import { FamilyAlert, UserProfile } from '../../api/types';
@@ -55,7 +53,6 @@ export const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { language, setLanguage, currentMeta } = useLanguage();
-  const { isBackendConnected, isDemoMode } = useDemoMode();
   const { activeUserId, switchUser, activeProfileName, activeProfileRole, isWsConnected } = useNotification();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,7 +86,7 @@ export const Header: React.FC = () => {
 
   const currentPage = PAGE_META[location.pathname] || {
     title: 'Satark Saathi',
-    description: 'Cybersecurity and family protection platform.',
+    description: 'Digital scam prevention and family safety platform.',
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -107,10 +104,10 @@ export const Header: React.FC = () => {
         {/* Page Title & Contextual Description */}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
-            <h1 className="text-lg font-bold text-[#14243A] tracking-tight leading-tight truncate">
+            <h1 className="text-lg font-bold text-[#142A36] tracking-tight leading-tight truncate">
               {currentPage.title}
             </h1>
-            <span className="hidden xl:inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md bg-[#E8F5EF] text-[#176B58] border border-[#C2E5D6]">
+            <span className="hidden xl:inline-block text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-[#DCEDE5] text-[#176B58] border border-[#B8DED0]">
               {currentMeta.tagline}
             </span>
           </div>
@@ -125,7 +122,7 @@ export const Header: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search scans, UTR, or suspect..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#F6F8FB] border border-[#E2E8F0] rounded-lg text-[#182536] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] transition-colors"
+            className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#F7F8F4] border border-[#E2E8F0] rounded-xl text-[#142A36] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] transition-colors"
           />
         </form>
 
@@ -135,7 +132,7 @@ export const Header: React.FC = () => {
           <div className="relative" ref={languageRef}>
             <button
               onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[#182536] bg-[#F6F8FB] hover:bg-[#EEF2F6] border border-[#E2E8F0] rounded-lg transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[#142A36] bg-[#F7F8F4] hover:bg-[#EEF1EB] border border-[#E2E8F0] rounded-xl transition-colors cursor-pointer"
               aria-label="Select language"
               aria-expanded={isLanguageOpen}
             >
@@ -145,7 +142,7 @@ export const Header: React.FC = () => {
             </button>
 
             {isLanguageOpen && (
-              <div className="absolute right-0 mt-1.5 w-44 bg-white border border-[#E2E8F0] rounded-xl shadow-dropdown py-1 z-40 text-xs">
+              <div className="absolute right-0 mt-1.5 w-44 bg-white border border-[#E2E8F0] rounded-2xl shadow-dropdown py-1 z-40 text-xs">
                 <div className="px-3 py-1.5 border-b border-[#F1F5F9] font-semibold text-[#64748B] text-[10px] uppercase">
                   Language / भाषा
                 </div>
@@ -156,8 +153,8 @@ export const Header: React.FC = () => {
                       setLanguage(lang.code);
                       setIsLanguageOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-1.5 hover:bg-[#F6F8FB] flex items-center justify-between transition-colors ${
-                      language === lang.code ? 'font-bold text-[#176B58] bg-[#E8F5EF]/60' : 'text-[#182536]'
+                    className={`w-full text-left px-3 py-1.5 hover:bg-[#F7F8F4] flex items-center justify-between transition-colors ${
+                      language === lang.code ? 'font-bold text-[#176B58] bg-[#DCEDE5]/60' : 'text-[#142A36]'
                     }`}
                   >
                     <span>{lang.nativeName}</span>
@@ -172,7 +169,7 @@ export const Header: React.FC = () => {
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-              className="relative p-2 text-[#64748B] hover:text-[#182536] hover:bg-[#F6F8FB] rounded-lg border border-[#E2E8F0] bg-white transition-colors cursor-pointer"
+              className="relative p-2 text-[#64748B] hover:text-[#142A36] hover:bg-[#F7F8F4] rounded-xl border border-[#E2E8F0] bg-white transition-colors cursor-pointer"
               aria-label="View alerts and notifications"
               aria-expanded={isNotificationsOpen}
             >
@@ -185,11 +182,11 @@ export const Header: React.FC = () => {
             </button>
 
             {isNotificationsOpen && (
-              <div className="absolute right-0 mt-1.5 w-80 bg-white border border-[#E2E8F0] rounded-xl shadow-dropdown z-40 overflow-hidden text-xs">
-                <div className="p-3 border-b border-[#F1F5F9] bg-[#F6F8FB] flex items-center justify-between">
-                  <span className="font-bold text-[#14243A] text-xs">Family Security Alerts</span>
+              <div className="absolute right-0 mt-1.5 w-80 bg-white border border-[#E2E8F0] rounded-2xl shadow-dropdown z-40 overflow-hidden text-xs">
+                <div className="p-3 border-b border-[#F1F5F9] bg-[#F7F8F4] flex items-center justify-between">
+                  <span className="font-bold text-[#142A36] text-xs">Family Security Alerts</span>
                   <span className="text-[10px] text-[#64748B]">
-                    {unacknowledgedAlerts.length} pending acknowledgment
+                    {unacknowledgedAlerts.length} pending
                   </span>
                 </div>
 
@@ -200,16 +197,16 @@ export const Header: React.FC = () => {
                     </div>
                   ) : (
                     alerts.slice(0, 5).map((alert) => (
-                      <div key={alert.id} className="p-3 hover:bg-[#F6F8FB] transition-colors">
+                      <div key={alert.id} className="p-3 hover:bg-[#F7F8F4] transition-colors">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="font-semibold text-[#182536] leading-tight">
+                          <p className="font-semibold text-[#142A36] leading-tight">
                             {alert.threat_title}
                           </p>
                           <span
                             className={`px-1.5 py-0.2 rounded text-[10px] font-medium shrink-0 ${
                               alert.status === 'ACKNOWLEDGED'
                                 ? 'bg-emerald-50 text-emerald-800'
-                                : 'bg-amber-50 text-amber-800 font-bold'
+                                : 'bg-amber-50 text-amber-900 font-bold'
                             }`}
                           >
                             {alert.status}
@@ -229,7 +226,7 @@ export const Header: React.FC = () => {
                   )}
                 </div>
 
-                <div className="p-2 border-t border-[#F1F5F9] bg-[#F6F8FB] text-center">
+                <div className="p-2 border-t border-[#F1F5F9] bg-[#F7F8F4] text-center">
                   <button
                     onClick={() => {
                       setIsNotificationsOpen(false);
@@ -248,16 +245,16 @@ export const Header: React.FC = () => {
           <div className="flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
             <button
               onClick={() => switchUser(activeUserId === '1' ? '2' : '1')}
-              className="flex items-center gap-2 p-1 rounded-xl hover:bg-[#F6F8FB] transition-colors cursor-pointer group text-left"
+              className="flex items-center gap-2 p-1 rounded-xl hover:bg-[#F7F8F4] transition-colors cursor-pointer group text-left"
               title="Click to toggle between Rajesh Sharma (Protected) and Aarav Sharma (Guardian)"
             >
-              <div className={`w-7 h-7 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-xs ${
-                activeUserId === '2' ? 'bg-[#176B58]' : 'bg-[#14243A]'
+              <div className={`w-7 h-7 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-subtle ${
+                activeUserId === '2' ? 'bg-[#176B58]' : 'bg-[#142A36]'
               }`}>
                 {activeProfileName.charAt(0)}
               </div>
               <div className="hidden lg:block leading-none">
-                <span className="text-xs font-bold text-[#182536] block truncate max-w-[120px] group-hover:text-[#176B58]">
+                <span className="text-xs font-bold text-[#142A36] block truncate max-w-[120px] group-hover:text-[#176B58]">
                   {activeProfileName}
                 </span>
                 <span className="text-[10px] text-[#64748B] block mt-0.5">
@@ -268,10 +265,10 @@ export const Header: React.FC = () => {
 
             {/* WebSocket / Backend Connection Status Pill */}
             <div
-              className={`ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-semibold border ${
+              className={`ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold border ${
                 isWsConnected
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  : 'bg-amber-50 text-amber-800 border-amber-200'
+                  : 'bg-amber-50 text-amber-900 border-amber-200'
               }`}
               title={isWsConnected ? 'FastAPI WebSockets live' : 'Connecting to live notification transport...'}
             >
@@ -287,10 +284,10 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsPresenterModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#14243A] hover:bg-[#1E334E] text-emerald-300 hover:text-white border border-slate-700 text-xs font-semibold shadow-xs transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#142A36] hover:bg-[#1A3342] text-[#DCEDE5] hover:text-white border border-[#244356] text-xs font-semibold shadow-subtle transition-all cursor-pointer"
               title="Open Hackathon Presenter Deck (Scenarios, Health & Evaluations)"
             >
-              <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+              <Sparkles className="w-3.5 h-3.5 text-[#DCEDE5]" />
               <span className="hidden sm:inline">Presenter Deck</span>
             </button>
           </div>

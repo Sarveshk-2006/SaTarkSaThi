@@ -332,7 +332,7 @@ export const IncidentHistoryPage: React.FC = () => {
             <div className="flex items-start justify-between border-b border-slate-100 pb-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-[#176B58] bg-[#E8F5EF] px-2 py-0.5 rounded border border-teal-200">
+                  <span className="font-mono text-xs font-bold text-[#176B58] bg-[#DCEDE5] px-2 py-0.5 rounded border border-teal-200">
                     {selectedIncident.incident_id}
                   </span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${

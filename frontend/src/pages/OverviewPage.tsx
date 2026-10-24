@@ -84,7 +84,7 @@ export const OverviewPage: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="border-b border-[#E2E8F0] pb-4">
-          <h1 className="text-xl font-bold text-[#14243A]">Security Overview</h1>
+          <h1 className="text-xl font-bold text-[#142A36]">Security Overview</h1>
           <p className="text-xs text-[#64748B] mt-1">Aggregated protection metrics for your family</p>
         </div>
         <LoadingSkeleton rows={5} />
@@ -118,7 +118,7 @@ export const OverviewPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-            <h2 className="text-xs font-bold text-[#14243A] tracking-wider uppercase">
+            <h2 className="text-xs font-bold text-[#142A36] tracking-wider uppercase">
               Operational Threat Prevention Desk
             </h2>
           </div>
@@ -130,7 +130,7 @@ export const OverviewPage: React.FC = () => {
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <button
             onClick={() => navigate('/payment-checkpoint')}
-            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#182536] bg-[#F6F8FB] hover:bg-[#EEF2F6] border border-[#E2E8F0] rounded-lg transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#142A36] bg-[#F7F8F4] hover:bg-[#EEF2F6] border border-[#E2E8F0] rounded-lg transition-colors cursor-pointer"
           >
             <CreditCard className="w-3.5 h-3.5 text-[#176B58]" />
             <span>Check Payment VPA</span>
@@ -154,11 +154,11 @@ export const OverviewPage: React.FC = () => {
 
       {/* Explicit Demo Mode Callout Notice */}
       {isDemoMode && (
-        <div className="px-4 py-2.5 rounded-xl border border-[#E2E8F0] bg-white text-[#182536] text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-subtle">
+        <div className="px-4 py-2.5 rounded-xl border border-[#E2E8F0] bg-white text-[#142A36] text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-subtle">
           <div className="flex items-center gap-2">
             <Info className="w-4 h-4 text-[#176B58] shrink-0" />
             <span className="text-[#64748B]">
-              <strong className="font-semibold text-[#14243A]">Demo Dataset Active:</strong> Records shown are curated local scenarios (Digital Arrest, Electricity Phishing) for platform evaluation. They do not represent live police data or real user accounts.
+              <strong className="font-semibold text-[#142A36]">Demo Dataset Active:</strong> Records shown are curated local scenarios (Digital Arrest, Electricity Phishing) for platform evaluation. They do not represent live police data or real user accounts.
             </span>
           </div>
           <button
@@ -198,12 +198,12 @@ export const OverviewPage: React.FC = () => {
             <div className="p-4 bg-white rounded-2xl border border-[#E2E8F0] shadow-card">
               <div className="flex items-center justify-between text-[#64748B] mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider">Messages Analyzed</span>
-                <div className="w-7 h-7 rounded-lg bg-[#F6F8FB] border border-[#E2E8F0] flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-[#F7F8F4] border border-[#E2E8F0] flex items-center justify-center">
                   <ScanSearch className="w-3.5 h-3.5 text-[#176B58]" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[#14243A]">{stats.total_analyses}</span>
+                <span className="text-2xl font-bold text-[#142A36]">{stats.total_analyses}</span>
                 <span className="text-[11px] text-[#64748B] font-medium">total verified</span>
               </div>
               <div className="mt-2 text-[11px] text-[#64748B] flex items-center gap-1.5">
@@ -234,12 +234,12 @@ export const OverviewPage: React.FC = () => {
             <div className="p-4 bg-white rounded-2xl border border-[#E2E8F0] shadow-card">
               <div className="flex items-center justify-between text-[#64748B] mb-2">
                 <span className="text-[11px] font-bold uppercase tracking-wider">Family Alerts Sent</span>
-                <div className="w-7 h-7 rounded-lg bg-[#E8F5EF] border border-[#C2E5D6] flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-[#DCEDE5] border border-[#B8DED0] flex items-center justify-center">
                   <Users className="w-3.5 h-3.5 text-[#176B58]" />
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[#14243A]">{stats.total_family_alerts}</span>
+                <span className="text-2xl font-bold text-[#142A36]">{stats.total_family_alerts}</span>
                 <span className="text-[11px] text-[#64748B] font-medium">notifications</span>
               </div>
               <p className="mt-2 text-[11px] text-[#64748B]">
@@ -256,7 +256,7 @@ export const OverviewPage: React.FC = () => {
                 </div>
               </div>
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[#14243A]">{stats.total_incidents}</span>
+                <span className="text-2xl font-bold text-[#142A36]">{stats.total_incidents}</span>
                 <span className="text-[11px] text-[#64748B] font-medium">disputes logged</span>
               </div>
               <div className="mt-2 text-[11px] text-[#64748B] font-medium">
@@ -275,7 +275,7 @@ export const OverviewPage: React.FC = () => {
           <div className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-card">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3 border-b border-[#F1F5F9] pb-3 gap-2">
               <div>
-                <h3 className="text-xs font-bold text-[#14243A] uppercase tracking-wider flex items-center gap-1.5">
+                <h3 className="text-xs font-bold text-[#142A36] uppercase tracking-wider flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#176B58]" />
                   <span>Essential Protection Steps for Indian Families</span>
                 </h3>
@@ -283,7 +283,7 @@ export const OverviewPage: React.FC = () => {
                   Follow this 4-step security checklist to establish full household protection against digital extortion.
                 </p>
               </div>
-              <span className="text-[11px] font-bold text-[#176B58] bg-[#E8F5EF] px-2.5 py-0.5 rounded-full border border-[#C2E5D6] shrink-0">
+              <span className="text-[11px] font-bold text-[#176B58] bg-[#DCEDE5] px-2.5 py-0.5 rounded-full border border-[#B8DED0] shrink-0">
                 {stats.active_trusted_contacts > 0 && stats.total_analyses > 0 ? '3 of 4 Ready' : 'Setup in Progress'}
               </span>
             </div>
@@ -291,10 +291,10 @@ export const OverviewPage: React.FC = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
               <div
                 onClick={() => navigate('/family-shield')}
-                className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F6F8FB] hover:bg-[#E8F5EF]/50 hover:border-[#C2E5D6] cursor-pointer transition-colors"
+                className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] hover:bg-[#DCEDE5]/50 hover:border-[#B8DED0] cursor-pointer transition-colors"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[#14243A]">1. Add Guardians</span>
+                  <span className="font-bold text-[#142A36]">1. Add Guardians</span>
                   {stats.active_trusted_contacts > 0 ? (
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   ) : (
@@ -308,10 +308,10 @@ export const OverviewPage: React.FC = () => {
 
               <div
                 onClick={() => navigate('/scanner')}
-                className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F6F8FB] hover:bg-[#E8F5EF]/50 hover:border-[#C2E5D6] cursor-pointer transition-colors"
+                className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] hover:bg-[#DCEDE5]/50 hover:border-[#B8DED0] cursor-pointer transition-colors"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[#14243A]">2. Test Scam Analyzer</span>
+                  <span className="font-bold text-[#142A36]">2. Test Scam Analyzer</span>
                   {stats.total_analyses > 0 ? (
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                   ) : (
@@ -325,10 +325,10 @@ export const OverviewPage: React.FC = () => {
 
               <div
                 onClick={() => navigate('/payment-checkpoint')}
-                className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F6F8FB] hover:bg-[#E8F5EF]/50 hover:border-[#C2E5D6] cursor-pointer transition-colors"
+                className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] hover:bg-[#DCEDE5]/50 hover:border-[#B8DED0] cursor-pointer transition-colors"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[#14243A]">3. Verify UPI VPAs</span>
+                  <span className="font-bold text-[#142A36]">3. Verify UPI VPAs</span>
                   <ArrowRight className="w-3.5 h-3.5 text-[#94A3B8]" />
                 </div>
                 <p className="text-[11px] text-[#64748B] leading-relaxed">
@@ -338,10 +338,10 @@ export const OverviewPage: React.FC = () => {
 
               <div
                 onClick={() => navigate('/golden-hour')}
-                className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F6F8FB] hover:bg-[#E8F5EF]/50 hover:border-[#C2E5D6] cursor-pointer transition-colors"
+                className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] hover:bg-[#DCEDE5]/50 hover:border-[#B8DED0] cursor-pointer transition-colors"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-[#14243A]">4. Know 1930 Helpline</span>
+                  <span className="font-bold text-[#142A36]">4. Know 1930 Helpline</span>
                   <ArrowRight className="w-3.5 h-3.5 text-[#94A3B8]" />
                 </div>
                 <p className="text-[11px] text-[#64748B] leading-relaxed">
@@ -358,7 +358,7 @@ export const OverviewPage: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-2.5 mb-3">
                   <div>
-                    <h3 className="text-xs font-bold text-[#14243A] uppercase tracking-wider">
+                    <h3 className="text-xs font-bold text-[#142A36] uppercase tracking-wider">
                       Analyzed Threat Distribution
                     </h3>
                     <p className="text-[11px] text-[#64748B]">
@@ -383,11 +383,11 @@ export const OverviewPage: React.FC = () => {
                         dataKey="name"
                         type="category"
                         width={130}
-                        tick={{ fontSize: 11, fill: '#14243A' }}
+                        tick={{ fontSize: 11, fill: '#142A36' }}
                       />
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: '#14243A',
+                          backgroundColor: '#142A36',
                           borderColor: '#1E334E',
                           borderRadius: '8px',
                           color: '#FFFFFF',
@@ -424,35 +424,35 @@ export const OverviewPage: React.FC = () => {
             <div className="lg:col-span-5 space-y-4">
               {/* Protection Status Card */}
               <div className="bg-white p-5 rounded-2xl border border-[#E2E8F0] shadow-card">
-                <h3 className="text-xs font-bold text-[#14243A] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                <h3 className="text-xs font-bold text-[#142A36] uppercase tracking-wider mb-3 flex items-center gap-1.5">
                   <Activity className="w-4 h-4 text-[#176B58]" />
                   <span>Current Protection Health</span>
                 </h3>
 
                 <div className="space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F6F8FB] border border-[#E2E8F0]">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F7F8F4] border border-[#E2E8F0]">
                     <span className="text-[#64748B] font-medium">Family Shield Status</span>
-                    <span className="font-bold text-[#176B58] bg-[#E8F5EF] px-2 py-0.5 rounded-md border border-[#C2E5D6]">
+                    <span className="font-bold text-[#176B58] bg-[#DCEDE5] px-2 py-0.5 rounded-md border border-[#B8DED0]">
                       Active ({stats.active_trusted_contacts} Guardians)
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F6F8FB] border border-[#E2E8F0]">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F7F8F4] border border-[#E2E8F0]">
                     <span className="text-[#64748B] font-medium">Scam Detection Engine</span>
-                    <span className="font-semibold text-[#182536]">
+                    <span className="font-semibold text-[#142A36]">
                       Satark Heuristic (watsonx ready)
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F6F8FB] border border-[#E2E8F0]">
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F7F8F4] border border-[#E2E8F0]">
                     <span className="text-[#64748B] font-medium">National Helpline Link</span>
-                    <span className="font-mono text-[#182536] font-bold">1930 Verified</span>
+                    <span className="font-mono text-[#142A36] font-bold">1930 Verified</span>
                   </div>
                 </div>
 
                 <div className="mt-4 pt-3 border-t border-[#F1F5F9] flex justify-between items-center text-xs">
                   <span className="text-[#64748B] text-[11px]">Primary Banking Partner:</span>
-                  <span className="font-semibold text-[#182536]">State Bank of India</span>
+                  <span className="font-semibold text-[#142A36]">State Bank of India</span>
                 </div>
               </div>
 
@@ -483,7 +483,7 @@ export const OverviewPage: React.FC = () => {
                         className="p-2.5 rounded-xl bg-white border border-amber-200 flex items-center justify-between gap-2 shadow-subtle"
                       >
                         <div className="truncate">
-                          <p className="font-bold text-[#14243A] truncate">{inc.title}</p>
+                          <p className="font-bold text-[#142A36] truncate">{inc.title}</p>
                           <span className="text-[11px] font-mono text-red-700 font-semibold">
                             Loss: ₹{inc.financial_loss.toLocaleString('en-IN')}
                           </span>
@@ -503,7 +503,7 @@ export const OverviewPage: React.FC = () => {
           <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-card overflow-hidden">
             <div className="px-5 py-4 border-b border-[#E2E8F0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
               <div>
-                <h3 className="text-sm font-bold text-[#14243A]">Recent Incident & Scan Activity</h3>
+                <h3 className="text-sm font-bold text-[#142A36]">Recent Incident & Scan Activity</h3>
                 <p className="text-[11px] text-[#64748B]">
                   Full forensic log of analyzed messages, red flag severity, and recovery case statuses
                 </p>
@@ -519,7 +519,7 @@ export const OverviewPage: React.FC = () => {
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-[#F6F8FB] border-b border-[#E2E8F0] text-[#64748B] font-semibold uppercase tracking-wider text-[11px]">
+                <thead className="bg-[#F7F8F4] border-b border-[#E2E8F0] text-[#64748B] font-semibold uppercase tracking-wider text-[11px]">
                   <tr>
                     <th className="px-4 py-3">Incident / Scan Title</th>
                     <th className="px-4 py-3">Severity</th>
@@ -529,10 +529,10 @@ export const OverviewPage: React.FC = () => {
                     <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#F1F5F9] text-[#182536]">
+                <tbody className="divide-y divide-[#F1F5F9] text-[#142A36]">
                   {stats.recent_incidents.map((incident) => (
-                    <tr key={incident.id} className="hover:bg-[#F6F8FB]/80 transition-colors">
-                      <td className="px-4 py-3 font-medium text-[#14243A]">
+                    <tr key={incident.id} className="hover:bg-[#F7F8F4]/80 transition-colors">
+                      <td className="px-4 py-3 font-medium text-[#142A36]">
                         <div>
                           <span>{incident.title}</span>
                           <span className="block text-[11px] text-[#64748B] font-normal">
@@ -544,7 +544,7 @@ export const OverviewPage: React.FC = () => {
                         <RiskSeverityBadge severity={incident.severity} size="sm" />
                       </td>
                       <td className="px-4 py-3">
-                        <span className="inline-block px-2 py-0.5 text-[11px] font-medium rounded-md border border-[#E2E8F0] bg-[#F6F8FB] text-[#182536]">
+                        <span className="inline-block px-2 py-0.5 text-[11px] font-medium rounded-md border border-[#E2E8F0] bg-[#F7F8F4] text-[#142A36]">
                           {incident.status.replace(/_/g, ' ')}
                         </span>
                       </td>
@@ -566,7 +566,7 @@ export const OverviewPage: React.FC = () => {
                       <td className="px-4 py-3 text-right">
                         <button
                           onClick={() => setSelectedIncident(incident)}
-                          className="px-2.5 py-1 text-xs font-semibold text-[#182536] hover:text-[#14243A] border border-[#E2E8F0] hover:border-slate-300 rounded-lg bg-white transition-colors cursor-pointer shadow-subtle"
+                          className="px-2.5 py-1 text-xs font-semibold text-[#142A36] hover:text-[#142A36] border border-[#E2E8F0] hover:border-slate-300 rounded-lg bg-white transition-colors cursor-pointer shadow-subtle"
                         >
                           Inspect Details
                         </button>
@@ -591,16 +591,16 @@ export const OverviewPage: React.FC = () => {
             <div className="flex items-start justify-between border-b border-[#F1F5F9] pb-3">
               <div>
                 <span className="text-[10px] uppercase font-bold text-[#64748B]">Incident Details</span>
-                <h3 className="text-base font-bold text-[#14243A] mt-0.5">{selectedIncident.title}</h3>
+                <h3 className="text-base font-bold text-[#142A36] mt-0.5">{selectedIncident.title}</h3>
               </div>
               <RiskSeverityBadge severity={selectedIncident.severity} size="sm" />
             </div>
 
-            <div className="mt-4 space-y-3 text-xs text-[#182536]">
-              <div className="grid grid-cols-2 gap-3 bg-[#F6F8FB] p-3 rounded-xl border border-[#E2E8F0]">
+            <div className="mt-4 space-y-3 text-xs text-[#142A36]">
+              <div className="grid grid-cols-2 gap-3 bg-[#F7F8F4] p-3 rounded-xl border border-[#E2E8F0]">
                 <div>
                   <span className="text-[#64748B] block">Scam Type:</span>
-                  <span className="font-semibold text-[#14243A]">{selectedIncident.scam_type}</span>
+                  <span className="font-semibold text-[#142A36]">{selectedIncident.scam_type}</span>
                 </div>
                 <div>
                   <span className="text-[#64748B] block">Financial Loss:</span>
@@ -610,29 +610,29 @@ export const OverviewPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[#64748B] block">Bank Involved:</span>
-                  <span className="font-medium text-[#14243A]">
+                  <span className="font-medium text-[#142A36]">
                     {selectedIncident.bank_name || 'State Bank of India'}
                   </span>
                 </div>
                 <div>
                   <span className="text-[#64748B] block">Transaction Ref (UTR):</span>
-                  <span className="font-mono text-[#14243A]">
+                  <span className="font-mono text-[#142A36]">
                     {selectedIncident.transaction_ref || 'Pending'}
                   </span>
                 </div>
               </div>
 
               <div>
-                <span className="font-semibold text-[#14243A] block mb-1">Incident Narrative:</span>
-                <p className="p-3 bg-[#F6F8FB] rounded-xl border border-[#E2E8F0] leading-relaxed text-[#182536]">
+                <span className="font-semibold text-[#142A36] block mb-1">Incident Narrative:</span>
+                <p className="p-3 bg-[#F7F8F4] rounded-xl border border-[#E2E8F0] leading-relaxed text-[#142A36]">
                   {selectedIncident.description}
                 </p>
               </div>
 
               {selectedIncident.suspect_contact && (
                 <div>
-                  <span className="font-semibold text-[#14243A] block mb-1">Suspect Identifier / Handle:</span>
-                  <span className="font-mono bg-[#F6F8FB] px-2.5 py-1 rounded-md border border-[#E2E8F0] text-[#14243A] inline-block">
+                  <span className="font-semibold text-[#142A36] block mb-1">Suspect Identifier / Handle:</span>
+                  <span className="font-mono bg-[#F7F8F4] px-2.5 py-1 rounded-md border border-[#E2E8F0] text-[#142A36] inline-block">
                     {selectedIncident.suspect_contact}
                   </span>
                 </div>
@@ -652,7 +652,7 @@ export const OverviewPage: React.FC = () => {
               </button>
               <button
                 onClick={() => setSelectedIncident(null)}
-                className="px-3.5 py-1.5 text-xs font-medium bg-[#F6F8FB] hover:bg-[#EEF2F6] text-[#182536] border border-[#E2E8F0] rounded-lg transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium bg-[#F7F8F4] hover:bg-[#EEF2F6] text-[#142A36] border border-[#E2E8F0] rounded-lg transition-colors cursor-pointer"
               >
                 Close
               </button>

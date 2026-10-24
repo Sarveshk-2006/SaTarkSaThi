@@ -41,7 +41,7 @@ export const SimulationBanner: React.FC<SimulationBannerProps> = ({
       <Info className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 mt-0.5 ${styles.icon}`} />
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-2 mb-1">
-          <span className="font-bold text-[#14243A]">{title}</span>
+          <span className="font-bold text-[#142A36]">{title}</span>
           <span
             className={`px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase border ${styles.badge}`}
           >

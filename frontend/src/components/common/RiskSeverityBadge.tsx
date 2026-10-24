@@ -41,13 +41,12 @@ export const RiskSeverityBadge: React.FC<RiskSeverityBadgeProps> = ({
       return 'bg-red-50 text-red-800 border-red-200';
     }
     if (isCaution) {
-      return 'bg-amber-50 text-amber-800 border-amber-200';
+      return 'bg-amber-50 text-amber-900 border-amber-300';
     }
-    return 'bg-emerald-50 text-emerald-800 border-emerald-200';
+    return 'bg-emerald-50 text-emerald-900 border-emerald-300';
   };
 
   const getLabel = () => {
-    if (norm === 'HIGH_RISK') return 'High Risk';
     if (isCritical) return 'Critical Risk';
     if (isHigh) return 'High Risk';
     if (isCaution) return 'Caution';

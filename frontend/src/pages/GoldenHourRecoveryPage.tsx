@@ -19,6 +19,7 @@ import {
   ShieldAlert,
   AlertOctagon,
   RotateCcw,
+  Printer,
 } from 'lucide-react';
 import { api } from '../api/endpoints';
 import {
@@ -361,7 +362,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 Golden Hour Incident Recovery Wizard
               </h1>
               {linkedIncidentId && (
-                <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#E8F5EF] text-[#176B58] border border-teal-200">
+                <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#DCEDE5] text-[#176B58] border border-teal-200">
                   Case #{linkedIncidentId}
                 </span>
               )}
@@ -377,7 +378,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
 
         {/* Case Hydration Loading State */}
         {caseLoading && (
-          <div className="p-3 bg-[#E8F5EF] border border-teal-200 rounded-xl text-xs text-[#176B58] flex items-center gap-2">
+          <div className="p-3 bg-[#DCEDE5] border border-teal-200 rounded-xl text-xs text-[#176B58] flex items-center gap-2">
             <RotateCcw className="w-4 h-4 text-[#176B58] animate-spin" />
             <span>Retrieving authoritative incident dossier from backend...</span>
           </div>
@@ -414,7 +415,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 wizardStep === s.step
                   ? 'bg-[#176B58] text-white border-[#176B58] shadow-sm'
                   : wizardStep > s.step
-                  ? 'bg-[#E8F5EF] text-[#176B58] border-teal-200 cursor-pointer'
+                  ? 'bg-[#DCEDE5] text-[#176B58] border-teal-200 cursor-pointer'
                   : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
               }`}
             >
@@ -548,7 +549,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-slate-700">
                   Transaction Reference / UTR Number
                 </label>
-                <span className="text-[10px] text-[#176B58] font-semibold bg-[#E8F5EF] px-2 py-0.5 rounded">
+                <span className="text-[10px] text-[#176B58] font-semibold bg-[#DCEDE5] px-2 py-0.5 rounded">
                   Optional / Missing UTR Allowed
                 </span>
               </div>
@@ -700,7 +701,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
         <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm space-y-0">
           <div className="p-6 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#176B58] bg-[#E8F5EF] px-2.5 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#176B58] bg-[#DCEDE5] px-2.5 py-0.5 rounded-full">
                 Step 4: Formal Recovery Dossier
               </span>
               <h2 className="text-lg font-bold text-slate-900 mt-1">
@@ -741,6 +742,15 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                 <Download className="w-4 h-4" />
                 Export TXT Dossier
               </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-3.5 py-2 rounded-xl bg-[#176B58] hover:bg-[#135948] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <Printer className="w-4 h-4" />
+                Print / Save PDF
+              </button>
             </div>
           </div>
 
@@ -753,7 +763,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
           )}
 
           {/* Prototype Simulation Notice & Statutory Filing Guidance */}
-          <div className="mx-6 mt-6 p-4 rounded-2xl bg-[#14243A] text-white flex flex-col gap-3 border border-slate-700/60 shadow-sm">
+          <div className="mx-6 mt-6 p-4 rounded-2xl bg-[#142A36] text-white flex flex-col gap-3 border border-slate-700/60 shadow-sm">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-slate-950 uppercase tracking-wider">

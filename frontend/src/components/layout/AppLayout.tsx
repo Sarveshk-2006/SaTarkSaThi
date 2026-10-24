@@ -6,7 +6,7 @@ import { MobileHeader } from './MobileHeader';
 
 export const AppLayout: React.FC = () => {
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-[#F6F8FB] text-[#182536]">
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#F7F8F4] text-[#142A36]">
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <MobileHeader />

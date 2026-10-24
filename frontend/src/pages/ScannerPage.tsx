@@ -439,10 +439,10 @@ ${currentAnalysis.limitations.join('\n')}
       <div className="border-b border-[#E2E8F0] pb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-[#14243A] tracking-tight">
+            <h1 className="text-xl font-bold text-[#142A36] tracking-tight">
               Scam Intelligence Engine
             </h1>
-            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-[#E8F5EF] text-[#176B58] border border-[#C2E5D6]">
+            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-md bg-[#DCEDE5] text-[#176B58] border border-[#B8DED0]">
               Evidence-Based Forensic Detection
             </span>
           </div>
@@ -451,7 +451,7 @@ ${currentAnalysis.limitations.join('\n')}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-medium text-[#182536] bg-white px-3 py-1.5 rounded-lg border border-[#E2E8F0] shadow-subtle">
+        <div className="flex items-center gap-2 text-xs font-medium text-[#142A36] bg-white px-3 py-1.5 rounded-lg border border-[#E2E8F0] shadow-subtle">
           <Cpu className="w-3.5 h-3.5 text-[#176B58]" />
           <span>IBM watsonx.ai Granite Ready</span>
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
@@ -464,7 +464,7 @@ ${currentAnalysis.limitations.join('\n')}
           {/* Preset scenarios bar */}
           <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-card">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-[#14243A] uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-bold text-[#142A36] uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#176B58]" />
                 <span>Test Common Indian Scam Scenarios</span>
               </span>
@@ -476,7 +476,7 @@ ${currentAnalysis.limitations.join('\n')}
                   key={preset.id}
                   type="button"
                   onClick={() => handleSelectPreset(preset)}
-                  className="px-2.5 py-1 text-xs font-medium rounded-lg border border-[#E2E8F0] bg-[#F6F8FB] hover:bg-[#E8F5EF] hover:border-[#C2E5D6] hover:text-[#176B58] text-[#182536] transition-colors text-left cursor-pointer"
+                  className="px-2.5 py-1 text-xs font-medium rounded-lg border border-[#E2E8F0] bg-[#F7F8F4] hover:bg-[#DCEDE5] hover:border-[#B8DED0] hover:text-[#176B58] text-[#142A36] transition-colors text-left cursor-pointer"
                 >
                   {preset.title}
                 </button>
@@ -487,14 +487,14 @@ ${currentAnalysis.limitations.join('\n')}
           {/* Unified Workspace Container */}
           <div className="bg-white rounded-2xl border border-[#E2E8F0] shadow-card overflow-hidden">
             {/* 4 Input Method Tabs */}
-            <div className="flex border-b border-[#E2E8F0] bg-[#F6F8FB] p-1.5 gap-1.5">
+            <div className="flex border-b border-[#E2E8F0] bg-[#F7F8F4] p-1.5 gap-1.5">
               <button
                 type="button"
                 onClick={() => setActiveTab('text')}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   activeTab === 'text'
                     ? 'bg-white text-[#176B58] shadow-subtle border border-[#E2E8F0] font-bold'
-                    : 'text-[#64748B] hover:text-[#182536] hover:bg-white/60'
+                    : 'text-[#64748B] hover:text-[#142A36] hover:bg-white/60'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
@@ -507,7 +507,7 @@ ${currentAnalysis.limitations.join('\n')}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   activeTab === 'url'
                     ? 'bg-white text-[#176B58] shadow-subtle border border-[#E2E8F0] font-bold'
-                    : 'text-[#64748B] hover:text-[#182536] hover:bg-white/60'
+                    : 'text-[#64748B] hover:text-[#142A36] hover:bg-white/60'
                 }`}
               >
                 <Link2 className="w-3.5 h-3.5" />
@@ -520,7 +520,7 @@ ${currentAnalysis.limitations.join('\n')}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   activeTab === 'image'
                     ? 'bg-white text-[#176B58] shadow-subtle border border-[#E2E8F0] font-bold'
-                    : 'text-[#64748B] hover:text-[#182536] hover:bg-white/60'
+                    : 'text-[#64748B] hover:text-[#142A36] hover:bg-white/60'
                 }`}
               >
                 <ImageIcon className="w-3.5 h-3.5" />
@@ -533,7 +533,7 @@ ${currentAnalysis.limitations.join('\n')}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                   activeTab === 'audio'
                     ? 'bg-white text-[#176B58] shadow-subtle border border-[#E2E8F0] font-bold'
-                    : 'text-[#64748B] hover:text-[#182536] hover:bg-white/60'
+                    : 'text-[#64748B] hover:text-[#142A36] hover:bg-white/60'
                 }`}
               >
                 <Mic className="w-3.5 h-3.5" />
@@ -547,7 +547,7 @@ ${currentAnalysis.limitations.join('\n')}
               {activeTab === 'text' && (
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <label htmlFor="text-input" className="text-xs font-bold text-[#14243A] uppercase tracking-wider">
+                    <label htmlFor="text-input" className="text-xs font-bold text-[#142A36] uppercase tracking-wider">
                       Suspicious Message Content
                     </label>
                     <div className="flex items-center gap-1.5 text-xs">
@@ -555,7 +555,7 @@ ${currentAnalysis.limitations.join('\n')}
                       <select
                         value={channel}
                         onChange={(e) => setChannel(e.target.value as ChannelType)}
-                        className="px-2.5 py-1 bg-[#F6F8FB] border border-[#E2E8F0] rounded-md text-xs font-medium text-[#182536] focus:outline-none focus:ring-1 focus:ring-[#176B58]"
+                        className="px-2.5 py-1 bg-[#F7F8F4] border border-[#E2E8F0] rounded-md text-xs font-medium text-[#142A36] focus:outline-none focus:ring-1 focus:ring-[#176B58]"
                       >
                         <option value="SMS">SMS Message</option>
                         <option value="WHATSAPP">WhatsApp</option>
@@ -574,13 +574,13 @@ ${currentAnalysis.limitations.join('\n')}
                       value={text}
                       onChange={(e) => setText(e.target.value)}
                       placeholder="Paste suspicious SMS, WhatsApp message, email, or caller script here (e.g. CBI arrest warrant, electricity disconnection, bank KYC notice)..."
-                      className="w-full p-3.5 text-sm bg-[#F6F8FB] border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#182536] leading-relaxed placeholder:text-[#94A3B8] resize-y"
+                      className="w-full p-3.5 text-sm bg-[#F7F8F4] border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#142A36] leading-relaxed placeholder:text-[#94A3B8] resize-y"
                     />
                     {text && (
                       <button
                         type="button"
                         onClick={() => setText('')}
-                        className="absolute top-2.5 right-2.5 px-2 py-0.5 text-xs text-[#64748B] hover:text-[#182536] rounded-md bg-white border border-[#E2E8F0] cursor-pointer shadow-subtle"
+                        className="absolute top-2.5 right-2.5 px-2 py-0.5 text-xs text-[#64748B] hover:text-[#142A36] rounded-md bg-white border border-[#E2E8F0] cursor-pointer shadow-subtle"
                       >
                         Clear
                       </button>
@@ -600,7 +600,7 @@ ${currentAnalysis.limitations.join('\n')}
               {activeTab === 'url' && (
                 <div className="space-y-3">
                   <div>
-                    <label htmlFor="url-input" className="text-xs font-bold text-[#14243A] uppercase tracking-wider block mb-1">
+                    <label htmlFor="url-input" className="text-xs font-bold text-[#142A36] uppercase tracking-wider block mb-1">
                       Suspicious URL / Web Link
                     </label>
                     <p className="text-xs text-[#64748B] mb-2">
@@ -616,13 +616,13 @@ ${currentAnalysis.limitations.join('\n')}
                         value={urlInput}
                         onChange={(e) => setUrlInput(e.target.value)}
                         placeholder="https://sbi-kyc-update.xyz/verify-login or bit.ly/free-prize"
-                        className="w-full pl-9 pr-12 py-2.5 text-sm bg-[#F6F8FB] border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#182536] font-mono"
+                        className="w-full pl-9 pr-12 py-2.5 text-sm bg-[#F7F8F4] border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#142A36] font-mono"
                       />
                       {urlInput && (
                         <button
                           type="button"
                           onClick={() => setUrlInput('')}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-[#94A3B8] hover:text-[#182536] cursor-pointer"
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-[#94A3B8] hover:text-[#142A36] cursor-pointer"
                         >
                           Clear
                         </button>
@@ -647,7 +647,7 @@ ${currentAnalysis.limitations.join('\n')}
               {activeTab === 'image' && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-[#14243A] uppercase tracking-wider block mb-1">
+                    <label className="text-xs font-bold text-[#142A36] uppercase tracking-wider block mb-1">
                       Upload Screenshot (SMS, WhatsApp, Payment, or Notice)
                     </label>
                     <p className="text-xs text-[#64748B] mb-2">
@@ -657,7 +657,7 @@ ${currentAnalysis.limitations.join('\n')}
                     {!imageFile ? (
                       <div
                         onClick={() => imageInputRef.current?.click()}
-                        className="border-2 border-dashed border-[#CBD5E1] hover:border-[#176B58] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-[#F6F8FB] hover:bg-white"
+                        className="border-2 border-dashed border-[#CBD5E1] hover:border-[#176B58] rounded-2xl p-6 text-center cursor-pointer transition-colors bg-[#F7F8F4] hover:bg-white"
                       >
                         <input
                           ref={imageInputRef}
@@ -666,14 +666,14 @@ ${currentAnalysis.limitations.join('\n')}
                           onChange={handleImageChange}
                           className="hidden"
                         />
-                        <div className="w-10 h-10 rounded-xl bg-[#E8F5EF] text-[#176B58] flex items-center justify-center mx-auto mb-2 border border-[#C2E5D6]">
+                        <div className="w-10 h-10 rounded-xl bg-[#DCEDE5] text-[#176B58] flex items-center justify-center mx-auto mb-2 border border-[#B8DED0]">
                           <Upload className="w-5 h-5" />
                         </div>
-                        <p className="text-xs font-semibold text-[#182536]">Click to upload screenshot</p>
+                        <p className="text-xs font-semibold text-[#142A36]">Click to upload screenshot</p>
                         <p className="text-[11px] text-[#94A3B8] mt-0.5">or drag and drop here</p>
                       </div>
                     ) : (
-                      <div className="border border-[#E2E8F0] rounded-xl p-3 bg-[#F6F8FB] flex items-center justify-between gap-3">
+                      <div className="border border-[#E2E8F0] rounded-xl p-3 bg-[#F7F8F4] flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           {imagePreview && (
                             <img
@@ -683,7 +683,7 @@ ${currentAnalysis.limitations.join('\n')}
                             />
                           )}
                           <div>
-                            <p className="text-xs font-bold text-[#14243A] truncate max-w-[200px]">{imageFile.name}</p>
+                            <p className="text-xs font-bold text-[#142A36] truncate max-w-[200px]">{imageFile.name}</p>
                             <p className="text-[11px] text-[#64748B]">{(imageFile.size / 1024).toFixed(1)} KB</p>
                           </div>
                         </div>
@@ -692,7 +692,7 @@ ${currentAnalysis.limitations.join('\n')}
                           <button
                             type="button"
                             onClick={() => imageInputRef.current?.click()}
-                            className="text-xs px-2.5 py-1 text-[#182536] bg-white border border-[#E2E8F0] rounded-lg hover:bg-slate-50 cursor-pointer"
+                            className="text-xs px-2.5 py-1 text-[#142A36] bg-white border border-[#E2E8F0] rounded-lg hover:bg-slate-50 cursor-pointer"
                           >
                             Replace
                           </button>
@@ -718,7 +718,7 @@ ${currentAnalysis.limitations.join('\n')}
 
                   {/* Editable OCR text area */}
                   <div>
-                    <label htmlFor="ocr-text-input" className="text-xs font-bold text-[#14243A] uppercase tracking-wider block mb-1">
+                    <label htmlFor="ocr-text-input" className="text-xs font-bold text-[#142A36] uppercase tracking-wider block mb-1">
                       Extracted Text / OCR Review
                     </label>
                     <p className="text-[11px] text-[#64748B] mb-1.5">
@@ -730,7 +730,7 @@ ${currentAnalysis.limitations.join('\n')}
                       value={imageOcrText}
                       onChange={(e) => setImageOcrText(e.target.value)}
                       placeholder="Extracted text from screenshot will appear here, or you can paste the text directly..."
-                      className="w-full p-3 text-xs bg-[#F6F8FB] border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#182536]"
+                      className="w-full p-3 text-xs bg-[#F7F8F4] border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#142A36]"
                     />
                   </div>
                 </div>
@@ -740,7 +740,7 @@ ${currentAnalysis.limitations.join('\n')}
               {activeTab === 'audio' && (
                 <div className="space-y-4">
                   <div>
-                    <label className="text-xs font-bold text-[#14243A] uppercase tracking-wider block mb-1">
+                    <label className="text-xs font-bold text-[#142A36] uppercase tracking-wider block mb-1">
                       Upload Audio Evidence (Voice Note or Call Recording)
                     </label>
                     <p className="text-xs text-[#64748B] mb-2">
@@ -750,7 +750,7 @@ ${currentAnalysis.limitations.join('\n')}
                     {!audioFile ? (
                       <div
                         onClick={() => audioInputRef.current?.click()}
-                        className="border-2 border-dashed border-[#CBD5E1] hover:border-[#176B58] rounded-2xl p-5 text-center cursor-pointer transition-colors bg-[#F6F8FB] hover:bg-white"
+                        className="border-2 border-dashed border-[#CBD5E1] hover:border-[#176B58] rounded-2xl p-5 text-center cursor-pointer transition-colors bg-[#F7F8F4] hover:bg-white"
                       >
                         <input
                           ref={audioInputRef}
@@ -759,20 +759,20 @@ ${currentAnalysis.limitations.join('\n')}
                           onChange={handleAudioChange}
                           className="hidden"
                         />
-                        <div className="w-10 h-10 rounded-xl bg-[#E8F5EF] text-[#176B58] flex items-center justify-center mx-auto mb-2 border border-[#C2E5D6]">
+                        <div className="w-10 h-10 rounded-xl bg-[#DCEDE5] text-[#176B58] flex items-center justify-center mx-auto mb-2 border border-[#B8DED0]">
                           <Mic className="w-5 h-5" />
                         </div>
-                        <p className="text-xs font-semibold text-[#182536]">Upload voice recording</p>
+                        <p className="text-xs font-semibold text-[#142A36]">Upload voice recording</p>
                         <p className="text-[11px] text-[#94A3B8] mt-0.5">Attach call audio or WhatsApp voice memo</p>
                       </div>
                     ) : (
-                      <div className="border border-[#E2E8F0] rounded-xl p-3 bg-[#F6F8FB] flex items-center justify-between gap-3">
+                      <div className="border border-[#E2E8F0] rounded-xl p-3 bg-[#F7F8F4] flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-[#E8F5EF] text-[#176B58] flex items-center justify-center border border-[#C2E5D6]">
+                          <div className="w-10 h-10 rounded-xl bg-[#DCEDE5] text-[#176B58] flex items-center justify-center border border-[#B8DED0]">
                             <Mic className="w-5 h-5" />
                           </div>
                           <div>
-                            <p className="text-xs font-bold text-[#14243A] truncate max-w-[200px]">{audioFile.name}</p>
+                            <p className="text-xs font-bold text-[#142A36] truncate max-w-[200px]">{audioFile.name}</p>
                             <p className="text-[11px] text-[#64748B]">{(audioFile.size / (1024 * 1024)).toFixed(2)} MB</p>
                           </div>
                         </div>
@@ -781,7 +781,7 @@ ${currentAnalysis.limitations.join('\n')}
                           <button
                             type="button"
                             onClick={() => audioInputRef.current?.click()}
-                            className="text-xs px-2.5 py-1 text-[#182536] bg-white border border-[#E2E8F0] rounded-lg hover:bg-slate-50 cursor-pointer"
+                            className="text-xs px-2.5 py-1 text-[#142A36] bg-white border border-[#E2E8F0] rounded-lg hover:bg-slate-50 cursor-pointer"
                           >
                             Replace
                           </button>
@@ -818,7 +818,7 @@ ${currentAnalysis.limitations.join('\n')}
 
                   {/* Editable Audio Transcript Area */}
                   <div>
-                    <label htmlFor="audio-transcript-input" className="text-xs font-bold text-[#14243A] uppercase tracking-wider block mb-1">
+                    <label htmlFor="audio-transcript-input" className="text-xs font-bold text-[#142A36] uppercase tracking-wider block mb-1">
                       Call / Voice Note Transcript <span className="text-red-500">*</span>
                     </label>
                     <textarea
@@ -827,7 +827,7 @@ ${currentAnalysis.limitations.join('\n')}
                       value={audioTranscript}
                       onChange={(e) => setAudioTranscript(e.target.value)}
                       placeholder="Type or paste what the caller said (e.g. 'This is Officer Sharma from Crime Branch. Do not disconnect the call or tell your family...')"
-                      className="w-full p-3 text-xs bg-[#F6F8FB] border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#182536] leading-relaxed"
+                      className="w-full p-3 text-xs bg-[#F7F8F4] border border-[#E2E8F0] rounded-xl focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#142A36] leading-relaxed"
                     />
                   </div>
                 </div>
@@ -838,7 +838,7 @@ ${currentAnalysis.limitations.join('\n')}
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="px-3 py-1.5 text-xs font-medium text-[#64748B] hover:text-[#182536] hover:bg-[#F6F8FB] rounded-lg transition-colors cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-medium text-[#64748B] hover:text-[#142A36] hover:bg-[#F7F8F4] rounded-lg transition-colors cursor-pointer"
                 >
                   Reset Workspace
                 </button>
@@ -869,7 +869,7 @@ ${currentAnalysis.limitations.join('\n')}
           {recentAnalyses.length > 0 && (
             <div className="bg-white p-4 rounded-2xl border border-[#E2E8F0] shadow-card">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-[#14243A] uppercase tracking-wider flex items-center gap-1.5">
+                <span className="text-xs font-bold text-[#142A36] uppercase tracking-wider flex items-center gap-1.5">
                   <History className="w-3.5 h-3.5 text-[#176B58]" />
                   <span>Recent Scans in this Session</span>
                 </span>
@@ -880,10 +880,10 @@ ${currentAnalysis.limitations.join('\n')}
                   <div
                     key={scan.incident_id}
                     onClick={() => setCurrentAnalysis(scan)}
-                    className="py-2.5 flex items-center justify-between gap-3 hover:bg-[#F6F8FB] px-2.5 rounded-lg cursor-pointer transition-colors"
+                    className="py-2.5 flex items-center justify-between gap-3 hover:bg-[#F7F8F4] px-2.5 rounded-lg cursor-pointer transition-colors"
                   >
                     <div className="truncate flex-1">
-                      <p className="font-semibold text-[#182536] truncate">{scan.verdict}</p>
+                      <p className="font-semibold text-[#142A36] truncate">{scan.verdict}</p>
                       <p className="text-[11px] text-[#94A3B8] truncate font-mono">{scan.incident_id}</p>
                     </div>
                     <span
@@ -934,13 +934,13 @@ ${currentAnalysis.limitations.join('\n')}
                             Confidence: {currentAnalysis.confidence_label}
                           </span>
                         </div>
-                        <h3 className="text-base font-bold text-[#14243A] mt-2 leading-snug">
+                        <h3 className="text-base font-bold text-[#142A36] mt-2 leading-snug">
                           {currentAnalysis.verdict}
                         </h3>
                       </div>
 
                       <div className="text-right shrink-0">
-                        <span className="text-2xl font-black text-[#14243A] font-mono">
+                        <span className="text-2xl font-black text-[#142A36] font-mono">
                           {currentAnalysis.risk_score}
                         </span>
                         <span className="text-xs text-[#64748B] font-mono">/100</span>
@@ -966,10 +966,10 @@ ${currentAnalysis.limitations.join('\n')}
               <div className="p-5 space-y-4 text-xs">
                 {/* Plain-Language Summary */}
                 <div>
-                  <h4 className="font-bold text-[#14243A] uppercase tracking-wider mb-1 text-[11px]">
+                  <h4 className="font-bold text-[#142A36] uppercase tracking-wider mb-1 text-[11px]">
                     Plain-Language Assessment
                   </h4>
-                  <p className="text-[#182536] leading-relaxed bg-[#F6F8FB] p-3 rounded-xl border border-[#E2E8F0] text-xs">
+                  <p className="text-[#142A36] leading-relaxed bg-[#F7F8F4] p-3 rounded-xl border border-[#E2E8F0] text-xs">
                     {currentAnalysis.plain_language_summary}
                   </p>
                   {currentAnalysis.policy_tier === 'GREEN' && (
@@ -981,7 +981,7 @@ ${currentAnalysis.limitations.join('\n')}
 
                 {/* Recommended Proportionate Action */}
                 {currentAnalysis.recommended_action && (
-                  <div className="p-3.5 rounded-xl bg-[#E8F5EF] border border-[#C2E5D6]">
+                  <div className="p-3.5 rounded-xl bg-[#DCEDE5] border border-[#B8DED0]">
                     <div className="flex items-center gap-1.5 font-bold text-[#176B58] text-[11px] uppercase tracking-wider mb-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#176B58] shrink-0" />
                       <span>Recommended Next Step</span>
@@ -995,7 +995,7 @@ ${currentAnalysis.limitations.join('\n')}
                 {/* Detected Manipulation Tactics */}
                 {currentAnalysis.detected_signals.length > 0 && (
                   <div>
-                    <h4 className="font-bold text-[#14243A] uppercase tracking-wider mb-2 text-[11px]">
+                    <h4 className="font-bold text-[#142A36] uppercase tracking-wider mb-2 text-[11px]">
                       Detected Psychological & Forensic Tactics
                     </h4>
                     <div className="flex flex-wrap gap-1.5">
@@ -1003,7 +1003,7 @@ ${currentAnalysis.limitations.join('\n')}
                         (tactic, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#F6F8FB] text-[#182536] border border-[#E2E8F0]"
+                            className="px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#F7F8F4] text-[#142A36] border border-[#E2E8F0]"
                           >
                             {tactic.replace(/_/g, ' ')}
                           </span>
@@ -1015,7 +1015,7 @@ ${currentAnalysis.limitations.join('\n')}
 
                 {/* Highlighted Evidence Breakdown */}
                 <div>
-                  <h4 className="font-bold text-[#14243A] uppercase tracking-wider mb-2 text-[11px] flex items-center justify-between">
+                  <h4 className="font-bold text-[#142A36] uppercase tracking-wider mb-2 text-[11px] flex items-center justify-between">
                     <span>Evidence & Threat Indicators</span>
                     <span className="text-[#64748B] font-normal">
                       {currentAnalysis.detected_signals.length} signals evaluated
@@ -1024,7 +1024,7 @@ ${currentAnalysis.limitations.join('\n')}
 
                   <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
                     {currentAnalysis.detected_signals.length === 0 ? (
-                      <p className="text-[#64748B] p-3 bg-[#F6F8FB] rounded-xl border border-[#E2E8F0] text-center">
+                      <p className="text-[#64748B] p-3 bg-[#F7F8F4] rounded-xl border border-[#E2E8F0] text-center">
                         No malicious threat indicators detected.
                       </p>
                     ) : (
@@ -1056,7 +1056,7 @@ ${currentAnalysis.limitations.join('\n')}
                               {sig.weight > 0 ? `+${sig.weight}` : `${sig.weight}`}
                             </span>
                           </div>
-                          <p className="mt-1 text-[11px] text-[#182536] leading-relaxed">{sig.reason}</p>
+                          <p className="mt-1 text-[11px] text-[#142A36] leading-relaxed">{sig.reason}</p>
                           {sig.excerpt && (
                             <p className="mt-1.5 font-mono text-[10px] text-[#64748B] bg-white/80 p-1.5 rounded-md border border-slate-200/80 truncate">
                               "{sig.excerpt}"
@@ -1095,14 +1095,14 @@ ${currentAnalysis.limitations.join('\n')}
                 {/* Immediate Protective Actions */}
                 {currentAnalysis.recommended_actions.length > 0 && (
                   <div>
-                    <h4 className="font-bold text-[#14243A] uppercase tracking-wider mb-2 text-[11px]">
+                    <h4 className="font-bold text-[#142A36] uppercase tracking-wider mb-2 text-[11px]">
                       Immediate Protective Actions
                     </h4>
                     <ul className="space-y-1.5">
                       {currentAnalysis.recommended_actions.map((act, idx) => (
                         <li
                           key={idx}
-                          className="flex items-start gap-2 p-2.5 rounded-xl bg-[#E8F5EF]/60 border border-[#C2E5D6] text-[#0F473A] text-xs leading-relaxed"
+                          className="flex items-start gap-2 p-2.5 rounded-xl bg-[#DCEDE5]/60 border border-[#B8DED0] text-[#0F473A] text-xs leading-relaxed"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5 text-[#176B58] shrink-0 mt-0.5" />
                           <span>{act}</span>
@@ -1115,10 +1115,10 @@ ${currentAnalysis.limitations.join('\n')}
                 {/* Independent Verification Steps */}
                 {currentAnalysis.verification_steps.length > 0 && (
                   <div>
-                    <h4 className="font-bold text-[#14243A] uppercase tracking-wider mb-2 text-[11px]">
+                    <h4 className="font-bold text-[#142A36] uppercase tracking-wider mb-2 text-[11px]">
                       Independent Verification Steps
                     </h4>
-                    <ul className="space-y-1 text-[#182536]">
+                    <ul className="space-y-1 text-[#142A36]">
                       {currentAnalysis.verification_steps.map((step, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-xs">
                           <span className="font-bold text-[#94A3B8]">•</span>
@@ -1145,7 +1145,7 @@ ${currentAnalysis.limitations.join('\n')}
                   <button
                     type="button"
                     onClick={handleEscalateToRecovery}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-[#182536] bg-[#F6F8FB] hover:bg-[#EEF2F6] border border-[#E2E8F0] rounded-xl transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-[#142A36] bg-[#F7F8F4] hover:bg-[#EEF2F6] border border-[#E2E8F0] rounded-xl transition-colors cursor-pointer"
                   >
                     <LifeBuoy className="w-3.5 h-3.5 text-[#176B58]" />
                     <span>File Golden Hour Incident Report</span>
@@ -1154,7 +1154,7 @@ ${currentAnalysis.limitations.join('\n')}
                   <button
                     type="button"
                     onClick={handleCopyFullReport}
-                    className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium text-[#64748B] hover:text-[#182536] border border-[#E2E8F0] rounded-xl hover:bg-[#F6F8FB] transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 px-3 py-1.5 text-xs font-medium text-[#64748B] hover:text-[#142A36] border border-[#E2E8F0] rounded-xl hover:bg-[#F7F8F4] transition-colors cursor-pointer"
                   >
                     {copiedReport ? (
                       <>
@@ -1175,7 +1175,7 @@ ${currentAnalysis.limitations.join('\n')}
                   <button
                     type="button"
                     onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
-                    className="w-full flex items-center justify-between text-[11px] text-[#64748B] hover:text-[#182536] py-1 cursor-pointer"
+                    className="w-full flex items-center justify-between text-[11px] text-[#64748B] hover:text-[#142A36] py-1 cursor-pointer"
                   >
                     <span className="font-medium flex items-center gap-1.5">
                       <Layers className="w-3.5 h-3.5" />
@@ -1185,27 +1185,27 @@ ${currentAnalysis.limitations.join('\n')}
                   </button>
 
                   {showTechnicalDetails && (
-                    <div className="mt-2 p-3.5 rounded-xl bg-[#F6F8FB] border border-[#E2E8F0] space-y-2 text-[11px] text-[#64748B] font-mono">
+                    <div className="mt-2 p-3.5 rounded-xl bg-[#F7F8F4] border border-[#E2E8F0] space-y-2 text-[11px] text-[#64748B] font-mono">
                       <div>
                         <span className="text-[#94A3B8]">Incident ID: </span>
-                        <span className="text-[#14243A] font-bold">{currentAnalysis.incident_id}</span>
+                        <span className="text-[#142A36] font-bold">{currentAnalysis.incident_id}</span>
                       </div>
                       <div>
                         <span className="text-[#94A3B8]">Input Type: </span>
-                        <span className="text-[#14243A] uppercase">{currentAnalysis.input_type}</span>
+                        <span className="text-[#142A36] uppercase">{currentAnalysis.input_type}</span>
                       </div>
                       <div>
                         <span className="text-[#94A3B8]">Analysis Mode: </span>
-                        <span className="text-[#14243A]">{currentAnalysis.analysis_mode}</span>
+                        <span className="text-[#142A36]">{currentAnalysis.analysis_mode}</span>
                       </div>
                       <div>
                         <span className="text-[#94A3B8]">AI Provider: </span>
-                        <span className="text-[#14243A]">{currentAnalysis.ai_provider}</span>
+                        <span className="text-[#142A36]">{currentAnalysis.ai_provider}</span>
                       </div>
                       {currentAnalysis.reason_codes && currentAnalysis.reason_codes.length > 0 && (
                         <div>
                           <span className="text-[#94A3B8]">Stable Reason Codes: </span>
-                          <span className="text-[#14243A] text-[10px] font-mono break-all">
+                          <span className="text-[#142A36] text-[10px] font-mono break-all">
                             {currentAnalysis.reason_codes.join(', ')}
                           </span>
                         </div>
@@ -1218,7 +1218,7 @@ ${currentAnalysis.limitations.join('\n')}
                       </div>
 
                       <div className="pt-1.5 border-t border-[#E2E8F0] font-sans text-[#64748B] space-y-1">
-                        <p className="font-semibold text-[#14243A] text-[10px] uppercase">Engine Limitations:</p>
+                        <p className="font-semibold text-[#142A36] text-[10px] uppercase">Engine Limitations:</p>
                         {currentAnalysis.limitations.map((lim, i) => (
                           <p key={i} className="text-[10px] leading-tight">• {lim}</p>
                         ))}
@@ -1228,18 +1228,18 @@ ${currentAnalysis.limitations.join('\n')}
                 </div>
 
                 {/* Safety Disclaimer */}
-                <div className="p-3 rounded-xl bg-[#F6F8FB] border border-[#E2E8F0] text-[10px] text-[#64748B] leading-relaxed">
-                  <strong className="text-[#14243A]">Security Notice:</strong> All submitted inputs are treated as untrusted data. Satark Saathi never executes remote links or files. A low-risk assessment does not guarantee complete safety. When in doubt, verify independently.
+                <div className="p-3 rounded-xl bg-[#F7F8F4] border border-[#E2E8F0] text-[10px] text-[#64748B] leading-relaxed">
+                  <strong className="text-[#142A36]">Security Notice:</strong> All submitted inputs are treated as untrusted data. Satark Saathi never executes remote links or files. A low-risk assessment does not guarantee complete safety. When in doubt, verify independently.
                 </div>
               </div>
             </div>
           ) : (
             /* Idle Placeholder */
             <div className="p-8 bg-white rounded-2xl border border-dashed border-[#CBD5E1] text-center flex flex-col items-center justify-center">
-              <div className="w-12 h-12 rounded-xl bg-[#E8F5EF] text-[#176B58] flex items-center justify-center mb-3 border border-[#C2E5D6]">
+              <div className="w-12 h-12 rounded-xl bg-[#DCEDE5] text-[#176B58] flex items-center justify-center mb-3 border border-[#B8DED0]">
                 <ScanSearch className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-semibold text-[#14243A]">Scan Results will Appear Here</h3>
+              <h3 className="text-sm font-semibold text-[#142A36]">Scan Results will Appear Here</h3>
               <p className="mt-1 text-xs text-[#64748B] max-w-xs leading-relaxed">
                 Paste any suspicious text, URL, screenshot, or call transcript, or select one of the test presets on the left to begin forensic risk evaluation.
               </p>
@@ -1264,7 +1264,7 @@ ${currentAnalysis.limitations.join('\n')}
               Select which trusted family contacts should receive an instant alert with protective instructions:
             </p>
 
-            <div className="space-y-1.5 max-h-48 overflow-y-auto mb-4 border border-[#E2E8F0] rounded-xl p-2 bg-[#F6F8FB]">
+            <div className="space-y-1.5 max-h-48 overflow-y-auto mb-4 border border-[#E2E8F0] rounded-xl p-2 bg-[#F7F8F4]">
               {contacts.map((contact) => (
                 <label
                   key={contact.id}
@@ -1283,7 +1283,7 @@ ${currentAnalysis.limitations.join('\n')}
                     className="rounded text-[#176B58] focus:ring-[#176B58]"
                   />
                   <div className="flex-1">
-                    <span className="font-semibold text-[#14243A]">{contact.name}</span>
+                    <span className="font-semibold text-[#142A36]">{contact.name}</span>
                     <span className="text-[11px] text-[#64748B] ml-1.5 font-normal">({contact.relationship})</span>
                   </div>
                   <span className="text-[11px] font-mono text-[#94A3B8]">{contact.phone_number}</span>
@@ -1295,7 +1295,7 @@ ${currentAnalysis.limitations.join('\n')}
               <button
                 type="button"
                 onClick={() => setIsAlertModalOpen(false)}
-                className="px-3.5 py-1.5 text-xs font-medium text-[#182536] bg-[#F6F8FB] border border-[#E2E8F0] hover:bg-[#EEF2F6] rounded-lg cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-medium text-[#142A36] bg-[#F7F8F4] border border-[#E2E8F0] hover:bg-[#EEF2F6] rounded-lg cursor-pointer"
               >
                 Cancel
               </button>
