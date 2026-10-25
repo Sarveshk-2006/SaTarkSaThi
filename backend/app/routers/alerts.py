@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional, Set
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, WebSocket, WebSocketDisconnect, status, Query
-from sqlalchemy import or_, select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 from backend.app.database import get_db
 from backend.app.models import FamilyAlert, TrustedContact, Incident, AuditEvent, UserProfile
@@ -10,6 +10,7 @@ from backend.app.dependencies import get_current_user_id, DEMO_USER_IDS
 from backend.app.services.alert_broadcaster import alert_broadcaster
 from backend.app.services.sms_service import sms_service
 from backend.app.schemas import CreateAlertRequest, FamilyAlertResponse
+from backend.app.services.family_guardian import is_eligible_guardian
 
 logger = logging.getLogger("satark_saathi.alerts")
 
@@ -55,9 +56,15 @@ def get_authorized_alerts_query(current_user_id: int, db: Session):
         ((TrustedContact.email.isnot(None)) & (TrustedContact.email == current_user.email))
     )
 
+    # Discreet safety escalations are hidden from the owner's own list so they cannot be seen by
+    # someone watching the owner's screen; the guardian recipient still sees them.
+    owner_visible = and_(
+        FamilyAlert.user_id == current_user_id,
+        or_(FamilyAlert.is_discreet.is_(None), FamilyAlert.is_discreet == False),  # noqa: E712
+    )
     return db.query(FamilyAlert).filter(
         or_(
-            FamilyAlert.user_id == current_user_id,
+            owner_visible,
             FamilyAlert.contact_id.in_(recipient_contact_ids)
         )
     )
@@ -175,9 +182,9 @@ async def dispatch_alert(
         if not contact:
             continue
 
-        # Check explicit user consent
-        if not contact.consent_granted:
-            logger.info(f"Skipping contact {contact.name}: User consent not granted.")
+        # Two-sided consent: owner granted it AND the contact accepted the invitation
+        if not is_eligible_guardian(contact):
+            logger.info(f"Skipping contact #{contact.id}: owner consent and contact acceptance are both required.")
             continue
 
         # Check configurable threshold
@@ -342,6 +349,8 @@ async def retry_alert(
     # Broadcast live update strictly to authorized users
     try:
         target_users = resolve_alert_recipient_user_ids(db, alert)
+        if alert.is_discreet:
+            target_users.discard(alert.user_id)
         await alert_broadcaster.broadcast_alert({
             "type": "FAMILY_ALERT_RETRY",
             "alert_id": alert.id,

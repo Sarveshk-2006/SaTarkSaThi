@@ -121,6 +121,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
         ws.onmessage = (event) => {
           try {
             const data = JSON.parse(event.data);
+            window.dispatchEvent(new CustomEvent('satark-live-event', { detail: data }));
             if (data.type === 'FAMILY_ALERT_NOTIFICATION' || data.threat_title) {
               setLiveAlert({
                 alert_id: data.alert_id,

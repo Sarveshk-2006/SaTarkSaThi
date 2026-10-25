@@ -14,7 +14,10 @@ from backend.app.models import (
     Incident,
     RecoveryDraft,
     PaymentCheck,
-    AuditEvent
+    AuditEvent,
+    GuardianApprovalRequest,
+    TransactionRecord,
+    SafetyPreference,
 )
 from backend.app.schemas import (
     UserProfileResponse,
@@ -35,7 +38,7 @@ def get_system_settings():
         app_name=settings.app_name,
         app_env=settings.app_env,
         analysis_provider=settings.analysis_provider,
-        watsonx_configured=bool((settings.watsonx_apikey and settings.watsonx_project_id) or (settings.watsonx_apikey and "bob" in settings.watsonx_apikey) or getattr(settings, "bob_api_key", "")),
+        watsonx_configured=settings.watsonx_configured,
         enable_demo_seed=settings.enable_demo_seed
     )
 
@@ -52,7 +55,7 @@ def update_system_settings(update_in: SystemSettingsUpdate):
         app_name=settings.app_name,
         app_env=settings.app_env,
         analysis_provider=settings.analysis_provider,
-        watsonx_configured=bool((settings.watsonx_apikey and settings.watsonx_project_id) or (settings.watsonx_apikey and "bob" in settings.watsonx_apikey) or getattr(settings, "bob_api_key", "")),
+        watsonx_configured=settings.watsonx_configured,
         enable_demo_seed=settings.enable_demo_seed
     )
 
@@ -108,6 +111,9 @@ def reset_database(req: ResetDbRequest, db: Session = Depends(get_db)):
     db.query(FamilyAlert).delete()
     db.query(ScamEvidence).delete()
     db.query(ScamAnalysis).delete()
+    db.query(GuardianApprovalRequest).delete()
+    db.query(TransactionRecord).delete()
+    db.query(SafetyPreference).delete()
     db.query(PaymentCheck).delete()
     db.query(AuditEvent).delete()
     db.query(TrustedContact).delete()

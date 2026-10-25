@@ -34,8 +34,9 @@ def test_database_initialization_and_schema():
         assert profile.full_name == "Rajesh Sharma"
 
         contacts = db.query(TrustedContact).all()
-        assert len(contacts) >= 3
+        assert len(contacts) == 2  # Family Shield allows at most two trusted contacts
         assert any(c.is_primary for c in contacts)
+        assert all(c.contact_consent_status == "ACCEPTED" for c in contacts)
 
         analyses = db.query(ScamAnalysis).all()
         assert len(analyses) >= 2

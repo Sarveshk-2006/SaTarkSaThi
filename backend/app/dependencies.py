@@ -112,7 +112,8 @@ def get_authorized_incident_user_ids(current_user_id: int, db) -> Set[int]:
             (TrustedContact.phone_number == current_user.phone_number) |
             ((TrustedContact.email.isnot(None)) & (TrustedContact.email == current_user.email)),
             TrustedContact.is_active == True,
-            TrustedContact.consent_granted == True
+            TrustedContact.consent_granted == True,
+            TrustedContact.contact_consent_status == "ACCEPTED"
         ).all()
         for c in contacts:
             authorized_uids.add(c.user_id)

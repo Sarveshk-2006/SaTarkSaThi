@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from backend.app.database import get_db
 from backend.app.dependencies import get_current_user_id
 from backend.app.models import ScamAnalysis, FamilyAlert, TrustedContact, Incident
@@ -31,7 +31,10 @@ def get_overview_stats(
         ScamAnalysis.severity == "SAFE"
     ).count()
 
-    total_family_alerts = db.query(FamilyAlert).filter(FamilyAlert.user_id == current_user_id).count()
+    total_family_alerts = db.query(FamilyAlert).filter(
+        FamilyAlert.user_id == current_user_id,
+        or_(FamilyAlert.is_discreet.is_(None), FamilyAlert.is_discreet == False),  # noqa: E712
+    ).count()
     active_trusted_contacts = db.query(TrustedContact).filter(
         TrustedContact.user_id == current_user_id,
         TrustedContact.is_active == True

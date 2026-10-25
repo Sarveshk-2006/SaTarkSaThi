@@ -32,6 +32,12 @@ import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { SimulationBanner } from '../components/common/SimulationBanner';
 import { useToast } from '../context/ToastContext';
 import { useNotification } from '../context/NotificationContext';
+import { GuardianInbox } from '../components/family/GuardianInbox';
+
+const MAX_TRUSTED_CONTACTS = 2;
+
+const isEligibleGuardian = (c: TrustedContact) =>
+  c.is_active && c.consent_granted && c.contact_consent_status === 'ACCEPTED';
 
 export const FamilyShieldPage: React.FC = () => {
   const navigate = useNavigate();
@@ -73,6 +79,7 @@ export const FamilyShieldPage: React.FC = () => {
 
   // Delete Confirmation
   const [contactToDelete, setContactToDelete] = useState<TrustedContact | null>(null);
+  const [inviteCodes, setInviteCodes] = useState<Record<number, string>>({});
   const [isRetryingAlertId, setIsRetryingAlertId] = useState<number | null>(null);
 
   const fetchData = async () => {
@@ -185,6 +192,20 @@ export const FamilyShieldPage: React.FC = () => {
   };
 
   // Confirm OTP verification flow
+  const handleSendInvite = async (c: TrustedContact) => {
+    try {
+      const res = await api.sendContactInvite(c.id);
+      setInviteCodes((prev) => ({ ...prev, [c.id]: res.demo_invite_code }));
+      showToast({
+        type: 'info',
+        title: 'Invitation created (demo)',
+        message: `No SMS was sent. Give ${c.name} the code ${res.demo_invite_code} to accept in their guardian inbox.`,
+      });
+    } catch (err: any) {
+      showToast({ type: 'error', title: 'Invitation failed', message: err.message });
+    }
+  };
+
   const handleConfirmVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!verifyingContact || !verificationCodeInput.trim()) return;
@@ -234,9 +255,9 @@ export const FamilyShieldPage: React.FC = () => {
   // Manual In-App Test Dispatch
   const handleDispatchTestAlert = async (e: React.FormEvent) => {
     e.preventDefault();
-    const verifiedContacts = contacts.filter((c) => c.is_active && c.consent_granted);
+    const verifiedContacts = contacts.filter(isEligibleGuardian);
     if (verifiedContacts.length === 0) {
-      showToast({ type: 'warning', title: 'No Eligible Contacts', message: 'You need at least one active contact with consent granted.' });
+      showToast({ type: 'warning', title: 'No Eligible Contacts', message: 'A guardian needs your consent and must have accepted your invitation.' });
       return;
     }
 
@@ -345,24 +366,29 @@ export const FamilyShieldPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Invitations and payment approvals addressed to the current persona */}
+      <GuardianInbox />
+
       {/* Page Title & Add Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
             <Users className="w-6 h-6 text-[#176B58]" />
-            Trusted Family Contacts
+            Trusted Family Contacts ({contacts.length}/{MAX_TRUSTED_CONTACTS})
           </h1>
           <p className="text-sm text-slate-600 mt-1">
-            Configure trusted family guardians who receive automated high-risk security alerts with verified consent.
+            Up to two guardians. Alerts, incident sharing and payment approvals need both your consent and the guardian's own acceptance.
           </p>
         </div>
 
         <button
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-[#176B58] hover:bg-[#125243] text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer"
+          disabled={contacts.length >= MAX_TRUSTED_CONTACTS}
+          title={contacts.length >= MAX_TRUSTED_CONTACTS ? 'Remove a guardian before adding another (maximum two).' : undefined}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#176B58] hover:bg-[#125243] text-white text-xs font-semibold rounded-xl shadow-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <UserPlus className="w-4 h-4" />
-          Add Trusted Guardian
+          {contacts.length >= MAX_TRUSTED_CONTACTS ? 'Maximum of 2 guardians reached' : 'Add Trusted Guardian'}
         </button>
       </div>
 
@@ -430,15 +456,46 @@ export const FamilyShieldPage: React.FC = () => {
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">Sharing Consent:</span>
+                  <span className="text-slate-500">Your consent:</span>
                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                     c.consent_granted
                       ? 'bg-emerald-100 text-emerald-800'
                       : 'bg-rose-100 text-rose-800'
                   }`}>
-                    {c.consent_granted ? 'Consent Granted' : 'Consent Pending (Alerts Disabled)'}
+                    {c.consent_granted ? 'Granted' : 'Not granted'}
                   </span>
                 </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500">Guardian accepted:</span>
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    c.contact_consent_status === 'ACCEPTED'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : c.contact_consent_status === 'DECLINED'
+                      ? 'bg-rose-100 text-rose-800'
+                      : 'bg-amber-100 text-amber-900'
+                  }`}>
+                    {c.contact_consent_status === 'ACCEPTED' ? 'Accepted' : c.contact_consent_status === 'DECLINED' ? 'Declined' : 'Awaiting acceptance'}
+                  </span>
+                </div>
+                <p className={`text-[11px] font-semibold ${isEligibleGuardian(c) ? 'text-emerald-700' : 'text-rose-700'}`}>
+                  {isEligibleGuardian(c) ? 'Receives alerts and approval requests.' : 'Alerts disabled until both consents are in place.'}
+                </p>
+                {c.contact_consent_status !== 'ACCEPTED' && (
+                  <div className="flex items-center justify-between gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => handleSendInvite(c)}
+                      className="px-2.5 py-1 rounded-lg text-[11px] font-semibold border border-[#176B58] text-[#176B58] hover:bg-[#DCEDE5]/50 cursor-pointer"
+                    >
+                      {c.contact_consent_status === 'DECLINED' ? 'Re-send invitation' : 'Send invitation (demo)'}
+                    </button>
+                    {inviteCodes[c.id] && (
+                      <span className="font-mono text-[11px] font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded" title="Demo only: no SMS was sent">
+                        {inviteCodes[c.id]}
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -762,7 +819,7 @@ export const FamilyShieldPage: React.FC = () => {
                       Explicit Guardian Consent Authorization
                     </span>
                     <span className="text-[11px] text-slate-600 block mt-0.5 leading-relaxed">
-                      I confirm I have informed this guardian and obtained their consent to receive scam alerts and access emergency incident dossiers. Alerts remain disabled until consent is granted.
+                      I agree to share scam alerts and emergency incident dossiers with this guardian. This is only my side of the consent: the guardian must also accept the invitation before anything is shared. Changing their phone or email resets their acceptance.
                     </span>
                   </div>
                 </label>

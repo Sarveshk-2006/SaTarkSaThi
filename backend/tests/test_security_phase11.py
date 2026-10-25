@@ -363,12 +363,24 @@ def test_websocket_disconnect_cleans_up_stale_subscriptions():
 # 3. Consent Behavior & Regression Tests
 # ==============================================================================
 
+def _clear_contacts(user_id: int):
+    """Family Shield allows two contacts per user, so contact-creation tests start from a clean slate."""
+    db = SessionLocal()
+    try:
+        for c in db.query(TrustedContact).filter(TrustedContact.user_id == user_id).all():
+            db.delete(c)
+        db.commit()
+    finally:
+        db.close()
+
+
 def test_contact_creation_defaults_to_no_consent():
     """
     Confirm that creating a new contact does NOT grant consent automatically.
-    consent_granted must default to False.
+    consent_granted must default to False and the contact's own acceptance starts as PENDING.
     """
-    headers = {"X-User-Id": "1"}
+    _clear_contacts(2)
+    headers = {"X-User-Id": "2"}
     contact_payload = {
         "name": "Dr. Ramesh Verma",
         "relationship": "Friend",
@@ -380,6 +392,7 @@ def test_contact_creation_defaults_to_no_consent():
     assert resp.status_code == 201
     contact = resp.json()
     assert contact["consent_granted"] is False, "Defect: contact creation granted consent automatically!"
+    assert contact["contact_consent_status"] == "PENDING"
     contact_id = contact["id"]
 
     # Verify that alert dispatch skips this contact due to withheld consent
@@ -394,19 +407,20 @@ def test_contact_creation_defaults_to_no_consent():
     dispatched = alert_resp.json()
     # No alert was created because consent was not granted
     assert len(dispatched) == 0
+    _clear_contacts(2)
 
 
 def test_consent_lifecycle_grant_and_revocation():
     """
-    Trace full consent lifecycle:
-    1. Contact created (consent_granted=False)
+    Trace full two-sided consent lifecycle:
+    1. Contact created (consent_granted=False, contact PENDING)
     2. Alert dispatch skipped
-    3. Consent granted via PUT /api/contacts/{id} (consent_granted=True)
-    4. Alert dispatch succeeds
-    5. Consent revoked via PUT /api/contacts/{id} (consent_granted=False)
-    6. Alert dispatch skipped again
+    3. Owner grants consent -> still skipped, because the contact has not accepted
+    4. Contact accepts with a one-time invitation code -> dispatch succeeds
+    5. Owner revokes consent -> dispatch skipped again
     """
-    headers = {"X-User-Id": "1"}
+    _clear_contacts(2)
+    headers = {"X-User-Id": "2"}
     # 1. Create contact without consent
     create_resp = client.post("/api/contacts", json={
         "name": "Sunil Mehta",
@@ -428,7 +442,26 @@ def test_consent_lifecycle_grant_and_revocation():
     }, headers=headers)
     assert len(resp1.json()) == 0
 
-    # 3. Explicitly grant consent
+    # 3. Explicitly grant owner consent; the contact has not accepted yet
+    pending_resp = client.put(f"/api/contacts/{c_id}", json={"consent_granted": True}, headers=headers)
+    assert pending_resp.status_code == 200
+    one_sided = client.post("/api/alerts/dispatch", json={
+        "contact_ids": [c_id],
+        "threat_title": "One-sided consent",
+        "message_content": "Must be skipped until the contact accepts",
+        "risk_level": "HIGH"
+    }, headers=headers)
+    assert len(one_sided.json()) == 0, "Alert sent without the contact's own acceptance!"
+
+    # 4. Contact accepts with the invitation code
+    invite = client.post(f"/api/contacts/{c_id}/invite", headers=headers)
+    assert invite.status_code == 200
+    accept = client.post("/api/contacts/invitations/respond-with-code", json={
+        "invite_code": invite.json()["demo_invite_code"], "decision": "ACCEPT"
+    })
+    assert accept.status_code == 200
+    assert accept.json()["contact_consent_status"] == "ACCEPTED"
+
     update_resp = client.put(f"/api/contacts/{c_id}", json={
         "consent_granted": True
     }, headers=headers)
@@ -460,3 +493,4 @@ def test_consent_lifecycle_grant_and_revocation():
         "risk_level": "HIGH"
     }, headers=headers)
     assert len(resp3.json()) == 0
+    _clear_contacts(2)

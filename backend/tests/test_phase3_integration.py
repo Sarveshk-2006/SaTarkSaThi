@@ -320,9 +320,16 @@ def test_journey_6_family_shield_consent_defaults_and_activation():
     Verify:
     - Creating contact without consent_granted explicitly sets consent_granted=False
     - Alert dispatch skips contact with withheld consent
-    - Explicitly updating contact with consent_granted=True enables dispatch
+    - Owner consent plus the contact's own acceptance enables dispatch
     """
-    headers = {"X-User-Id": "1"}
+    db = SessionLocal()
+    try:
+        for c in db.query(TrustedContact).filter(TrustedContact.user_id == 2).all():
+            db.delete(c)
+        db.commit()
+    finally:
+        db.close()
+    headers = {"X-User-Id": "2"}
 
     # 1. Create contact with consent_granted=False
     c_res = client.post("/api/contacts", json={
@@ -353,6 +360,12 @@ def test_journey_6_family_shield_consent_defaults_and_activation():
     }, headers=headers)
     assert up_res.status_code == 200
     assert up_res.json()["consent_granted"] is True
+
+    # The invited contact accepts with a one-time code (two-sided consent)
+    invite = client.post(f"/api/contacts/{c_id}/invite", headers=headers)
+    code = invite.json()["demo_invite_code"]
+    accept = client.post("/api/contacts/invitations/respond-with-code", json={"invite_code": code, "decision": "ACCEPT"})
+    assert accept.status_code == 200
 
     # 4. Dispatch alert again -> Succeeded
     d_res2 = client.post("/api/alerts/dispatch", json={
