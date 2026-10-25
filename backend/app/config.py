@@ -20,7 +20,9 @@ class Settings(BaseSettings):
     watsonx_apikey: str = ""
     watsonx_project_id: str = ""
     watsonx_url: str = "https://us-south.ml.cloud.ibm.com"
-    watsonx_model_id: str = "ibm/granite-13b-chat-v2"
+    # granite-13b-chat-v2 is deploy-on-demand only on current watsonx.ai; granite-4-h-small is listed
+    # as pay-per-token. Confirm availability for your region/project before relying on it.
+    watsonx_model_id: str = "ibm/granite-4-h-small"
 
     # SMS / Telecom Gateway Settings
     sms_provider: str = "simulated"  # "simulated" | "twilio" | "fast2sms"

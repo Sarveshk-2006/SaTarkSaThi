@@ -39,17 +39,17 @@ export const DemoModeIndicator: React.FC = () => {
         </div>
       )}
 
-      {/* AI Engine Indicator */}
+      {/* Analysis Engine Indicator (honest: the default is the local rule engine) */}
       <div
         className="hidden md:inline-flex items-center gap-1 px-2 py-1 rounded-md border bg-teal-50 text-teal-800 border-teal-200 font-medium"
         title={
           activeProvider === 'watsonx'
-            ? 'IBM watsonx.ai Granite Model Enabled'
-            : 'Satark Heuristic Engine (watsonx ready)'
+            ? 'IBM watsonx.ai selected; used only when credentials are configured, otherwise the rule engine runs'
+            : 'Local deterministic rule engine (no IBM service is called)'
         }
       >
         <Sparkles className="w-3 h-3 text-teal-600" />
-        <span>{activeProvider === 'watsonx' ? 'watsonx.ai' : 'watsonx Ready'}</span>
+        <span>{activeProvider === 'watsonx' ? 'watsonx.ai selected' : 'Rule Engine'}</span>
       </div>
     </div>
   );

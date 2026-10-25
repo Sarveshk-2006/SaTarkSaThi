@@ -459,7 +459,7 @@ export const OverviewPage: React.FC = () => {
                   <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F7F8F4] border border-[#E2E8F0]">
                     <span className="text-[#64748B] font-medium">Scam Detection Engine</span>
                     <span className="font-semibold text-[#142A36]">
-                      Satark Heuristic (watsonx ready)
+                      Satark rule engine (local)
                     </span>
                   </div>
 

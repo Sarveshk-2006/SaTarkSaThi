@@ -29,9 +29,9 @@ def check_health(db: Session = Depends(get_db)):
     # Honest provider description
     watsonx_configured = settings.watsonx_configured
     if settings.analysis_provider == "watsonx" and watsonx_configured:
-        analysis_engine = "IBM watsonx.ai Granite (configured)"
+        analysis_engine = "IBM watsonx.ai Granite (credentials configured; live connection not verified by health check)"
     else:
-        analysis_engine = "Satark Rule Engine (IBM watsonx.ai ready — credentials not configured)"
+        analysis_engine = "Satark Rule Engine (local deterministic rules; IBM watsonx.ai not configured)"
 
     return {
         "status": "online" if is_healthy else "degraded",

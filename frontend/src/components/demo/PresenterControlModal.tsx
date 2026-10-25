@@ -376,7 +376,7 @@ export const PresenterControlModal: React.FC<PresenterControlModalProps> = ({ is
                     </span>
                   </div>
                   <span className="text-[11px] text-slate-500 mt-1 block">
-                    {activeProvider === 'watsonx' ? 'Granite-13B Model' : 'watsonx Fallback Ready'}
+                    {activeProvider === 'watsonx' ? 'Selected; used only if credentials are configured' : 'Local deterministic rules (no IBM call)'}
                   </span>
                 </div>
 
