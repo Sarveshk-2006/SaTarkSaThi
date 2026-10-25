@@ -7,6 +7,7 @@ import {
   ExternalLink,
   CheckCircle2,
   Download,
+  FileText,
   Edit3,
   Save,
   ChevronRight,
@@ -230,10 +231,18 @@ export const GoldenHourRecoveryPage: React.FC = () => {
     }
   };
 
-  const handleExportTxt = () => {
+  const [isExporting, setIsExporting] = useState<'txt' | 'pdf' | null>(null);
+
+  const handleExport = async (format: 'txt' | 'pdf') => {
     if (!generatedDraft) return;
-    const url = api.getRecoveryDraftExportUrl(generatedDraft.id, 'txt');
-    window.open(url, '_blank');
+    setIsExporting(format);
+    try {
+      await api.downloadRecoveryDraft(generatedDraft.id, format);
+    } catch (err: any) {
+      showToast({ type: 'error', title: 'Export Failed', message: err.message });
+    } finally {
+      setIsExporting(null);
+    }
   };
 
   // Automated Banking Freeze & Cybercrime Portal e-Filing
@@ -736,11 +745,23 @@ export const GoldenHourRecoveryPage: React.FC = () => {
 
               <button
                 type="button"
-                onClick={handleExportTxt}
-                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                onClick={() => handleExport('pdf')}
+                disabled={isExporting !== null}
+                className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
+                title="Structured PDF: case summary, missing-information checklist, evidence references, timeline, audit trail and all three drafts"
+              >
+                <FileText className="w-4 h-4" />
+                {isExporting === 'pdf' ? 'Building PDF…' : 'Download PDF Complaint Pack'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleExport('txt')}
+                disabled={isExporting !== null}
+                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
               >
                 <Download className="w-4 h-4" />
-                Export TXT Dossier
+                {isExporting === 'txt' ? 'Exporting…' : 'Export TXT Dossier'}
               </button>
 
               <button

@@ -494,12 +494,14 @@ def update_draft(
 @router.get("/drafts/{draft_id}/export")
 def export_recovery_draft(
     draft_id: int,
-    format: str = Query(default="txt", pattern="^(txt|markdown)$"),
+    format: str = Query(default="txt", pattern="^(txt|markdown|pdf)$"),
     current_user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db)
 ):
     """
-    Export the reviewed recovery dossier as a plain text or markdown document for submission.
+    Export the reviewed recovery dossier as plain text, or as a structured PDF complaint pack
+    (case summary, missing-information checklist, evidence references, timeline, audit trail
+    and the three drafts).
     """
     draft = db.query(RecoveryDraft).filter(
         RecoveryDraft.id == draft_id,
@@ -507,6 +509,32 @@ def export_recovery_draft(
     ).first()
     if not draft:
         raise HTTPException(status_code=404, detail="Recovery draft not found or access denied")
+
+    if format == "pdf":
+        from backend.app.services.pdf_pack import build_complaint_pack
+
+        incident = db.query(Incident).filter(Incident.id == draft.incident_id).first()
+        profile = db.query(UserProfile).filter(UserProfile.id == draft.user_id).first()
+        audit_events = []
+        if incident:
+            audit_events = db.query(AuditEvent).filter(
+                AuditEvent.entity_id.in_([incident.incident_id, str(incident.id)])
+            ).order_by(AuditEvent.timestamp.asc()).limit(40).all()
+        pdf_bytes = build_complaint_pack(incident, draft, profile, audit_events)
+        db.add(AuditEvent(
+            user_id=current_user_id,
+            event_type="RECOVERY_PDF_EXPORTED",
+            entity_type="incident",
+            entity_id=incident.incident_id if incident else str(draft.incident_id),
+            description=f"Golden Hour PDF complaint pack exported for draft #{draft.id}.",
+        ))
+        db.commit()
+        reference = incident.incident_id if incident else f"draft_{draft_id}"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename=satark_golden_hour_pack_{reference}.pdf"},
+        )
 
     content = f"""SATARK SAATHI - OFFICIAL GOLDEN HOUR CYBER FRAUD RECOVERY DOSSIER
 ========================================================================
