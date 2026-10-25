@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type SupportedLanguage = 'en' | 'hi' | 'mr' | 'ta' | 'bn';
+export type SupportedLanguage = 'en' | 'hi' | 'mr' | 'kn' | 'ta' | 'bn';
 
 export interface LanguageMeta {
   code: SupportedLanguage;
@@ -32,6 +32,13 @@ export const LANGUAGES: Record<SupportedLanguage, LanguageMeta> = {
     tagline: 'थांबा. पडताळा. सुरक्षित राहा.',
     goldenRule: 'पैसे मिळवण्यासाठी कधीही आपला UPI पिन टाकू नका.',
   },
+  kn: {
+    code: 'kn',
+    name: 'Kannada',
+    nativeName: 'ಕನ್ನಡ',
+    tagline: 'ನಿಲ್ಲಿ. ಪರಿಶೀಲಿಸಿ. ಸುರಕ್ಷಿತವಾಗಿರಿ.',
+    goldenRule: 'ಹಣ ಪಡೆಯಲು ಎಂದಿಗೂ ನಿಮ್ಮ UPI ಪಿನ್ ನಮೂದಿಸಬೇಡಿ.',
+  },
   ta: {
     code: 'ta',
     name: 'Tamil',
@@ -57,7 +64,14 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<SupportedLanguage>('en');
+  const [language, setLanguageState] = useState<SupportedLanguage>(() => {
+    try {
+      const saved = localStorage.getItem('satark_saathi_lang') as SupportedLanguage | null;
+      return saved && saved in LANGUAGES ? saved : 'en';
+    } catch {
+      return 'en';
+    }
+  });
 
   const setLanguage = (lang: SupportedLanguage) => {
     setLanguageState(lang);

@@ -6,10 +6,12 @@ import {
   Globe,
   ChevronDown,
   Sparkles,
+  Eye,
 } from 'lucide-react';
 import { PresenterControlModal } from '../demo/PresenterControlModal';
 import { useLanguage, LANGUAGES } from '../../context/LanguageContext';
 import { useNotification } from '../../context/NotificationContext';
+import { useSeniorMode } from '../../context/SeniorModeContext';
 import { api } from '../../api/endpoints';
 import { FamilyAlert, UserProfile } from '../../api/types';
 
@@ -45,7 +47,11 @@ const PAGE_META: Record<string, PageMeta> = {
   },
   '/settings': {
     title: 'Platform Settings',
-    description: 'Complainant profile, IBM watsonx.ai bridge, and evaluation data controls.',
+    description: 'Profile, Senior Mode, discreet safety phrase, and honest integration status.',
+  },
+  '/mock-upi': {
+    title: 'Mock UPI App (Demo)',
+    description: 'Prototype payment app calling the Satark Safety SDK boundary. Not a real UPI app; no money moves.',
   },
 };
 
@@ -54,6 +60,7 @@ export const Header: React.FC = () => {
   const navigate = useNavigate();
   const { language, setLanguage, currentMeta } = useLanguage();
   const { activeUserId, switchUser, activeProfileName, activeProfileRole, isWsConnected } = useNotification();
+  const { seniorMode, setSeniorMode } = useSeniorMode();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -114,7 +121,8 @@ export const Header: React.FC = () => {
           <p className="text-xs text-[#64748B] mt-0.5 truncate">{currentPage.description}</p>
         </div>
 
-        {/* Global Incident Search */}
+        {/* Global Incident Search (hidden in Senior Mode to simplify the screen) */}
+        {!seniorMode && (
         <form onSubmit={handleSearchSubmit} className="relative w-64 lg:w-72">
           <Search className="w-3.5 h-3.5 text-[#94A3B8] absolute left-3 top-2.5" />
           <input
@@ -125,9 +133,24 @@ export const Header: React.FC = () => {
             className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#F7F8F4] border border-[#E2E8F0] rounded-xl text-[#142A36] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] transition-colors"
           />
         </form>
+        )}
 
         {/* Action Controls & Profile Area */}
         <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => setSeniorMode(!seniorMode)}
+            aria-pressed={seniorMode}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-xl border transition-colors cursor-pointer ${
+              seniorMode
+                ? 'bg-amber-400 text-slate-950 border-amber-500'
+                : 'bg-white text-[#142A36] border-[#CBD5E1] hover:bg-[#F7F8F4]'
+            }`}
+            title="Larger text, higher contrast and a simpler home screen"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>{seniorMode ? 'Senior Mode: ON' : 'Senior Mode'}</span>
+          </button>
           {/* Language Selector Dropdown */}
           <div className="relative" ref={languageRef}>
             <button
@@ -281,6 +304,7 @@ export const Header: React.FC = () => {
             </div>
 
             {/* Presenter Deck Live Controls Button */}
+            {!seniorMode && (
             <button
               type="button"
               onClick={() => setIsPresenterModalOpen(true)}
@@ -290,6 +314,7 @@ export const Header: React.FC = () => {
               <Sparkles className="w-3.5 h-3.5 text-[#DCEDE5]" />
               <span className="hidden sm:inline">Presenter Deck</span>
             </button>
+            )}
           </div>
         </div>
       </div>

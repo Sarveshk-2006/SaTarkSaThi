@@ -12,8 +12,10 @@ import {
   History,
   Settings,
   PhoneCall,
+  Smartphone,
 } from 'lucide-react';
 import { DemoModeIndicator } from './DemoModeIndicator';
+import { useSeniorMode } from '../../context/SeniorModeContext';
 
 const navItems = [
   { name: 'Overview', to: '/', icon: <LayoutDashboard className="w-4 h-4 shrink-0" /> },
@@ -22,11 +24,16 @@ const navItems = [
   { name: 'Family Shield', to: '/family-shield', icon: <Users className="w-4 h-4 shrink-0" /> },
   { name: 'Golden Hour Recovery', to: '/golden-hour', icon: <LifeBuoy className="w-4 h-4 shrink-0" />, badge: '1930' },
   { name: 'Incident History', to: '/incident-history', icon: <History className="w-4 h-4 shrink-0" /> },
+  { name: 'Mock UPI App', to: '/mock-upi', icon: <Smartphone className="w-4 h-4 shrink-0" />, badge: 'DEMO' },
   { name: 'Settings', to: '/settings', icon: <Settings className="w-4 h-4 shrink-0" /> },
 ];
 
+const SENIOR_ROUTES = ['/', '/scanner', '/payment-checkpoint', '/family-shield', '/golden-hour', '/settings'];
+
 export const MobileHeader: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { seniorMode, setSeniorMode } = useSeniorMode();
+  const items = seniorMode ? navItems.filter((i) => SENIOR_ROUTES.includes(i.to)) : navItems;
 
   return (
     <header className="md:hidden border-b border-[#1E3A4B] bg-[#142A36] text-white sticky top-0 z-40 shadow-xs">
@@ -65,17 +72,17 @@ export const MobileHeader: React.FC = () => {
       {isOpen && (
         <div className="border-t border-[#1E3A4B] bg-[#142A36] text-white px-4 py-3 space-y-1 shadow-dropdown">
           <nav className="space-y-1">
-            {navItems.map((item) => (
+            {items.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
                 end={item.to === '/'}
                 onClick={() => setIsOpen(false)}
                 className={({ isActive }) =>
-                  `flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+                  `flex items-center justify-between px-3 py-2.5 rounded-xl ${seniorMode ? 'text-base' : 'text-xs'} font-medium transition-colors ${
                     isActive
                       ? 'bg-[#176B58] text-white font-semibold shadow-subtle'
-                      : 'text-slate-300 hover:bg-[#1E3A4B] hover:text-white'
+                      : 'text-slate-100 hover:bg-[#1E3A4B] hover:text-white'
                   }`
                 }
               >
@@ -92,7 +99,15 @@ export const MobileHeader: React.FC = () => {
             ))}
           </nav>
 
-          <div className="pt-3 border-t border-[#1E3A4B] mt-3">
+          <div className="pt-3 border-t border-[#1E3A4B] mt-3 space-y-2">
+            <button
+              type="button"
+              onClick={() => setSeniorMode(!seniorMode)}
+              aria-pressed={seniorMode}
+              className="w-full px-3 py-2.5 rounded-xl text-sm font-bold bg-amber-400 text-slate-950 cursor-pointer"
+            >
+              {seniorMode ? 'Senior Mode: ON (tap to turn off)' : 'Turn on Senior Mode (larger text)'}
+            </button>
             <DemoModeIndicator />
           </div>
         </div>

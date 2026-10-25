@@ -10,9 +10,11 @@ import {
   Settings,
   Shield,
   PhoneCall,
+  Smartphone,
 } from 'lucide-react';
 import { DemoModeIndicator } from './DemoModeIndicator';
 import { useLanguage } from '../../context/LanguageContext';
+import { useSeniorMode } from '../../context/SeniorModeContext';
 
 interface NavItem {
   name: string;
@@ -61,6 +63,12 @@ const navItems: NavItem[] = [
     shortcut: '6',
   },
   {
+    name: 'Mock UPI App',
+    to: '/mock-upi',
+    icon: <Smartphone className="w-4 h-4 shrink-0" />,
+    badge: 'DEMO',
+  },
+  {
     name: 'Settings',
     to: '/settings',
     icon: <Settings className="w-4 h-4 shrink-0" />,
@@ -68,8 +76,12 @@ const navItems: NavItem[] = [
   },
 ];
 
+const SENIOR_ROUTES = ['/', '/scanner', '/payment-checkpoint', '/family-shield', '/golden-hour', '/settings'];
+
 export const Sidebar: React.FC = () => {
   const { currentMeta } = useLanguage();
+  const { seniorMode } = useSeniorMode();
+  const items = seniorMode ? navItems.filter((i) => SENIOR_ROUTES.includes(i.to)) : navItems;
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-[#142A36] text-slate-100 min-h-screen select-none border-r border-[#1E3A4B] shrink-0">
@@ -98,16 +110,16 @@ export const Sidebar: React.FC = () => {
         <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
           Security Modules
         </p>
-        {navItems.map((item) => (
+        {items.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              `flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition-all ${
+              `flex items-center justify-between px-3 ${seniorMode ? 'py-3 text-base' : 'py-2 text-xs'} rounded-xl font-medium transition-all ${
                 isActive
                   ? 'bg-[#176B58] text-white font-semibold shadow-subtle'
-                  : 'text-slate-300 hover:bg-[#1A3342] hover:text-white'
+                  : 'text-slate-100 hover:bg-[#1A3342] hover:text-white'
               }`
             }
           >

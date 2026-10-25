@@ -17,6 +17,7 @@ import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useToast } from '../context/ToastContext';
+import { DuressPhraseSettings, IntegrationStatusPanel, SeniorModeCard } from '../components/settings/SafetySettingsPanels';
 
 export const SettingsPage: React.FC = () => {
   const { showToast } = useToast();
@@ -241,6 +242,9 @@ export const SettingsPage: React.FC = () => {
             </div>
           </form>
 
+          <SeniorModeCard />
+          <DuressPhraseSettings />
+
           {/* Database Reset / Evaluation Tools */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
             <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
@@ -282,8 +286,8 @@ export const SettingsPage: React.FC = () => {
             </div>
 
             <div className="p-3.5 bg-[#DCEDE5] rounded-xl border border-teal-200 text-xs text-[#176B58] leading-relaxed">
-              <span className="font-bold block mb-0.5 text-slate-900">Injectable IBM watsonx.ai Granite Architecture</span>
-              The platform implements an injectable analysis adapter interface. The default high-speed Indian heuristic engine requires no API keys. Enter your IBM watsonx.ai credentials below to bridge IBM Granite foundation models in the next evaluation phase.
+              <span className="font-bold block mb-0.5 text-slate-900">Optional IBM watsonx.ai adapter (not active by default)</span>
+              By default all analysis runs on the local, deterministic Satark rule engine — no IBM service is called. The watsonx.ai client is used only when both an API key and a project ID are configured and the provider is set to watsonx; credentials set here last only until the server restarts. See "Integration status" below for what is real vs simulated.
             </div>
 
             <div className="space-y-3.5 text-xs">
@@ -333,6 +337,8 @@ export const SettingsPage: React.FC = () => {
               </div>
             </div>
           </form>
+
+          <IntegrationStatusPanel />
 
           {/* Platform Standards / Ethical Compliance Note */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-xs text-slate-600">
