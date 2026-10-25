@@ -1,0 +1,92 @@
+# Feature Gap Audit & Implementation Report (Phase 6)
+
+This document records (1) what the codebase actually contained for each requested capability before
+this change, (2) what was implemented, and (3) what is still simulated or out of reach. It is written
+to avoid over-claiming: anything that is simulated is labelled as such in the UI, the API and here.
+
+## 1. Audit result and outcome
+
+| # | Requirement                                               | Found in code before                                                                                                                                                                                                                                                                                                                                                                         | Status now                                                                                                                                                                                                                                                                                                                                               |
+| - | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1 | Contextual safety check-in (multi-question, multilingual) | **Partial.** Frontend-only modal with 3 yes/no questions (English + Hindi) in `PaymentCheckpointPage.tsx`. Answering "No" three times showed "No Immediate Coercion Detected" — i.e. coached answers cleared a payment. Labelled "AI" but no model was involved. Nothing was saved.                                                                                                 | **Implemented.** Server-driven adaptive check-in (`services/safety_checkin.py`, `POST /api/payment/simulations/{id}/checkin`) in English, Hindi, Marathi and Kannada. Answers can never lower the objective payment tier; contradictions raise it. Honestly labelled "guided rule-based check-in".                                             |
+| 2 | Transaction risk intelligence                             | **Partial.** Fixed points for 4 self-reported flags, VPA keywords and amount ≥ ₹25,000. "New recipient" was self-reported and alone forced a pause. No history, velocity or explanation sources.                                                                                                                                                                                     | **Implemented.** `services/transaction_risk.py`: spending deviation vs 90-day history, rapid velocity, history-derived new payee, repeat payments to a recent payee, high-value context, purpose terms, call context — each as an explained signal with its source. No ML model (see §4).                                                      |
+| 3 | Mobile UPI prototype & SDK boundary                       | **Missing.** No Flutter/Android/iOS code; only a static "UPI interception terminal" preview card.                                                                                                                                                                                                                                                                                      | **Implemented (web prototype).** `/mock-upi` phone-style mock app + `src/sdk/satarkSafetySdk.ts` + `/api/sdk/v1/*` boundary. Clearly labelled: not PhonePe/GPay/Paytm/BHIM/bank. See [SDK_AND_MOCK_UPI_ARCHITECTURE.md](SDK_AND_MOCK_UPI_ARCHITECTURE.md).                                                                                    |
+| 4 | Active-call / coercion context                            | **Partial.** A "LIVE COERCION" toggle only flipped `pressure_present`; never sent to the backend; no limitation notes.                                                                                                                                                                                                                                                               | **Implemented.** Explicit `call_state` (`NONE`, `USER_REPORTED_ACTIVE_CALL`, `DEMO_SIMULATED_ACTIVE_CALL`) stored and explained; demo signal is badged "DEMO ONLY". See [PLATFORM_LIMITATIONS.md](PLATFORM_LIMITATIONS.md).                                                                                                                 |
+| 5 | Family Shield upgrades                                    | **Partial.** No contact limit (seed had 3); consent was one-sided (the code's own docstring said so); no contact acceptance; no guardian approval.                                                                                                                                                                                                                                     | **Implemented.** Max 2 contacts (HTTP 409), contact-side acceptance (in-app or one-time invite code), guardian approval workflow with expiry — all enforced in the backend (`services/family_guardian.py`, `routers/guardian.py`).                                                                                                            |
+| 6 | Duress phrase                                             | **Missing.**                                                                                                                                                                                                                                                                                                                                                                           | **Implemented.** Opt-in with explicit consent; salted PBKDF2 hash only; discreet guardian-only escalation; phrase never in responses, alerts, logs or audit text (`services/duress.py`, `routers/safety.py`).                                                                                                                                  |
+| 7 | Senior Mode                                               | **Missing.**                                                                                                                                                                                                                                                                                                                                                                           | **Implemented.** Larger type (18 px root + overrides for fixed-pixel text), higher contrast, ≥44 px targets, simplified navigation, dedicated home with one-tap 1930 / guardian calls, persisted per device. Verified in the browser.                                                                                                             |
+| 8 | Golden Hour PDF complaint pack                            | **Partial.** TXT export only (`format=markdown` also returned TXT); opened with `window.open`, which cannot send auth/persona headers.                                                                                                                                                                                                                                             | **Implemented.** `GET /api/recovery/drafts/{id}/export?format=pdf` (ReportLab): case summary, missing-information checklist, evidence references, timeline, timestamped audit trail, all three drafts. Authenticated download in the UI.                                                                                                         |
+| 9 | IBM integration truth                                     | **Partial.** Real watsonx.ai text-generation client, but: default model `ibm/granite-13b-chat-v2` is now deploy-on-demand only on watsonx.ai; `/api/settings` reported "configured" if the API key merely contained "bob"; UI badges said "watsonx Ready"; start scripts said "Powered by IBM Bob / watsonx Granite-13B". No Orchestrate, Granite Guardian or Safer Payments code. | **Corrected.** Removed the "bob" shortcut; default model → `ibm/granite-4-h-small`; honest badges/scripts/README; new `GET /api/integrations/status` and `POST /api/integrations/watsonx/verify`. Orchestrate, Granite Guardian and Safer Payments are reported as **NOT_INTEGRATED** (no credentials/access to integrate genuinely). |
+
+### Additional gaps
+
+| Gap                    | How it is handled now                                                                                                                                                                                                                                                                                                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Two-sided consent      | Alerts, incident sharing and approvals need owner consent **and** the contact's acceptance. Changing a contact's phone/email resets acceptance. Self-invites are rejected.                                                                                                                                                                                                        |
+| False-positive control | Synthetic scenario evaluation (`backend/app/evaluation/payment_scenarios.py`, see §3). New payees with small amounts and calls during known small payments no longer interrupt; amount/history alone can pause (AMBER) but never label a payment as a scam (RED).                                                                                                                    |
+| Coached answers        | Check-in final tier = max(objective tier, answer tier). Contradictions (e.g. "no call" while a call signal is set) raise the tier and are listed as a reason.                                                                                                                                                                                                                           |
+| Platform limitations   | Call state is never auto-detected; documented in [PLATFORM_LIMITATIONS.md](PLATFORM_LIMITATIONS.md).                                                                                                                                                                                                                                                                                     |
+| Privacy & auditability | Free-text check-in answers are analysed in memory and never stored; only reason codes and the tier are saved. Duress phrase stored as a hash. Invite codes stored as SHA-256. Discreet alerts hidden from the requester's own alert list and dashboard count. Audit events record actions without sensitive content. Backend tests now use a throwaway database instead of the demo DB. |
+| Honest IBM claims      | See row 9 and `GET /api/integrations/status`.                                                                                                                                                                                                                                                                                                                                         |
+
+## 2. What changed (by area)
+
+**Backend (FastAPI)**
+
+- `models.py` — new columns on `TrustedContact` (contact consent, hashed invite code), `FamilyAlert.is_discreet`, `PaymentSimulation` (call state, explained signals, check-in outcome, source); new tables `TransactionRecord` (mock ledger), `GuardianApprovalRequest`, `SafetyPreference`. Added automatically by the existing `migrate_db()`.
+- `services/transaction_risk.py`, `services/safety_checkin.py`, `services/family_guardian.py`, `services/duress.py`, `services/pdf_pack.py` — new.
+- `routers/payment.py` — uses the shared risk service; check-in, guardian-approval request/status endpoints.
+- `routers/contacts.py` — 2-contact cap, invitations (in-app and code), identity-change reset.
+- `routers/guardian.py`, `routers/safety.py`, `routers/sdk.py`, `routers/integrations.py` — new.
+- `routers/alerts.py`, `dependencies.py`, `routers/stats.py` — two-sided consent; discreet alerts hidden from owner.
+- `routers/recovery.py` — PDF export. `routers/settings.py` — honest `watsonx_configured`; reset clears new tables.
+- `seed_data.py` — 2 accepted contacts (Aarav, Priya) and 16 mock ledger payments for Rajesh.
+- `requirements.txt` (root and backend) — `reportlab`.
+
+**Frontend (React)**
+
+- `components/payment/SafetyCheckIn.tsx`, `components/payment/PaymentSafetyWidgets.tsx` (risk-signal list, guardian approval panel).
+- `components/family/GuardianInbox.tsx` (invitations, approval decisions, invite-code acceptance).
+- `components/senior/SeniorHome.tsx`, `context/SeniorModeContext.tsx`, Senior Mode CSS in `index.css`.
+- `components/settings/SafetySettingsPanels.tsx` (Senior Mode, duress phrase, integration status).
+- `pages/MockUpiPage.tsx`, `sdk/satarkSafetySdk.ts`.
+- Updated: `PaymentCheckpointPage`, `FamilyShieldPage`, `GoldenHourRecoveryPage`, `SettingsPage`, layout (header/sidebar/mobile), `LanguageContext` (Kannada added; saved language now restored), honest engine badges.
+
+## 3. Verification
+
+- **Backend tests:** 237 passed. 5 tests fail only because optional packages are not installed in this environment (`whisper`, `joblib`/`scikit-learn`); 2 test files cannot be collected because the `evaluation_governance` package is not in the repository. None of these touch the changed code. New suite: `backend/tests/test_safety_features_phase6.py` (34 tests).
+- **Frontend:** `tsc -b` clean, Vitest 8/8, oxlint 0 errors.
+- **Scenario evaluation** (`python -m backend.app.evaluation.payment_scenarios`, 34 synthetic scenarios):
+
+  | Metric                                     | Result                                 |
+  | ------------------------------------------ | -------------------------------------- |
+  | Routine benign payments interrupted (16)   | 0%                                     |
+  | Benign payments labelled RED (20)          | 0%                                     |
+  | Unusual-but-legitimate payments paused (4) | 75% (AMBER — pause, not a scam label) |
+  | Scam scenarios not cleared (14)            | 100%                                   |
+  | Coercion scams labelled RED (8)            | 100%                                   |
+
+  These scenarios were written by the same team as the rules, so they are a regression guard, not evidence of real-world accuracy.
+- **Browser checks** (isolated backend + DB): explained signals on Payment Checkpoint; Kannada check-in with coached answers stayed RED with the "answers cannot clear" message; guardian request → Aarav declined from his inbox; 2/2 contact cap shown; mock UPI ALLOW → mock payment recorded, scam payment → CHECKIN_REQUIRED; duress phrase saved without being shown and a phrase-bearing answer produced an ordinary "family check" screen; Senior Mode home and navigation; PDF pack rendered (5 pages, missing-info checklist).
+
+## 4. Honest limitations
+
+- **No ML model.** There is no real, labelled transaction dataset, so a trained model could not be evaluated honestly. The rules are transparent and testable; revisit ML only with independent labelled data and a held-out evaluation.
+- **Translations** (Hindi, Marathi, Kannada) were written for this prototype and need review by native speakers before real use. Free-text analysis is tested on English, Hindi (Devanagari) and Hinglish only; Marathi and Kannada free text is not reliably analysed.
+- **Duress phrase** is checked only in the check-in's free-text answer (which is never stored), not in payment notes (which are stored).
+- **Invite codes and OTPs are returned in API responses** because there is no real SMS gateway; this is demo-only behaviour.
+- **IBM:** the watsonx.ai client has not been verified live (no credentials). `granite-4-h-small` availability and text-generation support must be confirmed for your project/region with `POST /api/integrations/watsonx/verify`. `.env.example` could not be reviewed (restricted by content policy) — if it still sets `WATSONX_MODEL_ID=ibm/granite-13b-chat-v2`, update it.
+- **Pre-existing, not changed:** `PUT /api/settings/system` accepts provider/credential changes without authentication; the PDF uses built-in fonts, so non-Latin characters are shown as `?` with a note pointing to the TXT export.
+
+## 5. Upgrading an existing demo database
+
+New columns are added automatically on startup, but existing contacts start as `PENDING` acceptance (and an old DB may still hold three contacts). Use **Settings → Restore Realistic Demo Data** (or Presenter Deck → Reset) once, which reseeds two accepted guardians and the mock ledger.
+
+## 6. Five-minute demo path
+
+1. **Payment Checkpoint** → *Digital Arrest Bail Deposit* → run → read the explained signals (note the purple "Demo-simulated signal").
+2. **Start Safety Check-in** → switch to हिन्दी/मराठी/ಕನ್ನಡ → answer reassuringly → result stays RED ("answers cannot clear").
+3. **Ask a guardian** → switch persona to Aarav → **Family Shield → Your guardian inbox** → decline/approve.
+4. **Mock UPI App** → *Known grocery store* (ALLOW → confirm) and *"CBI officer" on video call* (check-in required → blocked).
+5. **Settings** → turn on **Senior Mode**; set a **discreet safety phrase**; review **Integration status**.
+6. **Golden Hour** → generate drafts → **Download PDF Complaint Pack**.

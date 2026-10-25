@@ -2,7 +2,7 @@
 echo ===================================================
 echo Starting Satark Saathi Production Server
 echo AI Scam Prevention & Family Protection Platform
-echo Powered by IBM Bob / watsonx Granite-13B
+echo Default engine: local deterministic rules (IBM watsonx.ai optional, off unless configured)
 echo ===================================================
 cd /d "%~dp0"
 call .\backend\venv\Scripts\activate.bat
