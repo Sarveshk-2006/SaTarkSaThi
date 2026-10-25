@@ -19,7 +19,11 @@ from backend.app.routers import (
     stats,
     settings as settings_router,
     analyze_v1,
-    evaluation
+    evaluation,
+    guardian,
+    safety,
+    sdk,
+    integrations,
 )
 
 # Configure logging
@@ -102,6 +106,10 @@ app.include_router(stats.router, prefix=api_prefix)
 app.include_router(settings_router.router, prefix=api_prefix)
 app.include_router(analyze_v1.router, prefix=api_prefix)
 app.include_router(evaluation.router, prefix=api_prefix)
+app.include_router(guardian.router, prefix=api_prefix)
+app.include_router(safety.router, prefix=api_prefix)
+app.include_router(sdk.router, prefix=api_prefix)
+app.include_router(integrations.router, prefix=api_prefix)
 
 from backend.app.services.alert_broadcaster import alert_broadcaster
 from fastapi import WebSocket, WebSocketDisconnect, Query
