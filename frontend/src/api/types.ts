@@ -35,9 +35,33 @@ export interface TrustedContact {
   is_primary: boolean;
   is_verified: boolean;
   consent_granted: boolean;
+  contact_consent_status?: ContactConsentStatus;
+  contact_consent_at?: string;
   verification_sent_at?: string;
   verified_at?: string;
   created_at: string;
+}
+
+export type ContactConsentStatus = 'PENDING' | 'ACCEPTED' | 'DECLINED';
+
+export interface ContactInvitation {
+  contact_id: number;
+  owner_user_id: number;
+  owner_name: string;
+  relationship: string;
+  contact_consent_status: ContactConsentStatus;
+  owner_consent_granted: boolean;
+  created_at: string;
+}
+
+export interface ContactInviteResponse {
+  status: string;
+  contact_id: number;
+  expires_at: string;
+  demo_invite_code: string;
+  demo_mode: boolean;
+  channel: string;
+  message: string;
 }
 
 export interface ContactVerificationResponse {
@@ -187,9 +211,133 @@ export interface PaymentSimulation {
   evidence_factors: string[];
   verification_steps: string[];
   policy_tier?: PolicyTier;
+  call_state?: CallState;
+  risk_signals?: RiskSignal[];
+  history_summary?: Record<string, number | string>;
+  guardian_approval_recommended?: boolean;
+  eligible_guardian_count?: number;
+  checkin_status?: 'NOT_STARTED' | 'COMPLETED';
+  checkin_tier?: PolicyTier | null;
+  source?: 'SANDBOX' | 'MOCK_UPI_SDK';
   is_simulation: boolean;
   disclaimer: string;
   checked_at: string;
+}
+
+export type CallState = 'NONE' | 'DEMO_SIMULATED_ACTIVE_CALL' | 'USER_REPORTED_ACTIVE_CALL';
+
+export interface RiskSignal {
+  code: string;
+  label: string;
+  points: number;
+  explanation: string;
+  source: string;
+}
+
+export type CheckinLanguage = 'en' | 'hi' | 'mr' | 'kn';
+
+export interface CheckinQuestion {
+  id: string;
+  kind: 'single_choice' | 'free_text';
+  prompt: string;
+  prompt_en: string;
+  optional: boolean;
+  options: { value: string; label: string }[];
+  step: number;
+  total_estimate: number;
+}
+
+export type CheckinAction = 'DO_NOT_PAY' | 'WAIT_FOR_GUARDIAN' | 'PAUSE_AND_VERIFY' | 'PROCEED_WITH_CARE';
+
+export interface CheckinResult {
+  final_tier: PolicyTier;
+  recommended_action: CheckinAction;
+  message: string;
+  answers_could_not_clear: boolean;
+  answers_could_not_clear_message?: string | null;
+  reasons: { code: string; label: string }[];
+  guardian_request_ref?: string | null;
+  eligible_guardian_count: number;
+}
+
+export interface CheckinResponse {
+  simulation_id: string;
+  language: CheckinLanguage;
+  status: 'IN_PROGRESS' | 'COMPLETED';
+  engine: string;
+  engine_note: string;
+  next_question?: CheckinQuestion | null;
+  result?: CheckinResult | null;
+}
+
+export type ApprovalStatus = 'PENDING' | 'APPROVED' | 'DECLINED' | 'EXPIRED' | 'CANCELLED';
+
+export interface GuardianApproval {
+  request_ref: string;
+  simulation_id: string;
+  requester_name: string;
+  amount: number;
+  payee: string;
+  status: ApprovalStatus;
+  created_at: string;
+  expires_at: string;
+  decided_at?: string | null;
+  decision_note?: string | null;
+  viewer_role: 'REQUESTER' | 'GUARDIAN';
+  reason_codes: string[];
+  guardian_guidance?: string | null;
+}
+
+export interface DuressSettings {
+  enabled: boolean;
+  configured_at?: string | null;
+  eligible_guardian_count: number;
+  how_it_works: string;
+}
+
+export type SdkDecisionType = 'ALLOW' | 'CHECKIN_REQUIRED' | 'GUARDIAN_APPROVAL_REQUIRED' | 'BLOCK_RECOMMENDED';
+
+export interface SdkDecision {
+  sdk_version: string;
+  decision: SdkDecisionType;
+  simulation_id: string;
+  policy_tier: PolicyTier;
+  risk_score: number;
+  risk_signals: RiskSignal[];
+  checkin_status: string;
+  guardian_request_ref?: string | null;
+  guardian_status?: ApprovalStatus | null;
+  can_complete: boolean;
+  user_message: string;
+  integration_notice: string;
+}
+
+export interface SdkCompleteResponse {
+  simulation_id: string;
+  status: 'COMPLETED' | 'CANCELLED';
+  transaction_id?: number;
+  message: string;
+  is_mock: boolean;
+}
+
+export interface MockLedgerEntry {
+  id: number;
+  payee_vpa: string;
+  payee_name?: string;
+  amount: number;
+  status: string;
+  simulation_id?: string;
+  is_seed_data: boolean;
+  created_at: string;
+}
+
+export interface IntegrationStatus {
+  id: string;
+  name: string;
+  status: 'NOT_CONFIGURED' | 'CONFIGURED_UNVERIFIED' | 'NOT_INTEGRATED' | 'SIMULATED' | string;
+  active_for_scanner: boolean;
+  detail: string;
+  used_by: string[];
 }
 
 // Legacy alias

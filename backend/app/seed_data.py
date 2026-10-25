@@ -22,7 +22,8 @@ from backend.app.models import (
     Incident,
     PaymentSimulation,
     RecoveryDraft,
-    AuditEvent
+    AuditEvent,
+    TransactionRecord,
 )
 
 def seed_default_data(db: Session, force: bool = False):
@@ -68,6 +69,7 @@ def seed_default_data(db: Session, force: bool = False):
             db.query(TrustedContact).delete()
 
         now = datetime.now(timezone.utc)
+        # Max two trusted contacts; both seeded as having accepted (demo data) so alerts work out of the box.
         contacts = [
             TrustedContact(
                 user_id=1,
@@ -80,6 +82,8 @@ def seed_default_data(db: Session, force: bool = False):
                 is_primary=True,
                 is_verified=True,
                 consent_granted=True,
+                contact_consent_status="ACCEPTED",
+                contact_consent_at=now - timedelta(days=30),
                 verified_at=now - timedelta(days=30)
             ),
             TrustedContact(
@@ -93,22 +97,10 @@ def seed_default_data(db: Session, force: bool = False):
                 is_primary=False,
                 is_verified=True,
                 consent_granted=True,
+                contact_consent_status="ACCEPTED",
+                contact_consent_at=now - timedelta(days=20),
                 verified_at=now - timedelta(days=20)
             ),
-            TrustedContact(
-                user_id=1,
-                name="Sunita Sharma",
-                relationship="Spouse",
-                phone_number="+91 98303 45678",
-                email="sunita.sharma@example.com",
-                alert_level="HIGH_RISK_ONLY",
-                is_active=True,
-                is_primary=False,
-                is_verified=False,
-                verification_code="849201",
-                verification_sent_at=now - timedelta(hours=2),
-                consent_granted=True
-            )
         ]
         db.add_all(contacts)
         db.commit()
@@ -370,4 +362,37 @@ def seed_default_data(db: Session, force: bool = False):
             description="Initial seed records initialized for Satark Saathi local development and demo testing."
         )
         db.add(audit)
+        db.commit()
+
+    # 8. Mock transaction history (baseline for spending deviation / new-payee / velocity signals)
+    if db.query(TransactionRecord).filter(TransactionRecord.user_id == 1).count() == 0 or force:
+        if force:
+            db.query(TransactionRecord).delete()
+        now = datetime.now(timezone.utc)
+        history = [
+            # (payee, name, amount, category, days_ago)
+            ("kirana.store@icici", "Sharma General Store", 640, "GROCERY", 2),
+            ("kirana.store@icici", "Sharma General Store", 820, "GROCERY", 9),
+            ("kirana.store@icici", "Sharma General Store", 575, "GROCERY", 16),
+            ("kirana.store@icici", "Sharma General Store", 910, "GROCERY", 23),
+            ("kirana.store@icici", "Sharma General Store", 700, "GROCERY", 30),
+            ("milkman.ramesh@oksbi", "Ramesh Dairy", 1200, "DAIRY", 5),
+            ("milkman.ramesh@oksbi", "Ramesh Dairy", 1200, "DAIRY", 35),
+            ("bsesrajdhani.billdesk@hdfcbank", "BSES Rajdhani (BillDesk)", 2350, "UTILITY", 12),
+            ("bsesrajdhani.billdesk@hdfcbank", "BSES Rajdhani (BillDesk)", 2180, "UTILITY", 42),
+            ("airtel.prepaid@airtel", "Airtel Prepaid", 599, "TELECOM", 20),
+            ("apollo.pharmacy@icici", "Apollo Pharmacy", 1450, "HEALTH", 8),
+            ("apollo.pharmacy@icici", "Apollo Pharmacy", 980, "HEALTH", 38),
+            ("society.maintenance@sbi", "Green Park RWA", 3500, "HOUSING", 14),
+            ("society.maintenance@sbi", "Green Park RWA", 3500, "HOUSING", 44),
+            ("priya.sharma@okhdfc", "Priya Sharma", 5000, "FAMILY", 25),
+            ("lic.premium@axisbank", "LIC Premium", 4200, "INSURANCE", 60),
+        ]
+        db.add_all([
+            TransactionRecord(
+                user_id=1, payee_vpa=vpa, payee_name=name, amount=float(amount), category=category,
+                status="COMPLETED", is_mock=True, is_seed_data=True, created_at=now - timedelta(days=days),
+            )
+            for vpa, name, amount, category, days in history
+        ])
         db.commit()

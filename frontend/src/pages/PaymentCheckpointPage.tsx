@@ -11,7 +11,6 @@ import {
   PhoneCall,
   History,
   Info,
-  CheckCircle2,
   AlertOctagon,
   LifeBuoy,
   Save,
@@ -27,10 +26,13 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { api } from '../api/endpoints';
-import { PaymentSimulation } from '../api/types';
+import { CallState, PaymentSimulation } from '../api/types';
 import { useToast } from '../context/ToastContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { SimulationBanner } from '../components/common/SimulationBanner';
+import { SafetyCheckIn, toCheckinLanguage } from '../components/payment/SafetyCheckIn';
+import { GuardianApprovalPanel, RiskSignalList } from '../components/payment/PaymentSafetyWidgets';
 
 interface PresetSimulation {
   title: string;
@@ -45,6 +47,7 @@ interface PresetSimulation {
   authority: boolean;
   secrecy: boolean;
   returns: boolean;
+  call: CallState;
 }
 
 const PRESETS: PresetSimulation[] = [
@@ -61,6 +64,7 @@ const PRESETS: PresetSimulation[] = [
     authority: true,
     secrecy: true,
     returns: false,
+    call: 'DEMO_SIMULATED_ACTIVE_CALL',
   },
   {
     title: 'Electricity Bill Disconnection',
@@ -75,6 +79,7 @@ const PRESETS: PresetSimulation[] = [
     authority: false,
     secrecy: false,
     returns: false,
+    call: 'NONE',
   },
   {
     title: 'Telegram Guaranteed Return',
@@ -89,6 +94,7 @@ const PRESETS: PresetSimulation[] = [
     authority: false,
     secrecy: false,
     returns: true,
+    call: 'NONE',
   },
   {
     title: 'Legitimate Grocery Store QR',
@@ -103,6 +109,7 @@ const PRESETS: PresetSimulation[] = [
     authority: false,
     secrecy: false,
     returns: false,
+    call: 'NONE',
   },
 ];
 
@@ -116,6 +123,7 @@ const PURPOSE_SUGGESTIONS = [
 
 export const PaymentCheckpointPage: React.FC = () => {
   const { showToast } = useToast();
+  const { language: appLanguage } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -131,13 +139,11 @@ export const PaymentCheckpointPage: React.FC = () => {
   const [authorityClaimed, setAuthorityClaimed] = useState(false);
   const [secrecyDemanded, setSecrecyDemanded] = useState(false);
   const [guaranteedReturns, setGuaranteedReturns] = useState(false);
-  const [isOnCall, setIsOnCall] = useState(false);
+  // Call context is an explicit signal: either reported by the user or simulated for the demo.
+  const [callState, setCallState] = useState<CallState>('NONE');
 
-  // AI Safety Check-in states
+  // Safety Check-in modal (server-driven, adaptive)
   const [isCheckInOpen, setIsCheckInOpen] = useState(false);
-  const [checkInQ1, setCheckInQ1] = useState<boolean | null>(null);
-  const [checkInQ2, setCheckInQ2] = useState<boolean | null>(null);
-  const [checkInQ3, setCheckInQ3] = useState<boolean | null>(null);
 
   const [simulating, setSimulating] = useState(false);
   const [result, setResult] = useState<PaymentSimulation | null>(null);
@@ -186,7 +192,7 @@ export const PaymentCheckpointPage: React.FC = () => {
     setAuthorityClaimed(preset.authority);
     setSecrecyDemanded(preset.secrecy);
     setGuaranteedReturns(preset.returns);
-    setIsOnCall(preset.authority || preset.pressure);
+    setCallState(preset.call);
     setResult(null);
     setSavedIncidentId(null);
     setCheckedChecklist({});
@@ -216,10 +222,11 @@ export const PaymentCheckpointPage: React.FC = () => {
         requested_amount: numAmount,
         purpose: purpose.trim() || undefined,
         is_new_recipient: isNewRecipient,
-        pressure_present: pressurePresent || isOnCall,
+        pressure_present: pressurePresent,
         authority_claimed: authorityClaimed,
         secrecy_demanded: secrecyDemanded,
         guaranteed_returns: guaranteedReturns,
+        call_state: callState,
       });
 
       setResult(res);
@@ -270,11 +277,8 @@ export const PaymentCheckpointPage: React.FC = () => {
     setAuthorityClaimed(false);
     setSecrecyDemanded(false);
     setGuaranteedReturns(false);
-    setIsOnCall(false);
+    setCallState('NONE');
     setIsCheckInOpen(false);
-    setCheckInQ1(null);
-    setCheckInQ2(null);
-    setCheckInQ3(null);
     setResult(null);
     setSavedIncidentId(null);
     setCheckedChecklist({});
@@ -616,41 +620,53 @@ export const PaymentCheckpointPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* 5. Active Call in Progress (Signature Digital Arrest Feature) */}
-                <div
-                  onClick={() => {
-                    const next = !isOnCall;
-                    setIsOnCall(next);
-                    if (next) setPressurePresent(true);
-                  }}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                    isOnCall
-                      ? 'bg-red-100/90 border-red-400 ring-2 ring-red-500/30 shadow-xs'
-                      : 'bg-[#F7F8F4] border-[#E2E8F0] hover:bg-slate-100/70'
-                  }`}
-                >
+                {/* 5. Call context: explicit, never auto-detected */}
+                <fieldset className="p-3 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] space-y-2">
+                  <legend className="sr-only">Call context</legend>
                   <div className="flex items-start gap-3">
-                    <span className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${isOnCall ? 'bg-red-600 text-white animate-pulse' : 'bg-slate-200 text-slate-700'}`}>
+                    <span className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${callState !== 'NONE' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'}`}>
                       <PhoneCall className="w-3.5 h-3.5" />
                     </span>
                     <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-red-950">
-                          Active Phone or Video Call in Progress
-                        </span>
-                        <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-600 text-white uppercase tracking-wider">
-                          LIVE COERCION
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-red-900">
-                        Caller is on the line right now instructing you to make this payment.
+                      <span className="text-xs font-bold text-[#142A36] block">Call context while paying</span>
+                      <span className="text-[11px] text-[#64748B]">
+                        This prototype never detects calls automatically. Choose what you know, or simulate a device signal for the demo.
                       </span>
                     </div>
                   </div>
-                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${isOnCall ? 'bg-red-600 border-red-700 text-white' : 'bg-white border-slate-300'}`}>
-                    {isOnCall && <Check className="w-3.5 h-3.5" />}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2" role="radiogroup" aria-label="Call context">
+                    {([
+                      { value: 'NONE', label: 'No call', hint: 'Not on a call' },
+                      { value: 'USER_REPORTED_ACTIVE_CALL', label: "I'm on a call", hint: 'You report it' },
+                      { value: 'DEMO_SIMULATED_ACTIVE_CALL', label: 'Simulate call signal', hint: 'DEMO ONLY' },
+                    ] as { value: CallState; label: string; hint: string }[]).map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={callState === opt.value}
+                        onClick={() => setCallState(opt.value)}
+                        className={`min-h-[44px] px-3 py-2 rounded-xl border text-left text-xs font-semibold cursor-pointer transition-colors ${
+                          callState === opt.value
+                            ? opt.value === 'NONE'
+                              ? 'bg-white border-[#176B58] ring-1 ring-[#176B58] text-[#142A36]'
+                              : 'bg-red-50 border-red-400 ring-1 ring-red-400 text-red-950'
+                            : 'bg-white border-[#E2E8F0] text-[#142A36] hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="block">{opt.label}</span>
+                        <span className={`block text-[10px] ${opt.value === 'DEMO_SIMULATED_ACTIVE_CALL' ? 'font-bold text-purple-800' : 'text-[#64748B]'}`}>
+                          {opt.hint}
+                        </span>
+                      </button>
+                    ))}
                   </div>
-                </div>
+                  {callState === 'DEMO_SIMULATED_ACTIVE_CALL' && (
+                    <p className="text-[11px] text-purple-900 bg-purple-50 border border-purple-200 rounded-lg p-2">
+                      Simulated signal for demonstration. Real Android/iOS apps get only limited call-state access (see docs/PLATFORM_LIMITATIONS.md).
+                    </p>
+                  )}
+                </fieldset>
               </div>
             </div>
 
@@ -712,8 +728,25 @@ export const PaymentCheckpointPage: React.FC = () => {
               </div>
 
               <div className="p-5 sm:p-6 space-y-5">
-                {/* Detected Factors */}
-                {result.evidence_factors && result.evidence_factors.length > 0 && (
+                {/* Explained contributing signals */}
+                {result.risk_signals && result.risk_signals.length > 0 ? (
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
+                      Why this result (each contributing signal):
+                    </h4>
+                    <RiskSignalList signals={result.risk_signals} />
+                    {result.history_summary && typeof result.history_summary.transactions_considered === 'number' && (
+                      <p className="text-[11px] text-[#64748B] mt-2">
+                        Compared with {result.history_summary.transactions_considered} mock-ledger payments from the last{' '}
+                        {result.history_summary.window_days} days
+                        {result.history_summary.p90_amount
+                          ? ` (typical larger payment ₹${Number(result.history_summary.p90_amount).toLocaleString('en-IN')}).`
+                          : '.'}{' '}
+                        {result.history_summary.baseline_note}
+                      </p>
+                    )}
+                  </div>
+                ) : result.evidence_factors && result.evidence_factors.length > 0 && (
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
                       Detected Coercion Factors:
@@ -768,20 +801,26 @@ export const PaymentCheckpointPage: React.FC = () => {
                     </button>
                   )}
 
-                  {result.outcome !== 'PROCEED_WITH_CAUTION' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setCheckInQ1(isOnCall ? true : authorityClaimed ? true : null);
-                        setCheckInQ2(authorityClaimed || secrecyDemanded ? true : null);
-                        setCheckInQ3(guaranteedReturns ? true : null);
-                        setIsCheckInOpen(true);
-                      }}
-                      className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-subtle transition-all cursor-pointer"
-                    >
-                      <Sparkles className="w-4 h-4 text-white" />
-                      <span>Start 30-Second AI Safety Check-in (AI सुरक्षा संवाद)</span>
-                    </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsCheckInOpen(true)}
+                    className={`w-full min-h-[44px] py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                      result.outcome === 'PROCEED_WITH_CAUTION'
+                        ? 'bg-white border border-[#CBD5E1] text-[#142A36] hover:bg-[#F7F8F4]'
+                        : 'bg-amber-600 hover:bg-amber-700 text-white shadow-subtle'
+                    }`}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>
+                      {result.checkin_status === 'COMPLETED' ? 'Redo Safety Check-in' : 'Start Safety Check-in'} (सुरक्षा जाँच)
+                    </span>
+                  </button>
+
+                  {(result.outcome !== 'PROCEED_WITH_CAUTION' || result.guardian_approval_recommended) && (
+                    <GuardianApprovalPanel
+                      simulationId={result.simulation_id}
+                      eligibleGuardianCount={result.eligible_guardian_count ?? 0}
+                    />
                   )}
 
                   {/* Save as Authoritative Incident Dossier */}
@@ -931,208 +970,37 @@ export const PaymentCheckpointPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 30-Second AI Safety Check-in Modal (AI सुरक्षा संवाद) */}
-      {isCheckInOpen && (
-        <div className="fixed inset-0 z-50 bg-[#142A36]/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full border border-[#E2E8F0] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            {/* Header */}
-            <div className="p-5 bg-[#142A36] text-white flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="p-1 rounded-md bg-[#176B58] text-white">
-                    <Sparkles className="w-4 h-4" />
-                  </span>
-                  <h3 className="text-base font-bold text-white">
-                    30-Second AI Safety Check-in
-                  </h3>
-                </div>
-                <p className="text-xs text-[#DCEDE5] mt-1 font-hindi">
-                  AI सुरक्षा संवाद &bull; 30 seconds to break cognitive tunnel vision
-                </p>
-              </div>
+      {/* Safety Check-in Modal (server-driven, adaptive, multilingual) */}
+      {isCheckInOpen && result && (
+        <div
+          className="fixed inset-0 z-50 bg-[#142A36]/60 backdrop-blur-xs flex items-center justify-center p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Safety Check-in"
+        >
+          <div className="bg-white rounded-2xl max-w-lg w-full border border-[#E2E8F0] shadow-2xl overflow-hidden">
+            <div className="p-4 bg-[#142A36] text-white flex items-center justify-between">
+              <span className="text-sm font-bold">Safety Check-in &bull; {result.simulation_id}</span>
               <button
                 type="button"
-                onClick={() => setIsCheckInOpen(false)}
-                className="p-1.5 text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                onClick={() => {
+                  setIsCheckInOpen(false);
+                  fetchPastSimulations();
+                }}
+                className="p-1.5 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+                aria-label="Close check-in"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Questions */}
-            <div className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
-              <p className="text-xs text-[#64748B] leading-relaxed">
-                When scammers create panic or secrecy, your brain enters fight-or-flight mode. Answer these 3 questions truthfully to verify your situation:
-              </p>
-
-              {/* Q1 */}
-              <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] space-y-2">
-                <p className="text-xs font-bold text-[#142A36]">
-                  1. Is someone on a phone call or video call telling you to make this payment right now?
-                </p>
-                <p className="text-[11px] text-[#64748B]">
-                  क्या कोई कॉल पर रहकर आपसे अभी पैसे भेजने को कह रहा है?
-                </p>
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setCheckInQ1(true)}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      checkInQ1 === true
-                        ? 'bg-red-600 text-white shadow-xs'
-                        : 'bg-white text-[#142A36] border border-[#E2E8F0] hover:bg-red-50'
-                    }`}
-                  >
-                    YES (हाँ)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCheckInQ1(false)}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      checkInQ1 === false
-                        ? 'bg-[#176B58] text-white shadow-xs'
-                        : 'bg-white text-[#142A36] border border-[#E2E8F0] hover:bg-emerald-50'
-                    }`}
-                  >
-                    NO (नहीं)
-                  </button>
-                </div>
-              </div>
-
-              {/* Q2 */}
-              <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] space-y-2">
-                <p className="text-xs font-bold text-[#142A36]">
-                  2. Did someone claim to be police, CBI, customs, or bank officials and tell you NOT to tell anyone?
-                </p>
-                <p className="text-[11px] text-[#64748B]">
-                  क्या किसी ने पुलिस या CBI बनकर किसी को न बताने की धमकी दी है?
-                </p>
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setCheckInQ2(true)}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      checkInQ2 === true
-                        ? 'bg-red-600 text-white shadow-xs'
-                        : 'bg-white text-[#142A36] border border-[#E2E8F0] hover:bg-red-50'
-                    }`}
-                  >
-                    YES (हाँ)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCheckInQ2(false)}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      checkInQ2 === false
-                        ? 'bg-[#176B58] text-white shadow-xs'
-                        : 'bg-white text-[#142A36] border border-[#E2E8F0] hover:bg-emerald-50'
-                    }`}
-                  >
-                    NO (नहीं)
-                  </button>
-                </div>
-              </div>
-
-              {/* Q3 */}
-              <div className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] space-y-2">
-                <p className="text-xs font-bold text-[#142A36]">
-                  3. Were you promised guaranteed high returns, a task reward, or told your power will be cut in 15 mins?
-                </p>
-                <p className="text-[11px] text-[#64748B]">
-                  क्या बिना जोखिम बड़े मुनाफे का लालच या बिजली कटने का डर दिखाया गया है?
-                </p>
-                <div className="flex gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => setCheckInQ3(true)}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      checkInQ3 === true
-                        ? 'bg-red-600 text-white shadow-xs'
-                        : 'bg-white text-[#142A36] border border-[#E2E8F0] hover:bg-red-50'
-                    }`}
-                  >
-                    YES (हाँ)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCheckInQ3(false)}
-                    className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      checkInQ3 === false
-                        ? 'bg-[#176B58] text-white shadow-xs'
-                        : 'bg-white text-[#142A36] border border-[#E2E8F0] hover:bg-emerald-50'
-                    }`}
-                  >
-                    NO (नहीं)
-                  </button>
-                </div>
-              </div>
-
-              {/* Diagnosis Feedback */}
-              {(checkInQ1 === true || checkInQ2 === true) ? (
-                <div className="p-4 rounded-xl bg-red-50 border border-red-200 space-y-2">
-                  <div className="flex items-center gap-2 text-red-900 font-bold text-xs">
-                    <AlertOctagon className="w-4 h-4 text-red-600 shrink-0" />
-                    <span>DIAGNOSIS: Active Digital Arrest &amp; Extortion Coercion</span>
-                  </div>
-                  <p className="text-xs text-red-950 leading-relaxed">
-                    <strong>DO NOT TRANSFER MONEY.</strong> Real police, CBI, or Supreme Court judges NEVER issue arrest warrants over Skype or WhatsApp, and NEVER demand bail deposits into personal UPI IDs.
-                  </p>
-                  <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsCheckInOpen(false);
-                        navigate('/family-shield');
-                      }}
-                      className="py-2 px-3 rounded-lg bg-red-700 hover:bg-red-800 text-white font-bold text-xs text-center cursor-pointer"
-                    >
-                      Alert Family Guardian
-                    </button>
-                    <a
-                      href="tel:1930"
-                      className="py-2 px-3 rounded-lg bg-[#142A36] hover:bg-black text-white font-bold text-xs text-center cursor-pointer"
-                    >
-                      Call Cyber Helpline 1930
-                    </a>
-                  </div>
-                </div>
-              ) : checkInQ3 === true ? (
-                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-2">
-                  <div className="flex items-center gap-2 text-amber-900 font-bold text-xs">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>DIAGNOSIS: High-Probability Investment or Utility Scam</span>
-                  </div>
-                  <p className="text-xs text-amber-950 leading-relaxed">
-                    <strong>STOP.</strong> Genuine investment firms or electricity distribution boards do not collect payments into individual personal UPI handles or offer 200% returns for clicking Telegram links.
-                  </p>
-                </div>
-              ) : (checkInQ1 === false && checkInQ2 === false && checkInQ3 === false) ? (
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-1">
-                  <div className="flex items-center gap-2 text-emerald-900 font-bold text-xs">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>No Immediate Coercion Detected</span>
-                  </div>
-                  <p className="text-xs text-emerald-950">
-                    Always verify the exact VPA name before entering your UPI PIN. Never share your OTP or screen.
-                  </p>
-                </div>
-              ) : (
-                <div className="p-3 rounded-xl bg-blue-50 border border-blue-200 text-xs text-blue-900 flex items-center gap-2">
-                  <Info className="w-4 h-4 text-blue-600 shrink-0" />
-                  <span>Select YES or NO for all 3 questions to evaluate psychological coercion.</span>
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 bg-[#F7F8F4] border-t border-[#E2E8F0] flex justify-end">
-              <button
-                type="button"
-                onClick={() => setIsCheckInOpen(false)}
-                className="py-2 px-4 rounded-xl bg-[#142A36] hover:bg-[#1E334E] text-white font-semibold text-xs cursor-pointer transition-colors"
-              >
-                Return to Checkpoint
-              </button>
+            <div className="p-5 max-h-[78vh] overflow-y-auto">
+              <SafetyCheckIn
+                simulationId={result.simulation_id}
+                initialLanguage={toCheckinLanguage(appLanguage)}
+                onCompleted={(r) =>
+                  setResult((prev) => (prev ? { ...prev, checkin_status: 'COMPLETED', checkin_tier: r.final_tier } : prev))
+                }
+              />
             </div>
           </div>
         </div>

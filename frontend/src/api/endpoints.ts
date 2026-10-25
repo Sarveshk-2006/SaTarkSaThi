@@ -23,6 +23,17 @@ import {
   RecoveryCaseContextResponse,
   SavePaymentIncidentResponse,
   TokenResponse,
+  CallState,
+  CheckinLanguage,
+  CheckinResponse,
+  ContactInvitation,
+  ContactInviteResponse,
+  GuardianApproval,
+  DuressSettings,
+  SdkDecision,
+  SdkCompleteResponse,
+  MockLedgerEntry,
+  IntegrationStatus,
 } from './types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
@@ -121,6 +132,44 @@ export const api = {
     apiClient.post<ContactVerificationResponse>(`/contacts/${contactId}/verify/request`),
   confirmContactVerification: (contactId: number, code: string) =>
     apiClient.post<TrustedContact>(`/contacts/${contactId}/verify/confirm`, { code }),
+  sendContactInvite: (contactId: number) =>
+    apiClient.post<ContactInviteResponse>(`/contacts/${contactId}/invite`),
+  getMyInvitations: () => apiClient.get<ContactInvitation[]>('/contacts/invitations'),
+  respondToInvitation: (contactId: number, decision: 'ACCEPT' | 'DECLINE') =>
+    apiClient.post<ContactInvitation>(`/contacts/invitations/${contactId}/respond`, { decision }),
+  respondWithInviteCode: (inviteCode: string, decision: 'ACCEPT' | 'DECLINE') =>
+    apiClient.post<ContactInvitation>('/contacts/invitations/respond-with-code', { invite_code: inviteCode, decision }),
+
+  // Guardian approvals
+  getGuardianApprovals: () => apiClient.get<GuardianApproval[]>('/guardian/approvals'),
+  decideGuardianApproval: (requestRef: string, decision: 'APPROVE' | 'DECLINE', note?: string) =>
+    apiClient.post<GuardianApproval>(`/guardian/approvals/${requestRef}/decision`, { decision, note }),
+  requestGuardianApproval: (simulationId: string) =>
+    apiClient.post<GuardianApproval>(`/payment/simulations/${simulationId}/guardian-approval`),
+  getGuardianApprovalStatus: (simulationId: string) =>
+    apiClient.get<GuardianApproval>(`/payment/simulations/${simulationId}/guardian-approval`),
+
+  // Safety check-in (adaptive, server-driven)
+  runSafetyCheckin: (simulationId: string, language: CheckinLanguage, answers: { question_id: string; value: string }[]) =>
+    apiClient.post<CheckinResponse>(`/payment/simulations/${simulationId}/checkin`, { language, answers }),
+
+  // Duress phrase (only enabled/disabled status is ever returned)
+  getDuressSettings: () => apiClient.get<DuressSettings>('/safety/duress'),
+  setDuressPhrase: (phrase: string, consentAcknowledged: boolean) =>
+    apiClient.put<DuressSettings>('/safety/duress', { phrase, consent_acknowledged: consentAcknowledged }),
+  disableDuressPhrase: () => apiClient.delete<DuressSettings>('/safety/duress'),
+
+  // Satark Safety SDK boundary (mock UPI app only)
+  sdkPreTransactionCheck: (data: { payee_vpa: string; payee_name?: string; amount: number; note?: string; call_state?: CallState }) =>
+    apiClient.post<SdkDecision>('/sdk/v1/pre-transaction-check', { host_app: 'SATARK_MOCK_UPI', ...data }),
+  sdkGetDecision: (simulationId: string) => apiClient.get<SdkDecision>(`/sdk/v1/transactions/${simulationId}/decision`),
+  sdkComplete: (simulationId: string) => apiClient.post<SdkCompleteResponse>(`/sdk/v1/transactions/${simulationId}/complete`),
+  sdkCancel: (simulationId: string) => apiClient.post<SdkCompleteResponse>(`/sdk/v1/transactions/${simulationId}/cancel`),
+  getMockLedger: () => apiClient.get<MockLedgerEntry[]>('/sdk/v1/ledger'),
+
+  // Integration truth
+  getIntegrationStatus: () =>
+    apiClient.get<{ analysis_engine: string; integrations: IntegrationStatus[] }>('/integrations/status'),
 
   // Family Alerts
   getAlerts: () => apiClient.get<FamilyAlert[]>('/alerts'),
@@ -148,6 +197,7 @@ export const api = {
     authority_claimed?: boolean;
     secrecy_demanded?: boolean;
     guaranteed_returns?: boolean;
+    call_state?: CallState;
   }) => apiClient.post<PaymentSimulation>('/payment/simulate', data),
   getPaymentSimulations: () => apiClient.get<PaymentSimulation[]>('/payment/simulations'),
   savePaymentIncident: (simulationId: string) =>
@@ -194,8 +244,30 @@ export const api = {
     apiClient.post<RecoveryDraft>('/recovery/wizard', data),
   updateRecoveryDraft: (draftId: number, data: { portal_complaint_text?: string; bank_complaint_text?: string; police_complaint_text?: string; status?: string }) =>
     apiClient.put<RecoveryDraft>(`/recovery/drafts/${draftId}`, data),
-  getRecoveryDraftExportUrl: (draftId: number, format: 'txt' | 'markdown' = 'txt') =>
+  getRecoveryDraftExportUrl: (draftId: number, format: 'txt' | 'markdown' | 'pdf' = 'txt') =>
     `${BASE_URL}/recovery/drafts/${draftId}/export?format=${format}`,
+  downloadRecoveryDraft: async (draftId: number, format: 'txt' | 'pdf') => {
+    // Authenticated download: window.open() cannot send the auth / persona headers.
+    const response = await fetch(`${BASE_URL}/recovery/drafts/${draftId}/export?format=${format}`, {
+      headers: getAuthHeaders(false),
+    });
+    if (!response.ok) {
+      const data = await response.json().catch(() => null);
+      throw new Error(data?.detail || data?.message || 'Export failed');
+    }
+    const blob = await response.blob();
+    const disposition = response.headers.get('Content-Disposition') || '';
+    const match = disposition.match(/filename=([^;]+)/);
+    const filename = match ? match[1].trim() : `satark_recovery_${draftId}.${format}`;
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  },
   generateRecoveryDraft: (incidentId: number) =>
     apiClient.post<RecoveryDraft>(`/recovery/draft/${incidentId}`),
   submitBankFreeze: (data: {

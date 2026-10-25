@@ -74,8 +74,26 @@ class TrustedContactResponse(TrustedContactBase):
     user_id: int
     verification_sent_at: Optional[datetime] = None
     verified_at: Optional[datetime] = None
+    contact_consent_status: str = "PENDING"
+    contact_consent_at: Optional[datetime] = None
     created_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+class ContactInvitationResponse(BaseModel):
+    contact_id: int
+    owner_user_id: int
+    owner_name: str
+    relationship: str
+    contact_consent_status: str
+    owner_consent_granted: bool
+    created_at: datetime
+
+class InvitationDecisionRequest(BaseModel):
+    decision: str = Field(..., pattern="^(ACCEPT|DECLINE)$")
+
+class InvitationCodeDecisionRequest(BaseModel):
+    invite_code: str = Field(..., min_length=6, max_length=20)
+    decision: str = Field(..., pattern="^(ACCEPT|DECLINE)$")
 
 # --- Evidence & Analysis Schemas ---
 class ScamEvidenceResponse(BaseModel):
@@ -167,6 +185,18 @@ class PaymentSimulationRequest(BaseModel):
     authority_claimed: bool = False
     secrecy_demanded: bool = False
     guaranteed_returns: bool = False
+    call_state: str = Field(
+        default="NONE",
+        pattern="^(NONE|DEMO_SIMULATED_ACTIVE_CALL|USER_REPORTED_ACTIVE_CALL)$",
+        description="Explicit call-state signal. Never automatically detected in this prototype.",
+    )
+
+class RiskSignalResponse(BaseModel):
+    code: str
+    label: str
+    points: int
+    explanation: str
+    source: str
 
 class PaymentSimulationResponse(BaseModel):
     id: int
@@ -180,6 +210,7 @@ class PaymentSimulationResponse(BaseModel):
     authority_claimed: bool
     secrecy_demanded: bool
     guaranteed_returns: bool
+    call_state: str = "NONE"
     outcome: str  # "PROCEED_WITH_CAUTION", "PAUSE_AND_VERIFY", "SEEK_TRUSTED_HELP"
     policy_tier: str = "GREEN"  # "GREEN", "AMBER", "RED" aligned with centralized risk policy
     risk_score: int
@@ -187,10 +218,130 @@ class PaymentSimulationResponse(BaseModel):
     decision_rationale: str
     evidence_factors: List[str] = []
     verification_steps: List[str] = []
+    risk_signals: List[RiskSignalResponse] = []
+    history_summary: dict = {}
+    guardian_approval_recommended: bool = False
+    eligible_guardian_count: int = 0
+    checkin_status: str = "NOT_STARTED"
+    checkin_tier: Optional[str] = None
+    source: str = "SANDBOX"
     is_simulation: bool = True
     disclaimer: str = "SIMULATION ONLY: no real money has been moved or blocked."
     checked_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+# --- Safety Check-in Schemas ---
+class CheckinAnswer(BaseModel):
+    question_id: str = Field(..., max_length=40)
+    value: str = Field(default="", max_length=500)
+
+class CheckinRequest(BaseModel):
+    language: str = "en"
+    answers: List[CheckinAnswer] = []
+
+class CheckinOption(BaseModel):
+    value: str
+    label: str
+
+class CheckinQuestion(BaseModel):
+    id: str
+    kind: str
+    prompt: str
+    prompt_en: str
+    optional: bool = False
+    options: List[CheckinOption] = []
+    step: int
+    total_estimate: int
+
+class CheckinReason(BaseModel):
+    code: str
+    label: str
+
+class CheckinResult(BaseModel):
+    final_tier: str
+    recommended_action: str  # DO_NOT_PAY, WAIT_FOR_GUARDIAN, PAUSE_AND_VERIFY, PROCEED_WITH_CARE
+    message: str
+    answers_could_not_clear: bool = False
+    answers_could_not_clear_message: Optional[str] = None
+    reasons: List[CheckinReason] = []
+    guardian_request_ref: Optional[str] = None
+    eligible_guardian_count: int = 0
+
+class CheckinResponse(BaseModel):
+    simulation_id: str
+    language: str
+    status: str  # IN_PROGRESS, COMPLETED
+    engine: str = "RULE_BASED_GUIDED_CHECKIN"
+    engine_note: str = "Guided rule-based check-in. No generative AI model is used, and answers cannot override objective payment risk."
+    next_question: Optional[CheckinQuestion] = None
+    result: Optional[CheckinResult] = None
+
+# --- Guardian Approval Schemas ---
+class GuardianApprovalResponse(BaseModel):
+    request_ref: str
+    simulation_id: str
+    requester_name: str
+    amount: float
+    payee: str
+    status: str
+    created_at: datetime
+    expires_at: datetime
+    decided_at: Optional[datetime] = None
+    decision_note: Optional[str] = None
+    viewer_role: str
+    reason_codes: List[str] = []
+    guardian_guidance: Optional[str] = None
+
+class GuardianDecisionRequest(BaseModel):
+    decision: str = Field(..., pattern="^(APPROVE|DECLINE)$")
+    note: Optional[str] = Field(default=None, max_length=280)
+
+# --- Duress Phrase Schemas ---
+class DuressSettingsResponse(BaseModel):
+    enabled: bool
+    configured_at: Optional[datetime] = None
+    eligible_guardian_count: int = 0
+    how_it_works: str = (
+        "If your secret phrase appears in your answer to the check-in question about what a payment is for, "
+        "the app shows an ordinary 'family check needed' screen while quietly asking your accepted guardians to call you."
+    )
+
+class DuressSettingsUpdate(BaseModel):
+    phrase: str = Field(..., min_length=8, max_length=80)
+    consent_acknowledged: bool
+
+# --- SDK Boundary Schemas ---
+class SdkPreTransactionRequest(BaseModel):
+    payee_vpa: str = Field(..., min_length=3)
+    payee_name: Optional[str] = None
+    amount: float = Field(..., gt=0)
+    note: Optional[str] = None
+    call_state: str = Field(default="NONE", pattern="^(NONE|DEMO_SIMULATED_ACTIVE_CALL|USER_REPORTED_ACTIVE_CALL)$")
+    host_app: str = Field(default="SATARK_MOCK_UPI", max_length=40)
+
+class SdkDecisionResponse(BaseModel):
+    sdk_version: str = "0.1.0-prototype"
+    decision: str  # ALLOW, CHECKIN_REQUIRED, GUARDIAN_APPROVAL_REQUIRED, BLOCK_RECOMMENDED
+    simulation_id: str
+    policy_tier: str
+    risk_score: int
+    risk_signals: List[RiskSignalResponse] = []
+    checkin_status: str = "NOT_STARTED"
+    guardian_request_ref: Optional[str] = None
+    guardian_status: Optional[str] = None
+    can_complete: bool
+    user_message: str
+    integration_notice: str = (
+        "Prototype SDK boundary used by the Satark mock UPI app only. It is not integrated with PhonePe, "
+        "Google Pay, Paytm, BHIM or any bank application, and no real money moves."
+    )
+
+class SdkCompleteResponse(BaseModel):
+    simulation_id: str
+    status: str  # COMPLETED, CANCELLED
+    transaction_id: Optional[int] = None
+    message: str
+    is_mock: bool = True
 
 # Alias for legacy compatibility
 PaymentCheckResponse = PaymentSimulationResponse

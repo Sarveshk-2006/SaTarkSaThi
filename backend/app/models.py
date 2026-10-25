@@ -51,6 +51,13 @@ class TrustedContact(Base):
     # Explicit user consent for incident sharing
     consent_granted = Column(Boolean, default=False)  # Must be explicitly granted; never assumed.
 
+    # Contact-side consent: the invited person must accept separately from the owner's grant.
+    # "PENDING", "ACCEPTED", "DECLINED"
+    contact_consent_status = Column(String(20), default="PENDING")
+    contact_consent_at = Column(DateTime(timezone=True), nullable=True)
+    invite_code_hash = Column(String(128), nullable=True)
+    invite_expires_at = Column(DateTime(timezone=True), nullable=True)
+
     created_at = Column(DateTime(timezone=True), default=utc_now)
 
     # Relationships
@@ -158,6 +165,9 @@ class FamilyAlert(Base):
     acknowledged_at = Column(DateTime(timezone=True), nullable=True)
     acknowledged_by = Column(String(100), nullable=True)
 
+    # Discreet escalations are visible to the guardian recipient only, never in the owner's alert list.
+    is_discreet = Column(Boolean, default=False)
+
     # Relationships
     analysis = orm_relationship("ScamAnalysis", back_populates="alerts")
     contact = orm_relationship("TrustedContact", back_populates="alerts")
@@ -190,12 +200,82 @@ class PaymentSimulation(Base):
     evidence_factors = Column(Text, nullable=True)  # JSON array
     verification_steps = Column(Text, nullable=True)  # JSON array
 
+    # "NONE", "DEMO_SIMULATED_ACTIVE_CALL", "USER_REPORTED_ACTIVE_CALL"
+    call_state = Column(String(40), default="NONE")
+    risk_signals = Column(Text, nullable=True)  # JSON array of explained signals
+    guardian_approval_recommended = Column(Boolean, default=False)
+
+    # Safety check-in outcome only (free-text answers are never stored)
+    checkin_status = Column(String(20), default="NOT_STARTED")  # "NOT_STARTED", "COMPLETED"
+    checkin_tier = Column(String(10), nullable=True)
+    checkin_signal_codes = Column(Text, nullable=True)  # JSON array of codes
+    checkin_completed_at = Column(DateTime(timezone=True), nullable=True)
+
+    # "SANDBOX" (Payment Checkpoint) or "MOCK_UPI_SDK" (mock UPI app via SDK boundary)
+    source = Column(String(30), default="SANDBOX")
+
     # Strictly marked simulation
     is_simulation = Column(Boolean, default=True)
     checked_at = Column(DateTime(timezone=True), default=utc_now, index=True)
 
     # Relationships
     user = orm_relationship("UserProfile", back_populates="payment_simulations")
+
+
+class TransactionRecord(Base):
+    """
+    Mock payment ledger used as transaction history for risk baselines.
+    Seed rows and mock UPI app payments only; never a real bank or UPI record.
+    """
+    __tablename__ = "transaction_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False, index=True)
+    payee_vpa = Column(String(120), nullable=False, index=True)
+    payee_name = Column(String(120), nullable=True)
+    amount = Column(Float, nullable=False)
+    category = Column(String(40), nullable=True)
+    status = Column(String(20), default="COMPLETED")  # "COMPLETED", "CANCELLED"
+    simulation_id = Column(String(50), nullable=True)
+    is_mock = Column(Boolean, default=True)
+    is_seed_data = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now, index=True)
+
+
+class GuardianApprovalRequest(Base):
+    __tablename__ = "guardian_approval_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    request_ref = Column(String(30), unique=True, index=True, nullable=False)  # GA-XXXXXX
+    simulation_id = Column(String(50), nullable=False, index=True)
+    requester_user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False, index=True)
+    eligible_contact_ids = Column(Text, nullable=False)  # JSON array of TrustedContact ids
+    amount = Column(Float, nullable=False)
+    payee = Column(String(120), nullable=False)
+    reason_codes = Column(Text, nullable=True)  # JSON array
+    status = Column(String(20), default="PENDING", index=True)  # PENDING, APPROVED, DECLINED, EXPIRED, CANCELLED
+    is_discreet = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    decided_at = Column(DateTime(timezone=True), nullable=True)
+    decided_by_user_id = Column(Integer, nullable=True)
+    decided_by_contact_id = Column(Integer, nullable=True)
+    decision_note = Column(String(280), nullable=True)
+
+
+class SafetyPreference(Base):
+    """
+    Opt-in duress phrase settings. Only a salted PBKDF2 hash is stored; the phrase is never persisted.
+    """
+    __tablename__ = "safety_preferences"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False, unique=True, index=True)
+    duress_enabled = Column(Boolean, default=False)
+    duress_phrase_hash = Column(String(200), nullable=True)
+    duress_word_count = Column(Integer, nullable=True)
+    duress_consent_at = Column(DateTime(timezone=True), nullable=True)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 
 
 # Legacy alias so existing queries/imports do not break
