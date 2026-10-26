@@ -7,11 +7,14 @@ import {
   ChevronDown,
   Sparkles,
   Eye,
+  LogOut,
 } from 'lucide-react';
 import { PresenterControlModal } from '../demo/PresenterControlModal';
 import { useLanguage, LANGUAGES } from '../../context/LanguageContext';
 import { useNotification } from '../../context/NotificationContext';
 import { useSeniorMode } from '../../context/SeniorModeContext';
+import { useAuthSession } from '../../context/AuthSessionContext';
+import { ViewModeToggle } from '../appmode/ViewModeToggle';
 import { api } from '../../api/endpoints';
 import { FamilyAlert, UserProfile } from '../../api/types';
 
@@ -61,6 +64,7 @@ export const Header: React.FC = () => {
   const { language, setLanguage, currentMeta } = useLanguage();
   const { activeUserId, switchUser, activeProfileName, activeProfileRole, isWsConnected } = useNotification();
   const { seniorMode, setSeniorMode } = useSeniorMode();
+  const { signOut } = useAuthSession();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -106,24 +110,21 @@ export const Header: React.FC = () => {
   const unacknowledgedAlerts = alerts.filter((a) => a.status !== 'ACKNOWLEDGED');
 
   return (
-    <header className="hidden md:flex flex-col bg-white border-b border-[#E2E8F0] px-6 py-3.5 sticky top-0 z-30 shadow-subtle">
+    <header className="hidden lg:flex flex-col bg-white border-b border-[#E2E8F0] px-6 py-3.5 sticky top-0 z-30 shadow-subtle">
       <div className="flex items-center justify-between gap-4">
         {/* Page Title & Contextual Description */}
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[11rem] flex-1">
           <div className="flex items-center gap-2.5">
             <h1 className="text-lg font-bold text-[#142A36] tracking-tight leading-tight truncate">
               {currentPage.title}
             </h1>
-            <span className="hidden xl:inline-block text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-[#DCEDE5] text-[#176B58] border border-[#B8DED0]">
-              {currentMeta.tagline}
-            </span>
           </div>
           <p className="text-xs text-[#64748B] mt-0.5 truncate">{currentPage.description}</p>
         </div>
 
         {/* Global Incident Search (hidden in Senior Mode to simplify the screen) */}
         {!seniorMode && (
-        <form onSubmit={handleSearchSubmit} className="relative w-64 lg:w-72">
+        <form onSubmit={handleSearchSubmit} className="relative hidden xl:block flex-1 min-w-[9rem] max-w-[16rem]">
           <Search className="w-3.5 h-3.5 text-[#94A3B8] absolute left-3 top-2.5" />
           <input
             type="text"
@@ -136,7 +137,8 @@ export const Header: React.FC = () => {
         )}
 
         {/* Action Controls & Profile Area */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-2 xl:gap-3 shrink-0">
+          <ViewModeToggle />
           <button
             type="button"
             onClick={() => setSeniorMode(!seniorMode)}
@@ -149,7 +151,7 @@ export const Header: React.FC = () => {
             title="Larger text, higher contrast and a simpler home screen"
           >
             <Eye className="w-3.5 h-3.5" />
-            <span>{seniorMode ? 'Senior Mode: ON' : 'Senior Mode'}</span>
+            <span className="hidden xl:inline whitespace-nowrap">{seniorMode ? 'Senior Mode: ON' : 'Senior Mode'}</span>
           </button>
           {/* Language Selector Dropdown */}
           <div className="relative" ref={languageRef}>
@@ -160,7 +162,7 @@ export const Header: React.FC = () => {
               aria-expanded={isLanguageOpen}
             >
               <Globe className="w-3.5 h-3.5 text-[#64748B]" />
-              <span>{currentMeta.nativeName}</span>
+              <span className="hidden xl:inline">{currentMeta.nativeName}</span>
               <ChevronDown className="w-3 h-3 text-[#94A3B8]" />
             </button>
 
@@ -276,7 +278,7 @@ export const Header: React.FC = () => {
               }`}>
                 {activeProfileName.charAt(0)}
               </div>
-              <div className="hidden lg:block leading-none">
+              <div className="hidden 2xl:block leading-none">
                 <span className="text-xs font-bold text-[#142A36] block truncate max-w-[120px] group-hover:text-[#176B58]">
                   {activeProfileName}
                 </span>
@@ -300,10 +302,22 @@ export const Header: React.FC = () => {
                   isWsConnected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
                 }`}
               />
-              <span>{isWsConnected ? 'Live WS' : 'Connecting'}</span>
+              <span className="hidden 2xl:inline">{isWsConnected ? 'Live WS' : 'Connecting'}</span>
             </div>
 
             {/* Presenter Deck Live Controls Button */}
+            <button
+              type="button"
+              onClick={() => {
+                signOut();
+                window.location.assign('/welcome');
+              }}
+              className="p-2 rounded-xl border border-[#E2E8F0] bg-white text-[#64748B] hover:text-[#142A36] hover:bg-[#F7F8F4] cursor-pointer"
+              title="Sign out"
+              aria-label="Sign out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
             {!seniorMode && (
             <button
               type="button"
@@ -312,7 +326,7 @@ export const Header: React.FC = () => {
               title="Open Hackathon Presenter Deck (Scenarios, Health & Evaluations)"
             >
               <Sparkles className="w-3.5 h-3.5 text-[#DCEDE5]" />
-              <span className="hidden sm:inline">Presenter Deck</span>
+              <span className="hidden 2xl:inline">Presenter Deck</span>
             </button>
             )}
           </div>

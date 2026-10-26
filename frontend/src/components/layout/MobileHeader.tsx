@@ -12,10 +12,12 @@ import {
   History,
   Settings,
   PhoneCall,
-  Smartphone,
+  LogOut,
 } from 'lucide-react';
 import { DemoModeIndicator } from './DemoModeIndicator';
 import { useSeniorMode } from '../../context/SeniorModeContext';
+import { useAuthSession } from '../../context/AuthSessionContext';
+import { ViewModeToggle } from '../appmode/ViewModeToggle';
 
 const navItems = [
   { name: 'Overview', to: '/', icon: <LayoutDashboard className="w-4 h-4 shrink-0" /> },
@@ -24,7 +26,6 @@ const navItems = [
   { name: 'Family Shield', to: '/family-shield', icon: <Users className="w-4 h-4 shrink-0" /> },
   { name: 'Golden Hour Recovery', to: '/golden-hour', icon: <LifeBuoy className="w-4 h-4 shrink-0" />, badge: '1930' },
   { name: 'Incident History', to: '/incident-history', icon: <History className="w-4 h-4 shrink-0" /> },
-  { name: 'Mock UPI App', to: '/mock-upi', icon: <Smartphone className="w-4 h-4 shrink-0" />, badge: 'DEMO' },
   { name: 'Settings', to: '/settings', icon: <Settings className="w-4 h-4 shrink-0" /> },
 ];
 
@@ -33,10 +34,11 @@ const SENIOR_ROUTES = ['/', '/scanner', '/payment-checkpoint', '/family-shield',
 export const MobileHeader: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { seniorMode, setSeniorMode } = useSeniorMode();
+  const { signOut } = useAuthSession();
   const items = seniorMode ? navItems.filter((i) => SENIOR_ROUTES.includes(i.to)) : navItems;
 
   return (
-    <header className="md:hidden border-b border-[#1E3A4B] bg-[#142A36] text-white sticky top-0 z-40 shadow-xs">
+    <header className="lg:hidden border-b border-[#1E3A4B] bg-[#142A36] text-white sticky top-0 z-40 shadow-xs">
       <div className="flex items-center justify-between px-4 py-2.5">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-[#176B58] text-white flex items-center justify-center shadow-subtle border border-[#23806B]">
@@ -49,6 +51,7 @@ export const MobileHeader: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <ViewModeToggle dark />
           <a
             href="tel:1930"
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold shadow-xs transition-colors"
@@ -107,6 +110,16 @@ export const MobileHeader: React.FC = () => {
               className="w-full px-3 py-2.5 rounded-xl text-sm font-bold bg-amber-400 text-slate-950 cursor-pointer"
             >
               {seniorMode ? 'Senior Mode: ON (tap to turn off)' : 'Turn on Senior Mode (larger text)'}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                signOut();
+                window.location.assign('/welcome');
+              }}
+              className="w-full px-3 py-2.5 rounded-xl text-sm font-semibold border border-white/20 text-white flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <LogOut className="w-4 h-4" /> Sign out
             </button>
             <DemoModeIndicator />
           </div>

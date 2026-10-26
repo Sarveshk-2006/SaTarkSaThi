@@ -10,7 +10,6 @@ import {
   Settings,
   Shield,
   PhoneCall,
-  Smartphone,
 } from 'lucide-react';
 import { DemoModeIndicator } from './DemoModeIndicator';
 import { useLanguage } from '../../context/LanguageContext';
@@ -63,12 +62,6 @@ const navItems: NavItem[] = [
     shortcut: '6',
   },
   {
-    name: 'Mock UPI App',
-    to: '/mock-upi',
-    icon: <Smartphone className="w-4 h-4 shrink-0" />,
-    badge: 'DEMO',
-  },
-  {
     name: 'Settings',
     to: '/settings',
     icon: <Settings className="w-4 h-4 shrink-0" />,
@@ -84,7 +77,7 @@ export const Sidebar: React.FC = () => {
   const items = seniorMode ? navItems.filter((i) => SENIOR_ROUTES.includes(i.to)) : navItems;
 
   return (
-    <aside className="hidden md:flex flex-col w-64 bg-[#142A36] text-slate-100 min-h-screen select-none border-r border-[#1E3A4B] shrink-0">
+    <aside className="hidden lg:flex flex-col w-64 bg-[#142A36] text-slate-100 min-h-screen select-none border-r border-[#1E3A4B] shrink-0">
       {/* Brand Header */}
       <div className="p-4 border-b border-[#1E3A4B] bg-[#0E1E27]">
         <div className="flex items-center gap-3">
