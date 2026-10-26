@@ -57,6 +57,11 @@ def get_current_user_id(
                 detail="Malformed token claims: missing or non-integer user identifier.",
                 headers={"WWW-Authenticate": "Bearer"},
             )
+        if not _load_access(user_id)[1]:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="This account has been deactivated.",
+            )
         return user_id
 
     # 2. Production Fail-Closed Enforcement
@@ -95,6 +100,56 @@ def get_current_user_id(
         )
 
     logger.debug(f"Authenticated via dev-only demo persona header for user_id={user_id}")
+    return user_id
+
+
+def _load_access(user_id: int):
+    """Returns (access_role, is_active) for a user, or ("USER", True) if the profile is missing."""
+    from backend.app.database import SessionLocal
+    from backend.app.models import UserProfile
+    db = SessionLocal()
+    try:
+        profile = db.query(UserProfile).filter(UserProfile.id == user_id).first()
+        if not profile:
+            return "USER", True
+        return (profile.access_role or "USER").upper(), profile.is_active is not False
+    finally:
+        db.close()
+
+
+def get_access_role(user_id: int) -> str:
+    if user_id in settings.admin_user_id_set:
+        return "ADMIN"
+    role, _ = _load_access(user_id)
+    return role if role in ("USER", "OPERATOR", "ADMIN") else "USER"
+
+
+def require_admin(
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+) -> int:
+    """Authenticates the caller and requires ADMIN (ADMIN_USER_IDS bootstrap list or access_role=ADMIN)."""
+    user_id = get_current_user_id(authorization=authorization, x_user_id=x_user_id)
+    if get_access_role(user_id) != "ADMIN":
+        logger.warning(f"Denied admin-only operation for user_id={user_id}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator permission required for this operation.",
+        )
+    return user_id
+
+
+def require_operator(
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+) -> int:
+    """Requires OPERATOR or ADMIN access."""
+    user_id = get_current_user_id(authorization=authorization, x_user_id=x_user_id)
+    if get_access_role(user_id) not in ("OPERATOR", "ADMIN"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operator or administrator permission required.",
+        )
     return user_id
 
 

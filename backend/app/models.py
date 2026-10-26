@@ -15,6 +15,9 @@ class UserProfile(Base):
     phone_number = Column(String(20), nullable=False, default="+91 98765 43210")
     email = Column(String(120), nullable=True, default="rajesh.sharma@example.in")
     role = Column(String(30), default="PROTECTED_MEMBER")  # "PROTECTED_MEMBER", "GUARDIAN"
+    # Platform access role, separate from the family role above: "USER", "OPERATOR", "ADMIN".
+    access_role = Column(String(20), default="USER")
+    is_active = Column(Boolean, default=True)
     passcode_hash = Column(String(128), nullable=True)  # Hashed passcode for demo session
     preferred_language = Column(String(20), default="English")
     city = Column(String(50), default="New Delhi")
