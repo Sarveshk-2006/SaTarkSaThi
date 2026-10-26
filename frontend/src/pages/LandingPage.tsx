@@ -16,13 +16,15 @@ import {
   Launch,
   Document,
   Chat,
-  Help,
   Close,
   Menu,
   ChevronDown,
   View,
-  Locked,
-  Information,
+  Notification,
+  Timer,
+  Time,
+  Mobile,
+  Gateway,
 } from '@carbon/icons-react';
 import { Button, Tag } from '@carbon/react';
 import { useAuthSession } from '../context/AuthSessionContext';
@@ -120,6 +122,57 @@ const DEMO_SCENARIOS: DemoScenario[] = [
   },
 ];
 
+const METRIC_PILLARS = [
+  {
+    label: 'Verification Latency',
+    value: '< 4.5s',
+    subtext: 'Dual heuristic & semantic inference',
+    badge: 'Real-time',
+  },
+  {
+    label: 'Duress Phrase Privacy',
+    value: '100%',
+    subtext: 'Salted SHA-256 hash storage',
+    badge: 'Zero Plaintext',
+  },
+  {
+    label: 'Helpline Compliance',
+    value: '1930 Ready',
+    subtext: 'Official Cyber Crime portal dossier',
+    badge: 'National Standard',
+  },
+  {
+    label: 'Safety Checkpoints',
+    value: '3 Layers',
+    subtext: 'Cooldown + VPA audit + Coercion check',
+    badge: 'Pre-Flight',
+  },
+];
+
+const INTERCEPTION_PIPELINE = [
+  {
+    step: 'Stage 01',
+    title: 'Signal Ingestion & OCR Extraction',
+    desc: 'Extracts sender headers, domain origins, QR payloads, and image OCR from SMS, WhatsApp, and banking push alerts.',
+    icon: Mobile,
+    tag: 'Input Layer',
+  },
+  {
+    step: 'Stage 02',
+    title: 'Dual Heuristic & Coercion Engine',
+    desc: 'Evaluates lookalike domains against official RBI/IBA registries, flags 2-hour panic deadlines, and detects malware APK calls.',
+    icon: Gateway,
+    tag: 'Analysis Core',
+  },
+  {
+    step: 'Stage 03',
+    title: 'Multi-Desk Actionable Output',
+    desc: 'Dispatches plain-language citizen guidance, triggers Family Shield guardian push alerts, and generates 1930 recovery dossiers.',
+    icon: Security,
+    tag: 'Response Grid',
+  },
+];
+
 const WHY_VECTORS = [
   {
     icon: WarningAlt,
@@ -127,6 +180,7 @@ const WHY_VECTORS = [
     description:
       'Fraudsters disguise SMS sender headers as national banks (SBI, HDFC, PNB) threatening instant freeze of pensions or savings accounts unless PAN is re-verified.',
     badge: 'Banking Vector',
+    sample: '"Your SBI account will be permanently blocked in 2 hours. Update PAN: sbi-kyc.in"',
   },
   {
     icon: Flash,
@@ -134,6 +188,7 @@ const WHY_VECTORS = [
     description:
       'Panicked shopkeepers and senior citizens receive evening SMS alerts threatening power disconnection within two hours unless a fraudulent APK is downloaded.',
     badge: 'Utility Vector',
+    sample: '"Electricity will be disconnected at 9:30 PM. Call bill officer at 9832104412."',
   },
   {
     icon: Security,
@@ -141,6 +196,7 @@ const WHY_VECTORS = [
     description:
       'Organized crime syndicates pose as police, CBI, or customs officials on video calls, keeping victims isolated for hours while demanding "bail clearance" transfers.',
     badge: 'Extortion Vector',
+    sample: '"FedEx customs parcel seized with narcotics under your Aadhaar. Join Skype immediately."',
   },
   {
     icon: Wallet,
@@ -148,6 +204,7 @@ const WHY_VECTORS = [
     description:
       'Telegram channels promise lucrative daily earnings for rating hotels or videos, leading victims through psychological escalation into irreversible deposits.',
     badge: 'Investment Vector',
+    sample: '"Earn ₹3,500 daily by rating Google Maps hotels. Deposit ₹500 to unlock tier 1 task."',
   },
 ];
 
@@ -226,6 +283,33 @@ const INPUT_CAPABILITIES = [
   },
 ];
 
+const GOLDEN_HOUR_TIMELINE = [
+  {
+    time: 'Minutes 0–15',
+    title: 'Freeze & Evidence Lock',
+    desc: 'Immediately stop any further communication. Take full-resolution screenshots showing transaction UTR, sender number, and payment time.',
+    badge: 'Immediate',
+  },
+  {
+    time: 'Minutes 15–45',
+    title: 'Call National Helpline 1930',
+    desc: 'Dial 1930 from your registered mobile. State your bank account, transaction ID, and the fraudster beneficiary account to request a fast lien.',
+    badge: 'Crucial Lien Window',
+  },
+  {
+    time: 'Minutes 45–90',
+    title: 'Bank Fraud Escalation',
+    desc: 'Contact your bank branch manager or 24x7 fraud desk. Quote the 1930 complaint acknowledgment to freeze outward fund dissipation.',
+    badge: 'Bank Coordination',
+  },
+  {
+    time: 'Minutes 90–180',
+    title: 'Formal Cybercrime.gov.in Filing',
+    desc: 'Export Satark Saathi’s formatted evidence dossier and register the complete incident report on the National Cyber Crime Reporting Portal.',
+    badge: 'Police Dossier',
+  },
+];
+
 const FAQ_ITEMS = [
   {
     question: 'What is Satark Saathi and how does it protect citizens?',
@@ -263,15 +347,17 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { session } = useAuthSession();
   const containerRef = useRef<HTMLDivElement>(null);
+  const previewCardRef = useRef<HTMLDivElement>(null);
   const [selectedScenarioIndex, setSelectedScenarioIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
   const [customInputText, setCustomInputText] = useState('');
   const [familyShieldView, setFamilyShieldView] = useState<'guardian' | 'senior'>('guardian');
+  const [activeVectorIndex, setActiveVectorIndex] = useState<number | null>(null);
 
   const scenario = DEMO_SCENARIOS[selectedScenarioIndex];
 
-  // GSAP animations with matchMedia and reduced-motion support
+  // GSAP 3D and ScrollTrigger animations
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
@@ -279,13 +365,15 @@ export const LandingPage: React.FC = () => {
       // Respect prefers-reduced-motion
       mm.add('(prefers-reduced-motion: reduce)', () => {
         gsap.set(
-          '.gsap-hero-header, .gsap-hero-eyebrow, .gsap-hero-title, .gsap-hero-desc, .gsap-hero-cta, .gsap-hero-trust, .gsap-hero-preview, .gsap-floating-card, .gsap-reveal, .gsap-step-line',
+          '.gsap-hero-header, .gsap-hero-eyebrow, .gsap-hero-title, .gsap-hero-desc, .gsap-hero-cta, .gsap-hero-trust, .gsap-hero-preview, .gsap-floating-badge, .gsap-reveal, .gsap-step-line, .gsap-3d-card',
           {
             opacity: 1,
             y: 0,
             x: 0,
             scale: 1,
             scaleX: 1,
+            rotateX: 0,
+            rotateY: 0,
             clearProps: 'all',
           }
         );
@@ -303,8 +391,33 @@ export const LandingPage: React.FC = () => {
           .from('.gsap-hero-desc', { y: 18, opacity: 0, duration: 0.6 }, '-=0.4')
           .from('.gsap-hero-cta', { y: 16, opacity: 0, stagger: 0.1, duration: 0.5 }, '-=0.3')
           .from('.gsap-hero-trust', { opacity: 0, y: 10, duration: 0.5 }, '-=0.2')
-          .from('.gsap-hero-preview', { y: 32, opacity: 0, scale: 0.98, duration: 0.8 }, '-=0.6')
-          .from('.gsap-floating-card', { y: 16, opacity: 0, stagger: 0.12, duration: 0.5 }, '-=0.4');
+          .from('.gsap-hero-preview', { y: 36, opacity: 0, scale: 0.97, rotateX: 6, transformPerspective: 1000, duration: 0.9 }, '-=0.6')
+          .from('.gsap-floating-badge', { y: 20, opacity: 0, stagger: 0.12, duration: 0.5 }, '-=0.4');
+
+        // Continuous subtle 3D floating effect on floating badges
+        gsap.to('.gsap-float-1', {
+          y: -7,
+          duration: 2.6,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+        });
+        gsap.to('.gsap-float-2', {
+          y: -9,
+          duration: 3.1,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: 0.5,
+        });
+        gsap.to('.gsap-float-3', {
+          y: -6,
+          duration: 2.8,
+          repeat: -1,
+          yoyo: true,
+          ease: 'sine.inOut',
+          delay: 1.0,
+        });
 
         // Linear step connector animation on ScrollTrigger
         gsap.from('.gsap-step-line', {
@@ -314,11 +427,29 @@ export const LandingPage: React.FC = () => {
           },
           scaleX: 0,
           transformOrigin: 'left center',
-          duration: 1.1,
+          duration: 1.2,
           ease: 'power2.inOut',
         });
 
-        // ScrollTrigger section reveals
+        // 3D section reveals with perspective
+        const cards3D = gsap.utils.toArray<HTMLElement>('.gsap-3d-card');
+        cards3D.forEach((card) => {
+          gsap.from(card, {
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+            y: 35,
+            opacity: 0,
+            rotateX: 4,
+            transformPerspective: 1000,
+            duration: 0.75,
+            ease: 'power2.out',
+          });
+        });
+
+        // Standard ScrollTrigger section reveals
         const sections = gsap.utils.toArray<HTMLElement>('.gsap-section');
         sections.forEach((sec) => {
           const targets = sec.querySelectorAll('.gsap-reveal');
@@ -370,6 +501,31 @@ export const LandingPage: React.FC = () => {
     },
     { scope: containerRef }
   );
+
+  // 3D Interactive Mouse Tilt on Preview Card
+  const handlePreviewMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!previewCardRef.current || window.innerWidth < 1024) return;
+    const rect = previewCardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    gsap.to(previewCardRef.current, {
+      rotateY: x * 0.02,
+      rotateX: -y * 0.02,
+      transformPerspective: 1000,
+      ease: 'power1.out',
+      duration: 0.4,
+    });
+  };
+
+  const handlePreviewMouseLeave = () => {
+    if (!previewCardRef.current) return;
+    gsap.to(previewCardRef.current, {
+      rotateY: 0,
+      rotateX: 0,
+      ease: 'power2.out',
+      duration: 0.6,
+    });
+  };
 
   // Coordinated GSAP reveal when user switches demo scenarios
   const handleSelectScenario = (index: number) => {
@@ -466,6 +622,7 @@ export const LandingPage: React.FC = () => {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-[#586474]" aria-label="Main Navigation">
+            <a href="#pipeline" className="hover:text-[#0F766E] transition-colors">Architecture</a>
             <a href="#why" className="hover:text-[#0F766E] transition-colors">Why Satark</a>
             <a href="#how" className="hover:text-[#0F766E] transition-colors">How It Works</a>
             <a href="#inputs" className="hover:text-[#0F766E] transition-colors">Capabilities</a>
@@ -525,6 +682,13 @@ export const LandingPage: React.FC = () => {
         {mobileMenuOpen && (
           <div className="sm:hidden border-t border-[#E2E8F0] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
             <nav className="flex flex-col space-y-2 text-sm font-medium text-[#586474]" aria-label="Mobile Navigation">
+              <a
+                href="#pipeline"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1.5 px-2 rounded hover:bg-[#F7F9FC] hover:text-[#0F766E]"
+              >
+                Interception Architecture
+              </a>
               <a
                 href="#why"
                 onClick={() => setMobileMenuOpen(false)}
@@ -602,10 +766,13 @@ export const LandingPage: React.FC = () => {
 
       <main id="main-content">
         {/* -------------------------------------------------------------------------
-            SECTION 2 & 3: Hero Section & Interactive Product Demonstration
+            SECTION 2 & 3: Hero Section & Interactive Product Demonstration with 3D Depth
             ------------------------------------------------------------------------- */}
         <section className="relative pt-12 pb-20 md:pt-16 md:pb-28 overflow-hidden bg-gradient-to-b from-white via-[#F7F9FC] to-[#F7F9FC] border-b border-[#E2E8F0]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Subtle Ambient Radial Mesh Pattern */}
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[radial-gradient(ellipse_at_top,_rgba(15,118,110,0.08)_0%,_transparent_70%)] pointer-events-none" />
+
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
               {/* Left Column: Headline, Description, and CTAs */}
               <div className="lg:col-span-6 space-y-6">
@@ -667,7 +834,7 @@ export const LandingPage: React.FC = () => {
                 </div>
 
                 {/* Interactive Direct Check Input Form */}
-                <div className="gsap-hero-trust pt-3">
+                <div className="gsap-hero-trust pt-2">
                   <form onSubmit={handleRunCustomCheck} className="bg-white border border-[#CBD5E1] rounded-xl p-3 shadow-sm flex flex-col sm:flex-row gap-2">
                     <input
                       type="text"
@@ -687,8 +854,12 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right Column: Realistic Product Preview & Floating Contextual Cards */}
-              <div className="lg:col-span-6 relative">
+              {/* Right Column: Realistic Product Preview with 3D Depth & Floating CyberWall Badges */}
+              <div
+                className="lg:col-span-6 relative"
+                onMouseMove={handlePreviewMouseMove}
+                onMouseLeave={handlePreviewMouseLeave}
+              >
                 {/* Threat scenario switcher tabs */}
                 <div className="mb-3 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" role="tablist" aria-label="Sample Scenarios">
                   <span className="text-[11px] font-semibold text-[#586474] uppercase tracking-wider mr-1 shrink-0">
@@ -712,8 +883,11 @@ export const LandingPage: React.FC = () => {
                   ))}
                 </div>
 
-                {/* Main Product Preview Container */}
-                <div className="gsap-hero-preview bg-white rounded-2xl border border-[#CBD5E1] shadow-xl overflow-hidden">
+                {/* Main Product Preview Container with 3D Tilt Ref */}
+                <div
+                  ref={previewCardRef}
+                  className="gsap-hero-preview bg-white rounded-2xl border border-[#CBD5E1] shadow-2xl overflow-hidden transition-shadow hover:shadow-teal-900/10"
+                >
                   {/* Top Header of the Preview Card */}
                   <div className="px-5 py-3.5 bg-[#182230] text-white flex items-center justify-between gap-3 border-b border-[#334155]">
                     <div className="flex items-center gap-2.5">
@@ -806,23 +980,102 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Floating contextual micro-cards */}
-                <div className="gsap-floating-card hidden sm:flex absolute -bottom-5 -left-4 bg-white border border-[#E2E8F0] shadow-lg rounded-xl px-3.5 py-2.5 items-center gap-2.5 text-xs">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#D92D20]" />
+                {/* Floating 3D CyberWall Badges */}
+                <div className="gsap-floating-badge gsap-float-1 hidden sm:flex absolute -bottom-5 -left-4 bg-white border border-[#CBD5E1] shadow-xl rounded-xl px-3.5 py-2.5 items-center gap-2.5 text-xs z-20">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#D92D20] animate-pulse" />
                   <div>
-                    <span className="font-semibold text-[#182230] block">Fake Shortcode</span>
-                    <span className="text-[10px] text-[#586474]">Unverified 10-digit mobile number</span>
+                    <span className="font-semibold text-[#182230] block">Fake 10-Digit Sender</span>
+                    <span className="text-[10px] text-[#586474]">Not an authorized RBI bank shortcode</span>
                   </div>
                 </div>
 
-                <div className="gsap-floating-card hidden sm:flex absolute -top-4 -right-4 bg-white border border-[#E2E8F0] shadow-lg rounded-xl px-3.5 py-2.5 items-center gap-2.5 text-xs">
+                <div className="gsap-floating-badge gsap-float-2 hidden sm:flex absolute -top-5 -right-4 bg-white border border-[#CBD5E1] shadow-xl rounded-xl px-3.5 py-2.5 items-center gap-2.5 text-xs z-20">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#0F766E]" />
                   <div>
                     <span className="font-semibold text-[#182230] block">Helpline 1930 Integration</span>
                     <span className="text-[10px] text-[#586474]">One-tap dossier compilation</span>
                   </div>
                 </div>
+
+                <div className="gsap-floating-badge gsap-float-3 hidden lg:flex absolute top-1/2 -right-8 bg-white border border-[#CBD5E1] shadow-lg rounded-xl px-3 py-2 items-center gap-2 text-xs z-20">
+                  <span className="w-2 h-2 rounded-full bg-[#B54708]" />
+                  <span className="text-[11px] font-semibold text-[#182230]">2-Hour Panic Ultimatum Flagged</span>
+                </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* -------------------------------------------------------------------------
+            PILLARS BAR: Product Performance & Trust Metrics
+            ------------------------------------------------------------------------- */}
+        <section className="bg-white border-b border-[#E2E8F0] py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {METRIC_PILLARS.map((m, idx) => (
+                <div key={idx} className="gsap-reveal border-l-2 border-[#0F766E] pl-4 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-2xl sm:text-3xl font-bold font-mono text-[#182230]">{m.value}</span>
+                    <span className="text-[10px] uppercase tracking-wider font-semibold bg-[#E6F4F2] text-[#0F766E] px-2 py-0.5 rounded">
+                      {m.badge}
+                    </span>
+                  </div>
+                  <p className="text-xs font-semibold text-[#182230]">{m.label}</p>
+                  <p className="text-[11px] text-[#586474]">{m.subtext}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* -------------------------------------------------------------------------
+            INTERCEPTION ARCHITECTURE (CyberWall-Inspired Threat Flow)
+            ------------------------------------------------------------------------- */}
+        <section id="pipeline" className="gsap-section py-20 bg-[#F7F9FC] border-b border-[#E2E8F0]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl space-y-3 mb-14">
+              <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
+                Technical Security Architecture
+              </span>
+              <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
+                How Satark Saathi Intercepts Threats
+              </h2>
+              <p className="gsap-reveal text-sm sm:text-base text-[#586474] leading-relaxed">
+                A multi-layered threat interception framework calibrated against the Indian digital payment and messaging ecosystem.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {INTERCEPTION_PIPELINE.map((p, idx) => {
+                const IconComponent = p.icon;
+                return (
+                  <div
+                    key={idx}
+                    className="gsap-3d-card bg-white border border-[#CBD5E1] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all space-y-4"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-[#E6F4F2] text-[#0F766E] flex items-center justify-center">
+                        <IconComponent size={20} />
+                      </div>
+                      <span className="text-xs font-mono font-bold text-[#586474] bg-[#F7F9FC] px-2.5 py-1 rounded-full border border-[#E2E8F0]">
+                        {p.step}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Tag type="teal" size="sm">
+                        {p.tag}
+                      </Tag>
+                      <h3 className="font-bold text-base text-[#182230] pt-1">
+                        {p.title}
+                      </h3>
+                      <p className="text-xs text-[#586474] leading-relaxed">
+                        {p.desc}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -847,10 +1100,12 @@ export const LandingPage: React.FC = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {WHY_VECTORS.map((vec, idx) => {
                 const IconComponent = vec.icon;
+                const isSelected = activeVectorIndex === idx;
                 return (
                   <div
                     key={idx}
-                    className="gsap-reveal bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-6 flex flex-col justify-between hover:border-[#CBD5E1] transition-all hover:shadow-md"
+                    className="gsap-3d-card bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-6 flex flex-col justify-between hover:border-[#CBD5E1] transition-all hover:shadow-md cursor-pointer"
+                    onClick={() => setActiveVectorIndex(isSelected ? null : idx)}
                   >
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -867,10 +1122,19 @@ export const LandingPage: React.FC = () => {
                       <p className="text-xs text-[#586474] leading-relaxed">
                         {vec.description}
                       </p>
+
+                      {/* Expandable Anatomy Sample */}
+                      {isSelected && (
+                        <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg text-[11px] font-mono text-[#D92D20] space-y-1 animate-fadeIn">
+                          <span className="font-bold uppercase tracking-wider block text-[10px] text-[#586474]">Intercepted Pattern:</span>
+                          <p>{vec.sample}</p>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="pt-5 mt-4 border-t border-[#E2E8F0]/70 flex items-center text-xs font-semibold text-[#0F766E]">
-                      <span>Real-world threat profile</span>
+                    <div className="pt-5 mt-4 border-t border-[#E2E8F0]/70 flex items-center justify-between text-xs font-semibold text-[#0F766E]">
+                      <span>{isSelected ? 'Hide Sample' : 'Inspect Sample'}</span>
+                      <ChevronDown size={14} className={`transform transition-transform ${isSelected ? 'rotate-180' : ''}`} />
                     </div>
                   </div>
                 );
@@ -906,7 +1170,7 @@ export const LandingPage: React.FC = () => {
                 {STEPS.map((s, idx) => (
                   <div
                     key={idx}
-                    className="gsap-reveal bg-white border border-[#E2E8F0] rounded-2xl p-6 relative flex flex-col justify-between shadow-sm hover:border-[#CBD5E1] transition-all"
+                    className="gsap-3d-card bg-white border border-[#E2E8F0] rounded-2xl p-6 relative flex flex-col justify-between shadow-sm hover:border-[#CBD5E1] transition-all"
                   >
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -971,7 +1235,7 @@ export const LandingPage: React.FC = () => {
                 return (
                   <div
                     key={idx}
-                    className="gsap-reveal bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-6 flex flex-col justify-between hover:border-[#CBD5E1] transition-all hover:shadow-sm"
+                    className="gsap-3d-card bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-6 flex flex-col justify-between hover:border-[#CBD5E1] transition-all hover:shadow-sm"
                   >
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
@@ -1048,7 +1312,7 @@ export const LandingPage: React.FC = () => {
 
               {/* Visual Breakdown Dossier Card */}
               <div className="lg:col-span-6">
-                <div className="gsap-reveal bg-white border border-[#CBD5E1] rounded-2xl p-6 shadow-md space-y-5">
+                <div className="gsap-3d-card bg-white border border-[#CBD5E1] rounded-2xl p-6 shadow-md space-y-5">
                   <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
                     <div className="flex items-center gap-2">
                       <Security size={18} className="text-[#0F766E]" />
@@ -1170,7 +1434,7 @@ export const LandingPage: React.FC = () => {
 
               {/* Family Shield Interactive Simulation Mockup */}
               <div className="lg:col-span-6">
-                <div className="gsap-reveal bg-[#F7F9FC] border border-[#CBD5E1] rounded-2xl p-6 shadow-md space-y-4">
+                <div className="gsap-3d-card bg-[#F7F9FC] border border-[#CBD5E1] rounded-2xl p-6 shadow-md space-y-4">
                   {/* View switcher: Guardian Dashboard vs Senior Citizen Mode */}
                   <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
                     <div className="flex items-center gap-2">
@@ -1278,47 +1542,35 @@ export const LandingPage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Step-by-step Emergency Protocol */}
+              {/* 180-Minute Recovery Protocol Grid */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                <div className="p-5 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl space-y-2">
-                  <div className="w-7 h-7 rounded-full bg-[#182230] text-white flex items-center justify-center text-xs font-bold font-mono">
-                    1
+                {GOLDEN_HOUR_TIMELINE.map((step, idx) => (
+                  <div
+                    key={idx}
+                    className={`gsap-3d-card p-5 rounded-2xl border space-y-2 ${
+                      idx === 1
+                        ? 'bg-[#FEF3F2] border-[#FECDCA]'
+                        : 'bg-[#F7F9FC] border-[#E2E8F0]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${
+                        idx === 1 ? 'bg-[#D92D20] text-white' : 'bg-[#182230] text-white'
+                      }`}>
+                        {step.time}
+                      </span>
+                      <span className="text-[10px] uppercase tracking-wider font-semibold text-[#586474]">
+                        {step.badge}
+                      </span>
+                    </div>
+                    <h3 className={`font-bold text-sm ${idx === 1 ? 'text-[#D92D20]' : 'text-[#182230]'}`}>
+                      {step.title}
+                    </h3>
+                    <p className="text-xs text-[#586474] leading-relaxed">
+                      {step.desc}
+                    </p>
                   </div>
-                  <h3 className="font-bold text-sm text-[#182230]">Halt Further Payments</h3>
-                  <p className="text-xs text-[#586474] leading-relaxed">
-                    Never send additional "reversal fees" or "tax clearance" funds. Disconnect immediately.
-                  </p>
-                </div>
-
-                <div className="p-5 bg-[#FEF3F2] border border-[#FECDCA] rounded-2xl space-y-2">
-                  <div className="w-7 h-7 rounded-full bg-[#D92D20] text-white flex items-center justify-center text-xs font-bold font-mono">
-                    2
-                  </div>
-                  <h3 className="font-bold text-sm text-[#D92D20]">Dial Helpline 1930</h3>
-                  <p className="text-xs text-[#586474] leading-relaxed">
-                    Call 1930 immediately with your transaction UTR, bank account number, and timestamp.
-                  </p>
-                </div>
-
-                <div className="p-5 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl space-y-2">
-                  <div className="w-7 h-7 rounded-full bg-[#182230] text-white flex items-center justify-center text-xs font-bold font-mono">
-                    3
-                  </div>
-                  <h3 className="font-bold text-sm text-[#182230]">File at Cybercrime.gov.in</h3>
-                  <p className="text-xs text-[#586474] leading-relaxed">
-                    Register a formal incident report on the National Cyber Crime Reporting Portal.
-                  </p>
-                </div>
-
-                <div className="p-5 bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl space-y-2">
-                  <div className="w-7 h-7 rounded-full bg-[#182230] text-white flex items-center justify-center text-xs font-bold font-mono">
-                    4
-                  </div>
-                  <h3 className="font-bold text-sm text-[#182230]">Generate Dossier</h3>
-                  <p className="text-xs text-[#586474] leading-relaxed">
-                    Use Satark Saathi to format timestamps, screenshots, and suspect UTRs into a police-ready PDF.
-                  </p>
-                </div>
+                ))}
               </div>
 
               {/* Action Buttons for Recovery */}
@@ -1390,7 +1642,7 @@ export const LandingPage: React.FC = () => {
                     {isOpen && (
                       <div
                         id={`faq-answer-${idx}`}
-                        className="px-6 pb-5 pt-1 text-xs sm:text-sm text-[#586474] leading-relaxed border-t border-[#E2E8F0] bg-white"
+                        className="px-6 pb-5 pt-1 text-xs sm:text-sm text-[#586474] leading-relaxed border-t border-[#E2E8F0] bg-white animate-fadeIn"
                       >
                         {faq.answer}
                       </div>
