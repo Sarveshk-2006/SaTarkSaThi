@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -16,11 +16,13 @@ import {
   Launch,
   Document,
   Chat,
-  Information,
   Help,
   Close,
   Menu,
   ChevronDown,
+  View,
+  Locked,
+  Information,
 } from '@carbon/icons-react';
 import { Button, Tag } from '@carbon/react';
 import { useAuthSession } from '../context/AuthSessionContext';
@@ -258,42 +260,63 @@ const FAQ_ITEMS = [
 ];
 
 export const LandingPage: React.FC = () => {
+  const navigate = useNavigate();
   const { session } = useAuthSession();
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedScenarioIndex, setSelectedScenarioIndex] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
+  const [customInputText, setCustomInputText] = useState('');
+  const [familyShieldView, setFamilyShieldView] = useState<'guardian' | 'senior'>('guardian');
 
   const scenario = DEMO_SCENARIOS[selectedScenarioIndex];
 
+  // GSAP animations with matchMedia and reduced-motion support
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
 
       // Respect prefers-reduced-motion
       mm.add('(prefers-reduced-motion: reduce)', () => {
-        gsap.set('.gsap-hero-header, .gsap-hero-eyebrow, .gsap-hero-title, .gsap-hero-desc, .gsap-hero-cta, .gsap-hero-trust, .gsap-hero-preview, .gsap-floating-card, .gsap-reveal', {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          clearProps: 'all',
-        });
+        gsap.set(
+          '.gsap-hero-header, .gsap-hero-eyebrow, .gsap-hero-title, .gsap-hero-desc, .gsap-hero-cta, .gsap-hero-trust, .gsap-hero-preview, .gsap-floating-card, .gsap-reveal, .gsap-step-line',
+          {
+            opacity: 1,
+            y: 0,
+            x: 0,
+            scale: 1,
+            scaleX: 1,
+            clearProps: 'all',
+          }
+        );
       });
 
-      // Default animated experience
-      mm.add('(prefers-reduced-motion: no-preference)', () => {
+      // Desktop animation (min-width: 768px)
+      mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
         // Hero entrance timeline
         const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
         heroTl
-          .from('.gsap-hero-header', { y: -16, opacity: 0, duration: 0.6 })
+          .from('.gsap-hero-header', { y: -20, opacity: 0, duration: 0.6 })
           .from('.gsap-hero-eyebrow', { y: 14, opacity: 0, duration: 0.5 }, '-=0.3')
           .from('.gsap-hero-title', { y: 22, opacity: 0, duration: 0.7 }, '-=0.3')
           .from('.gsap-hero-desc', { y: 18, opacity: 0, duration: 0.6 }, '-=0.4')
           .from('.gsap-hero-cta', { y: 16, opacity: 0, stagger: 0.1, duration: 0.5 }, '-=0.3')
-          .from('.gsap-hero-trust', { opacity: 0, duration: 0.5 }, '-=0.2')
-          .from('.gsap-hero-preview', { y: 30, opacity: 0, scale: 0.98, duration: 0.8 }, '-=0.6')
-          .from('.gsap-floating-card', { y: 16, opacity: 0, stagger: 0.1, duration: 0.5 }, '-=0.4');
+          .from('.gsap-hero-trust', { opacity: 0, y: 10, duration: 0.5 }, '-=0.2')
+          .from('.gsap-hero-preview', { y: 32, opacity: 0, scale: 0.98, duration: 0.8 }, '-=0.6')
+          .from('.gsap-floating-card', { y: 16, opacity: 0, stagger: 0.12, duration: 0.5 }, '-=0.4');
+
+        // Linear step connector animation on ScrollTrigger
+        gsap.from('.gsap-step-line', {
+          scrollTrigger: {
+            trigger: '#how',
+            start: 'top 75%',
+          },
+          scaleX: 0,
+          transformOrigin: 'left center',
+          duration: 1.1,
+          ease: 'power2.inOut',
+        });
 
         // ScrollTrigger section reveals
         const sections = gsap.utils.toArray<HTMLElement>('.gsap-section');
@@ -315,16 +338,108 @@ export const LandingPage: React.FC = () => {
           }
         });
       });
+
+      // Mobile animation (max-width: 767px)
+      mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
+        const heroTl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+        heroTl
+          .from('.gsap-hero-header', { opacity: 0, duration: 0.4 })
+          .from('.gsap-hero-eyebrow, .gsap-hero-title, .gsap-hero-desc', { opacity: 0, y: 12, stagger: 0.1, duration: 0.5 }, '-=0.2')
+          .from('.gsap-hero-cta', { opacity: 0, y: 10, stagger: 0.08, duration: 0.4 }, '-=0.2')
+          .from('.gsap-hero-preview', { opacity: 0, y: 16, duration: 0.6 }, '-=0.2');
+
+        const sections = gsap.utils.toArray<HTMLElement>('.gsap-section');
+        sections.forEach((sec) => {
+          const targets = sec.querySelectorAll('.gsap-reveal');
+          if (targets.length > 0) {
+            gsap.from(targets, {
+              scrollTrigger: {
+                trigger: sec,
+                start: 'top 88%',
+                toggleActions: 'play none none none',
+              },
+              y: 16,
+              opacity: 0,
+              stagger: 0.06,
+              duration: 0.5,
+              ease: 'power2.out',
+            });
+          }
+        });
+      });
     },
     { scope: containerRef }
   );
+
+  // Coordinated GSAP reveal when user switches demo scenarios
+  const handleSelectScenario = (index: number) => {
+    if (index === selectedScenarioIndex) return;
+    setSelectedScenarioIndex(index);
+
+    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
+    tl.fromTo(
+      '.preview-inner',
+      { opacity: 0.7, y: 6 },
+      { opacity: 1, y: 0, duration: 0.25 }
+    )
+      .fromTo(
+        '.preview-message',
+        { opacity: 0, y: 8 },
+        { opacity: 1, y: 0, duration: 0.25 },
+        '-=0.15'
+      )
+      .fromTo(
+        '.preview-badge',
+        { opacity: 0, scale: 0.95 },
+        { opacity: 1, scale: 1, duration: 0.2 },
+        '-=0.1'
+      )
+      .fromTo(
+        '.preview-indicator',
+        { opacity: 0, x: -6 },
+        { opacity: 1, x: 0, stagger: 0.06, duration: 0.2 },
+        '-=0.1'
+      )
+      .fromTo(
+        '.preview-explanation',
+        { opacity: 0, y: 6 },
+        { opacity: 1, y: 0, duration: 0.25 },
+        '-=0.1'
+      )
+      .fromTo(
+        '.preview-action',
+        { opacity: 0, y: 6 },
+        { opacity: 1, y: 0, duration: 0.25 },
+        '-=0.15'
+      );
+  };
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
+  const handleRunCustomCheck = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customInputText.trim()) {
+      navigate('/scanner');
+      return;
+    }
+    navigate('/scanner', { state: { text: customInputText.trim() } });
+  };
+
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#F7F9FC] text-[#182230] font-sans antialiased selection:bg-[#0F766E]/15">
+    <div
+      ref={containerRef}
+      className="min-h-screen bg-[#F7F9FC] text-[#182230] font-sans antialiased selection:bg-[#0F766E]/15 overflow-x-hidden"
+    >
+      {/* Skip to Main Content Link for WCAG Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#0F766E] focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#0F62FE]"
+      >
+        Skip to main content
+      </a>
+
       {/* -------------------------------------------------------------------------
           SECTION 1: Header and Navigation (Clean, restrained, sticky)
           ------------------------------------------------------------------------- */}
@@ -409,7 +524,7 @@ export const LandingPage: React.FC = () => {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="sm:hidden border-t border-[#E2E8F0] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
-            <nav className="flex flex-col space-y-2 text-sm font-medium text-[#586474]">
+            <nav className="flex flex-col space-y-2 text-sm font-medium text-[#586474]" aria-label="Mobile Navigation">
               <a
                 href="#why"
                 onClick={() => setMobileMenuOpen(false)}
@@ -485,7 +600,7 @@ export const LandingPage: React.FC = () => {
         )}
       </header>
 
-      <main>
+      <main id="main-content">
         {/* -------------------------------------------------------------------------
             SECTION 2 & 3: Hero Section & Interactive Product Demonstration
             ------------------------------------------------------------------------- */}
@@ -550,23 +665,45 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Interactive Direct Check Input Form */}
+                <div className="gsap-hero-trust pt-3">
+                  <form onSubmit={handleRunCustomCheck} className="bg-white border border-[#CBD5E1] rounded-xl p-3 shadow-sm flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={customInputText}
+                      onChange={(e) => setCustomInputText(e.target.value)}
+                      placeholder="Paste suspicious SMS, link or sender number..."
+                      className="flex-1 px-3 py-2 text-xs text-[#182230] bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0F62FE]"
+                      aria-label="Direct message input"
+                    />
+                    <Button type="submit" kind="primary" size="sm" renderIcon={ArrowRight} className="shrink-0">
+                      Verify Text
+                    </Button>
+                  </form>
+                  <span className="block text-[11px] text-[#586474] mt-1.5 pl-1">
+                    Direct input routes straight to our explainable Scam Analyzer.
+                  </span>
+                </div>
               </div>
 
               {/* Right Column: Realistic Product Preview & Floating Contextual Cards */}
               <div className="lg:col-span-6 relative">
                 {/* Threat scenario switcher tabs */}
-                <div className="mb-3 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                  <span className="text-[11px] font-semibold text-[#586474] uppercase tracking-wider mr-1">
+                <div className="mb-3 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" role="tablist" aria-label="Sample Scenarios">
+                  <span className="text-[11px] font-semibold text-[#586474] uppercase tracking-wider mr-1 shrink-0">
                     Try Scenario:
                   </span>
                   {DEMO_SCENARIOS.map((s, idx) => (
                     <button
                       key={s.id}
                       type="button"
-                      onClick={() => setSelectedScenarioIndex(idx)}
+                      role="tab"
+                      aria-selected={selectedScenarioIndex === idx}
+                      onClick={() => handleSelectScenario(idx)}
                       className={`px-3 py-1.5 rounded-full font-semibold transition-all whitespace-nowrap text-xs ${
                         selectedScenarioIndex === idx
-                          ? 'bg-[#0F766E] text-white shadow-sm'
+                          ? 'bg-[#0F766E] text-white shadow-sm ring-2 ring-[#0F766E]/20'
                           : 'bg-white text-[#586474] hover:bg-[#E2E8F0]/60 border border-[#E2E8F0]'
                       }`}
                     >
@@ -590,9 +727,9 @@ export const LandingPage: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="p-5 sm:p-6 space-y-5">
+                  <div className="preview-inner p-5 sm:p-6 space-y-5">
                     {/* Suspicious Incoming Message Box */}
-                    <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 space-y-2">
+                    <div className="preview-message bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 space-y-2">
                       <div className="flex items-center justify-between text-xs text-[#586474]">
                         <span className="font-semibold text-[#182230]">From: {scenario.sender}</span>
                         <span>{scenario.timestamp}</span>
@@ -603,7 +740,7 @@ export const LandingPage: React.FC = () => {
                     </div>
 
                     {/* Threat Assessment Header & Severity Badge */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                    <div className="preview-badge flex flex-wrap items-center justify-between gap-3 pt-1">
                       <div className="flex items-center gap-2">
                         <Tag type={scenario.tagKind} size="md">
                           {scenario.severity}
@@ -625,7 +762,7 @@ export const LandingPage: React.FC = () => {
                       </p>
                       <ul className="space-y-1.5 text-xs text-[#182230]">
                         {scenario.indicators.map((ind, i) => (
-                          <li key={i} className="flex items-start gap-2">
+                          <li key={i} className="preview-indicator flex items-start gap-2">
                             <Warning size={14} className="text-[#D92D20] mt-0.5 shrink-0" />
                             <span>{ind}</span>
                           </li>
@@ -634,7 +771,7 @@ export const LandingPage: React.FC = () => {
                     </div>
 
                     {/* Plain Language Explanation */}
-                    <div className="p-3 bg-[#FEF3F2] border-l-4 border-[#D92D20] rounded-r-lg space-y-1">
+                    <div className="preview-explanation p-3 bg-[#FEF3F2] border-l-4 border-[#D92D20] rounded-r-lg space-y-1">
                       <p className="text-xs font-bold text-[#D92D20] uppercase tracking-wider">
                         Why This Is Fraudulent:
                       </p>
@@ -644,7 +781,7 @@ export const LandingPage: React.FC = () => {
                     </div>
 
                     {/* Recommended Safe Next Step */}
-                    <div className="p-3.5 bg-[#E6F4F2] border border-[#BCE3DE] rounded-xl flex items-start gap-2.5">
+                    <div className="preview-action p-3.5 bg-[#E6F4F2] border border-[#BCE3DE] rounded-xl flex items-start gap-2.5">
                       <Security size={18} className="text-[#0F766E] mt-0.5 shrink-0" />
                       <div className="text-xs space-y-0.5">
                         <span className="font-bold text-[#0F766E] block">Immediate Recommended Action:</span>
@@ -656,12 +793,16 @@ export const LandingPage: React.FC = () => {
                   {/* Preview Footer Actions */}
                   <div className="px-5 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-between text-xs">
                     <span className="text-[11px] text-[#586474]">
-                      Have a similar message?
+                      Have a suspicious message?
                     </span>
-                    <Link to="/scanner" className="font-semibold text-[#0F766E] hover:underline inline-flex items-center gap-1">
-                      <span>Analyze your own text</span>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/scanner', { state: { text: scenario.messageText } })}
+                      className="font-semibold text-[#0F766E] hover:underline inline-flex items-center gap-1 focus:outline-none"
+                    >
+                      <span>Analyze this scenario in Scanner</span>
                       <ArrowRight size={14} />
-                    </Link>
+                    </button>
                   </div>
                 </div>
 
@@ -739,9 +880,9 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* -------------------------------------------------------------------------
-            SECTION 5: How It Works (4-Step Linear Sequence)
+            SECTION 5: How It Works (4-Step Linear Sequence with Animated Track)
             ------------------------------------------------------------------------- */}
-        <section id="how" className="gsap-section py-20 bg-[#F7F9FC] border-b border-[#E2E8F0]">
+        <section id="how" className="gsap-section py-20 bg-[#F7F9FC] border-b border-[#E2E8F0] relative">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
               <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
@@ -755,32 +896,39 @@ export const LandingPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {STEPS.map((s, idx) => (
-                <div
-                  key={idx}
-                  className="gsap-reveal bg-white border border-[#E2E8F0] rounded-2xl p-6 relative flex flex-col justify-between shadow-sm hover:border-[#CBD5E1] transition-all"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl font-mono font-bold text-[#0F766E]/40">
-                        {s.step}
-                      </span>
-                      <span className="w-2 h-2 rounded-full bg-[#0F766E]" />
-                    </div>
-                    <h3 className="text-lg font-bold text-[#182230]">
-                      {s.title}
-                    </h3>
-                    <p className="text-xs text-[#586474] leading-relaxed">
-                      {s.description}
-                    </p>
-                  </div>
+            {/* Desktop Connector Track */}
+            <div className="relative">
+              <div className="hidden lg:block absolute top-12 left-12 right-12 h-0.5 bg-[#CBD5E1]">
+                <div className="gsap-step-line h-full w-full bg-[#0F766E]" />
+              </div>
 
-                  <div className="pt-6 mt-4 border-t border-[#E2E8F0]/70 text-[11px] font-medium text-[#586474]">
-                    Step {idx + 1} of 4
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
+                {STEPS.map((s, idx) => (
+                  <div
+                    key={idx}
+                    className="gsap-reveal bg-white border border-[#E2E8F0] rounded-2xl p-6 relative flex flex-col justify-between shadow-sm hover:border-[#CBD5E1] transition-all"
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="text-2xl font-mono font-bold text-[#0F766E]/40">
+                          {s.step}
+                        </span>
+                        <span className="w-3 h-3 rounded-full bg-[#0F766E] ring-4 ring-[#E6F4F2]" />
+                      </div>
+                      <h3 className="text-lg font-bold text-[#182230]">
+                        {s.title}
+                      </h3>
+                      <p className="text-xs text-[#586474] leading-relaxed">
+                        {s.description}
+                      </p>
+                    </div>
+
+                    <div className="pt-6 mt-4 border-t border-[#E2E8F0]/70 text-[11px] font-medium text-[#586474]">
+                      Step {idx + 1} of 4
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <div className="mt-12 text-center">
@@ -1020,43 +1168,91 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Family Shield Visual Mockup */}
+              {/* Family Shield Interactive Simulation Mockup */}
               <div className="lg:col-span-6">
                 <div className="gsap-reveal bg-[#F7F9FC] border border-[#CBD5E1] rounded-2xl p-6 shadow-md space-y-4">
+                  {/* View switcher: Guardian Dashboard vs Senior Citizen Mode */}
                   <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
                     <div className="flex items-center gap-2">
                       <UserMultiple size={18} className="text-[#0F766E]" />
-                      <span className="font-bold text-sm text-[#182230]">Active Protection Link</span>
+                      <span className="font-bold text-sm text-[#182230]">Interactive Family Mode View</span>
                     </div>
-                    <span className="text-[11px] font-semibold text-[#0F766E] bg-[#E6F4F2] px-2.5 py-0.5 rounded-full">
-                      Two-Way Consent Active
-                    </span>
+                    <div className="inline-flex rounded-lg border border-[#CBD5E1] bg-white p-0.5 text-xs font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => setFamilyShieldView('guardian')}
+                        className={`px-2.5 py-1 rounded-md transition-colors ${
+                          familyShieldView === 'guardian'
+                            ? 'bg-[#0F766E] text-white shadow-xs'
+                            : 'text-[#586474] hover:text-[#182230]'
+                        }`}
+                      >
+                        Guardian View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setFamilyShieldView('senior')}
+                        className={`px-2.5 py-1 rounded-md transition-colors ${
+                          familyShieldView === 'senior'
+                            ? 'bg-[#0F766E] text-white shadow-xs'
+                            : 'text-[#586474] hover:text-[#182230]'
+                        }`}
+                      >
+                        Senior Citizen Mode
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-[#182230]">Senior Protected Member: Ramesh (Father)</span>
-                      <span className="text-[11px] text-[#586474]">Senior Mode Enabled</span>
-                    </div>
-                    <p className="text-xs text-[#586474]">
-                      Pre-flight checks active for transfers exceeding ₹5,000 or unverified VPAs.
-                    </p>
-                  </div>
+                  {familyShieldView === 'guardian' ? (
+                    <div className="space-y-3">
+                      <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-[#182230]">Senior Protected Member: Ramesh (Father)</span>
+                          <span className="text-[11px] text-[#0F766E] font-semibold bg-[#E6F4F2] px-2 py-0.5 rounded">
+                            Senior Mode Active
+                          </span>
+                        </div>
+                        <p className="text-xs text-[#586474]">
+                          Pre-flight verification active for transfers exceeding ₹5,000 or unverified VPAs.
+                        </p>
+                      </div>
 
-                  <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-[#182230]">Primary Guardian: Priya (Daughter)</span>
-                      <span className="text-[11px] text-[#0F766E] font-semibold">Real-Time Alerts ON</span>
-                    </div>
-                    <p className="text-xs text-[#586474]">
-                      Receives instant notification when high-risk SMS or unknown APK installation is detected.
-                    </p>
-                  </div>
+                      <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="font-bold text-[#182230]">Primary Guardian: Priya (Daughter)</span>
+                          <span className="text-[11px] text-[#0F766E] font-semibold">Real-Time Alerts ON</span>
+                        </div>
+                        <p className="text-xs text-[#586474]">
+                          Receives quiet push alerts when coercive SMS or unknown APK installation is detected.
+                        </p>
+                      </div>
 
-                  <div className="p-3 bg-[#E6F4F2] border border-[#BCE3DE] rounded-xl text-xs text-[#0F766E] flex items-center gap-2">
-                    <Security size={16} className="shrink-0" />
-                    <span>Duress Phrase: "Tulsi Plant" &bull; Salted SHA-256 Hash Verified</span>
-                  </div>
+                      <div className="p-3 bg-[#E6F4F2] border border-[#BCE3DE] rounded-xl text-xs text-[#0F766E] flex items-center gap-2">
+                        <Security size={16} className="shrink-0" />
+                        <span>Duress Phrase: "Tulsi Plant" &bull; Salted SHA-256 Hash Verified</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-5 bg-white rounded-xl border-2 border-[#0F766E] space-y-4">
+                      <div className="flex items-center gap-2 text-[#0F766E]">
+                        <View size={20} />
+                        <span className="font-bold text-base text-[#182230]">Senior Protected View</span>
+                      </div>
+                      <p className="text-sm font-semibold text-[#182230] leading-snug">
+                        "Stop. Do not tap unknown links. If you are unsure, press the button below to alert your daughter Priya."
+                      </p>
+                      <button
+                        type="button"
+                        className="w-full py-3.5 px-4 bg-[#0F766E] text-white text-base font-bold rounded-xl shadow-md hover:bg-[#0d655e] flex items-center justify-center gap-2 min-h-[48px]"
+                      >
+                        <Phone size={20} />
+                        <span>One-Tap Call Guardian (Priya)</span>
+                      </button>
+                      <span className="block text-[11px] text-[#586474] text-center">
+                        Minimum 48px tap targets &bull; High-contrast 20px typography &bull; Non-intimidating guidance
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
