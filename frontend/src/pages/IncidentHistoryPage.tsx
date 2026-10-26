@@ -29,6 +29,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { useToast } from '../context/ToastContext';
 import { useNotification } from '../context/NotificationContext';
+import { motion, AnimatePresence } from 'motion/react';
 
 export const IncidentHistoryPage: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -269,9 +270,12 @@ export const IncidentHistoryPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e0e0e0]">
-                  {incidents.map((inc) => (
-                    <tr
+                  {incidents.map((inc, idx) => (
+                    <motion.tr
                       key={inc.id}
+                      initial={{ opacity: 0, y: 3 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.15, delay: idx * 0.03 }}
                       onClick={() => handleSelectIncident(inc)}
                       className={`hover:bg-[#f4f4f4] transition-colors cursor-pointer ${
                         selectedIncident?.id === inc.id ? 'bg-[#edf5ff]' : ''
@@ -330,7 +334,7 @@ export const IncidentHistoryPage: React.FC = () => {
                       <td className="py-3 px-4 text-right">
                         <ChevronRight size={16} className="text-[#8d8d8d] inline" />
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
@@ -349,8 +353,17 @@ export const IncidentHistoryPage: React.FC = () => {
         </div>
 
         {/* Incident Detail Drawer / Panel */}
-        {selectedIncident && (
-          <Tile className="lg:col-span-5 shadow-sm p-6 space-y-6">
+        <AnimatePresence>
+          {selectedIncident && (
+            <motion.div
+              key={selectedIncident.incident_id}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.2 }}
+              className="lg:col-span-5"
+            >
+              <Tile className="shadow-sm p-6 space-y-6">
             <div className="flex items-start justify-between border-b border-[#e0e0e0] pb-4">
               <div>
                 <div className="flex items-center gap-2">
@@ -515,7 +528,9 @@ export const IncidentHistoryPage: React.FC = () => {
               </Button>
             </div>
           </Tile>
-        )}
+        </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Delete Confirmation Modal */}

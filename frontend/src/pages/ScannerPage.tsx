@@ -41,6 +41,7 @@ import {
 } from '../api/types';
 import { useToast } from '../context/ToastContext';
 import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader';
+import { motion, AnimatePresence } from 'motion/react';
 
 type ActiveTab = 'text' | 'url' | 'image' | 'audio';
 
@@ -843,357 +844,435 @@ ${currentAnalysis.limitations.join('\n')}
             </Tile>
           )}
         </div>
-
         {/* Right Column: Investigation View Panel (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          {currentAnalysis ? (
-            <Tile className="bg-white p-0 border border-[#e0e0e0] overflow-hidden">
-              {/* Prominent Risk Banner */}
-              <div
-                className={`p-5 border-b border-[#e0e0e0] ${
-                  currentAnalysis.risk_level === 'CRITICAL' || currentAnalysis.risk_level === 'HIGH'
-                    ? 'bg-[#fff1f1] border-l-4 border-l-[#da1e28]'
-                    : currentAnalysis.risk_level === 'MEDIUM'
-                    ? 'bg-[#fef7e0] border-l-4 border-l-[#f1c21b]'
-                    : 'bg-[#edfcf2] border-l-4 border-l-[#24a148]'
-                }`}
+          <AnimatePresence mode="wait">
+            {analyzing ? (
+              <motion.div
+                key="analyzing-state"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white border border-[#0f62fe]/30 rounded-xl p-6 shadow-xs space-y-5 relative overflow-hidden"
               >
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Tag
-                        type={getRiskTagType(currentAnalysis.risk_level)}
-                        size="md"
-                        className="font-bold uppercase tracking-wider"
-                      >
-                        {currentAnalysis.risk_level} RISK
-                      </Tag>
-                      {currentAnalysis.policy_tier && (
-                        <Tag
-                          type={
-                            currentAnalysis.policy_tier === 'RED'
-                              ? 'red'
-                              : currentAnalysis.policy_tier === 'AMBER'
-                              ? 'warm-gray'
-                              : 'green'
-                          }
-                          size="sm"
-                        >
-                          Tier: {currentAnalysis.policy_tier}
-                        </Tag>
-                      )}
-                      <span className="text-[11px] font-mono text-[#525252]">
-                        Confidence: {currentAnalysis.confidence_label}
-                      </span>
-                    </div>
-                    <h3 className="text-base font-semibold text-[#161616] mt-2 leading-snug">
-                      {currentAnalysis.verdict}
-                    </h3>
-                  </div>
-
-                  <div className="text-right shrink-0">
-                    <span className="text-2xl font-bold text-[#161616] font-mono">
-                      {currentAnalysis.risk_score}
-                    </span>
-                    <span className="text-xs text-[#525252] font-mono">/100</span>
-                    <p className="text-[10px] text-[#8d8d8d] font-sans uppercase">Risk Score</p>
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <ProgressBar
-                    value={currentAnalysis.risk_score}
-                    max={100}
-                    label=""
-                    hideLabel
-                    status={
-                      currentAnalysis.risk_level === 'CRITICAL' || currentAnalysis.risk_level === 'HIGH'
-                        ? 'error'
-                        : 'active'
-                    }
+                <div className="absolute top-0 left-0 right-0 h-1 bg-[#edf5ff] overflow-hidden">
+                  <motion.div
+                    className="h-full bg-[#0f62fe] w-1/3"
+                    animate={{ x: ['-100%', '350%'] }}
+                    transition={{ repeat: Infinity, duration: 1.2, ease: 'easeInOut' }}
                   />
                 </div>
-
-                <p className="text-[10px] text-[#525252] mt-1.5 leading-relaxed">
-                  *Heuristic signal indicator based on weighted threat vectors and counter-signals. Not a calibrated probability.
-                </p>
-              </div>
-
-              <div className="p-5 space-y-4 text-xs">
-                {/* Plain-Language Summary */}
-                <div>
-                  <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-1 text-[11px]">
-                    Plain-Language Assessment
-                  </h4>
-                  <p className="text-[#161616] leading-relaxed bg-[#f4f4f4] p-3 border border-[#e0e0e0] text-xs">
-                    {currentAnalysis.plain_language_summary}
-                  </p>
-                  {currentAnalysis.policy_tier === 'GREEN' && (
-                    <p className="mt-2 text-[11px] text-[#0e6027] bg-[#edfcf2] border border-[#a7f0ba] p-2.5 leading-relaxed">
-                      <strong>Tier GREEN Advisory:</strong> No sufficiently strong threat indicators were detected in this message. This does <em>not</em> guarantee that the communication or sender is safe or authentic. Always exercise digital vigilance and never disclose OTPs, PINs, or credentials.
-                    </p>
-                  )}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-[#edf5ff] border border-[#d0e2ff] text-[#0f62fe] flex items-center justify-center animate-spin">
+                    <Renew size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#161616]">Deep Scanning Threat Indicators...</h3>
+                    <p className="text-[11px] text-[#525252]">Evaluating coercive language, sender domains, and financial extortion patterns</p>
+                  </div>
                 </div>
 
-                {/* Recommended Proportionate Action */}
-                {currentAnalysis.recommended_action && (
-                  <div className="p-3.5 bg-[#edf5ff] border border-[#d0e2ff]">
-                    <div className="flex items-center gap-1.5 font-semibold text-[#0f62fe] text-[11px] uppercase tracking-wider mb-1">
-                      <CheckmarkFilled size={16} />
-                      <span>Recommended Next Step</span>
+                <div className="space-y-3 pt-2 text-xs">
+                  <div className="p-3 bg-[#f8fafc] border border-[#e0e0e0] flex items-center justify-between">
+                    <span className="text-[#525252]">1. Lexical Threat Classification</span>
+                    <span className="font-mono text-[#0f62fe] font-semibold text-[11px]">RUNNING</span>
+                  </div>
+                  <div className="p-3 bg-[#f8fafc] border border-[#e0e0e0] flex items-center justify-between">
+                    <span className="text-[#525252]">2. Forensic Pattern Recognition</span>
+                    <span className="font-mono text-[#525252] text-[11px]">QUEUED</span>
+                  </div>
+                  <div className="p-3 bg-[#f8fafc] border border-[#e0e0e0] flex items-center justify-between">
+                    <span className="text-[#525252]">3. Institutional Counter-Signal Check</span>
+                    <span className="font-mono text-[#525252] text-[11px]">QUEUED</span>
+                  </div>
+                </div>
+              </motion.div>
+            ) : currentAnalysis ? (
+              <motion.div
+                key={currentAnalysis.incident_id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+              >
+                <Tile className="bg-white p-0 border border-[#e0e0e0] overflow-hidden">
+                  {/* Prominent Risk Banner */}
+                  <div
+                    className={`p-5 border-b border-[#e0e0e0] ${
+                      currentAnalysis.risk_level === 'CRITICAL' || currentAnalysis.risk_level === 'HIGH'
+                        ? 'bg-[#fff1f1] border-l-4 border-l-[#da1e28]'
+                        : currentAnalysis.risk_level === 'MEDIUM'
+                        ? 'bg-[#fef7e0] border-l-4 border-l-[#f1c21b]'
+                        : 'bg-[#edfcf2] border-l-4 border-l-[#24a148]'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Tag
+                            type={getRiskTagType(currentAnalysis.risk_level)}
+                            size="md"
+                            className="font-bold uppercase tracking-wider"
+                          >
+                            {currentAnalysis.risk_level} RISK
+                          </Tag>
+                          {currentAnalysis.policy_tier && (
+                            <Tag
+                              type={
+                                currentAnalysis.policy_tier === 'RED'
+                                  ? 'red'
+                                  : currentAnalysis.policy_tier === 'AMBER'
+                                  ? 'warm-gray'
+                                  : 'green'
+                              }
+                              size="sm"
+                            >
+                              Tier: {currentAnalysis.policy_tier}
+                            </Tag>
+                          )}
+                          <span className="text-[11px] font-mono text-[#525252]">
+                            Confidence: {currentAnalysis.confidence_label}
+                          </span>
+                        </div>
+                        <h3 className="text-base font-semibold text-[#161616] mt-2 leading-snug">
+                          {currentAnalysis.verdict}
+                        </h3>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className="text-2xl font-bold text-[#161616] font-mono">
+                          {currentAnalysis.risk_score}
+                        </span>
+                        <span className="text-xs text-[#525252] font-mono">/100</span>
+                        <p className="text-[10px] text-[#8d8d8d] font-sans uppercase">Risk Score</p>
+                      </div>
                     </div>
-                    <p className="text-[#002d9c] font-medium text-xs leading-relaxed">
-                      {currentAnalysis.recommended_action}
+
+                    {/* Smooth Animated Risk Bar */}
+                    <div className="mt-3">
+                      <div className="h-3 w-full bg-[#e0e0e0] rounded-full overflow-hidden p-0.5 relative">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${Math.min(100, Math.max(0, currentAnalysis.risk_score))}%` }}
+                          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                          className={`h-full rounded-full transition-colors ${
+                            currentAnalysis.risk_level === 'CRITICAL' || currentAnalysis.risk_level === 'HIGH'
+                              ? 'bg-[#da1e28]'
+                              : currentAnalysis.risk_level === 'MEDIUM'
+                              ? 'bg-[#f1c21b]'
+                              : 'bg-[#24a148]'
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-[#525252] mt-1.5 leading-relaxed">
+                      *Heuristic signal indicator based on weighted threat vectors and counter-signals. Not a calibrated probability.
                     </p>
                   </div>
-                )}
 
-                {/* Detected Manipulation Tactics */}
-                {currentAnalysis.detected_signals.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-2 text-[11px]">
-                      Detected Psychological & Forensic Tactics
-                    </h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {Array.from(new Set(currentAnalysis.detected_signals.map((s) => s.signal_type.replace('COUNTER_', '')))).map(
-                        (tactic, idx) => (
-                          <Tag key={idx} type="cool-gray" size="sm">
-                            {tactic.replace(/_/g, ' ')}
-                          </Tag>
-                        )
+                  <div className="p-5 space-y-4 text-xs">
+                    {/* Plain-Language Summary */}
+                    <div>
+                      <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-1 text-[11px]">
+                        Plain-Language Assessment
+                      </h4>
+                      <p className="text-[#161616] leading-relaxed bg-[#f4f4f4] p-3 border border-[#e0e0e0] text-xs">
+                        {currentAnalysis.plain_language_summary}
+                      </p>
+                      {currentAnalysis.policy_tier === 'GREEN' && (
+                        <p className="mt-2 text-[11px] text-[#0e6027] bg-[#edfcf2] border border-[#a7f0ba] p-2.5 leading-relaxed">
+                          <strong>Tier GREEN Advisory:</strong> No sufficiently strong threat indicators were detected in this message. This does <em>not</em> guarantee that the communication or sender is safe or authentic. Always exercise digital vigilance and never disclose OTPs, PINs, or credentials.
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Recommended Proportionate Action */}
+                    {currentAnalysis.recommended_action && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.15 }}
+                        className="p-3.5 bg-[#edf5ff] border border-[#d0e2ff]"
+                      >
+                        <div className="flex items-center gap-1.5 font-semibold text-[#0f62fe] text-[11px] uppercase tracking-wider mb-1">
+                          <CheckmarkFilled size={16} />
+                          <span>Recommended Next Step</span>
+                        </div>
+                        <p className="text-[#002d9c] font-medium text-xs leading-relaxed">
+                          {currentAnalysis.recommended_action}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {/* Detected Manipulation Tactics */}
+                    {currentAnalysis.detected_signals.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-2 text-[11px]">
+                          Detected Psychological & Forensic Tactics
+                        </h4>
+                        <div className="flex flex-wrap gap-1.5">
+                          {Array.from(new Set(currentAnalysis.detected_signals.map((s) => s.signal_type.replace('COUNTER_', '')))).map(
+                            (tactic, idx) => (
+                              <Tag key={idx} type="cool-gray" size="sm">
+                                {tactic.replace(/_/g, ' ')}
+                              </Tag>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Highlighted Evidence Breakdown with Staggered Entrance */}
+                    <div>
+                      <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-2 text-[11px] flex items-center justify-between">
+                        <span>Evidence & Threat Indicators</span>
+                        <span className="text-[#525252] font-normal">
+                          {currentAnalysis.detected_signals.length} signals evaluated
+                        </span>
+                      </h4>
+
+                      <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                        {currentAnalysis.detected_signals.length === 0 ? (
+                          <p className="text-[#525252] p-3 bg-[#f4f4f4] border border-[#e0e0e0] text-center">
+                            No malicious threat indicators detected.
+                          </p>
+                        ) : (
+                          currentAnalysis.detected_signals.map((sig, idx) => (
+                            <motion.div
+                              key={idx}
+                              initial={{ opacity: 0, x: -6 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ duration: 0.2, delay: 0.1 + idx * 0.04 }}
+                              className={`p-3 border text-xs ${
+                                sig.weight < 0
+                                  ? 'bg-[#edfcf2] border-[#a7f0ba] text-[#0e6027]'
+                                  : sig.severity === 'HIGH'
+                                  ? 'bg-[#fff1f1] border-[#ffb3b8] text-[#750e13]'
+                                  : 'bg-[#fef7e0] border-[#f1c21b] text-[#483700]'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between font-semibold text-[11px]">
+                                <span className="flex items-center gap-1.5">
+                                  {sig.weight < 0 ? (
+                                    <CheckmarkFilled size={16} className="text-[#24a148]" />
+                                  ) : (
+                                    <WarningFilled size={16} className="text-[#da1e28]" />
+                                  )}
+                                  <span>{sig.signal_type.replace(/_/g, ' ')}</span>
+                                </span>
+                                <span
+                                  className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${
+                                    sig.weight < 0 ? 'bg-[#a7f0ba] text-[#0e6027]' : 'bg-[#e0e0e0] text-[#161616]'
+                                  }`}
+                                >
+                                  {sig.weight > 0 ? `+${sig.weight}` : `${sig.weight}`}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-[11px] text-[#161616] leading-relaxed">{sig.reason}</p>
+                              {sig.excerpt && (
+                                <p className="mt-1.5 font-mono text-[10px] text-[#525252] bg-white/90 p-1.5 border border-[#e0e0e0] truncate">
+                                  "{sig.excerpt}"
+                                </p>
+                              )}
+                            </motion.div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Counter-Signals & Legitimacy Indicators */}
+                    {currentAnalysis.counter_signals && currentAnalysis.counter_signals.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.25 }}
+                      >
+                        <h4 className="font-semibold text-[#0e6027] uppercase tracking-wider mb-2 text-[11px] flex items-center justify-between">
+                          <span className="flex items-center gap-1.5">
+                            <CheckmarkFilled size={16} className="text-[#24a148]" />
+                            <span>Observed Legitimacy Indicators ({currentAnalysis.counter_signals.length})</span>
+                          </span>
+                        </h4>
+                        <div className="space-y-1.5">
+                          {currentAnalysis.counter_signals.map((cs, i) => (
+                            <div key={i} className="p-2.5 bg-[#edfcf2] border border-[#a7f0ba] text-xs text-[#0e6027]">
+                              <p className="font-medium text-[11px]">{cs.reason}</p>
+                              {cs.excerpt && (
+                                <p className="mt-1 font-mono text-[10px] text-[#0e6027] bg-white/90 p-1 border border-[#a7f0ba] truncate">
+                                  "{cs.excerpt}"
+                                </p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Immediate Protective Actions */}
+                    {currentAnalysis.recommended_actions.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-2 text-[11px]">
+                          Immediate Protective Actions
+                        </h4>
+                        <ul className="space-y-1.5">
+                          {currentAnalysis.recommended_actions.map((act, idx) => (
+                            <li
+                              key={idx}
+                              className="flex items-start gap-2 p-2.5 bg-[#edf5ff] border border-[#d0e2ff] text-[#002d9c] text-xs leading-relaxed"
+                            >
+                              <CheckmarkFilled size={16} className="text-[#0f62fe] shrink-0 mt-0.5" />
+                              <span>{act}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Independent Verification Steps */}
+                    {currentAnalysis.verification_steps.length > 0 && (
+                      <div>
+                        <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-2 text-[11px]">
+                          Independent Verification Steps
+                        </h4>
+                        <ul className="space-y-1 text-[#161616]">
+                          {currentAnalysis.verification_steps.map((step, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-xs">
+                              <span className="font-bold text-[#8d8d8d]">•</span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Primary Safety Buttons */}
+                    <div className="pt-3 border-t border-[#e0e0e0] flex flex-col gap-2">
+                      {currentAnalysis.should_alert_family && (
+                        <Button
+                          kind="danger"
+                          size="md"
+                          renderIcon={Share}
+                          onClick={() => setIsAlertModalOpen(true)}
+                        >
+                          Alert Family Shield Guardians
+                        </Button>
+                      )}
+
+                      <Button
+                        kind="tertiary"
+                        size="md"
+                        renderIcon={Help}
+                        onClick={handleEscalateToRecovery}
+                      >
+                        File Golden Hour Incident Report
+                      </Button>
+
+                      <Button
+                        kind="ghost"
+                        size="sm"
+                        renderIcon={copiedReport ? Checkmark : Copy}
+                        onClick={handleCopyFullReport}
+                      >
+                        {copiedReport ? 'Report Copied to Clipboard' : 'Copy Full Investigation Report'}
+                      </Button>
+                    </div>
+
+                    {/* Progressive Disclosure: Technical Details */}
+                    <div className="pt-2 border-t border-[#e0e0e0]">
+                      <button
+                        type="button"
+                        onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
+                        className="w-full flex items-center justify-between text-[11px] text-[#525252] hover:text-[#161616] py-1 cursor-pointer"
+                      >
+                        <span className="font-medium flex items-center gap-1.5">
+                          <Chip size={16} />
+                          <span>Technical Metadata & Model Boundaries</span>
+                        </span>
+                        {showTechnicalDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </button>
+
+                      {showTechnicalDetails && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          className="mt-2 p-3.5 bg-[#f4f4f4] border border-[#e0e0e0] space-y-2 text-[11px] text-[#525252] font-mono overflow-hidden"
+                        >
+                          <div>
+                            <span className="text-[#8d8d8d]">Incident ID: </span>
+                            <span className="text-[#161616] font-semibold">{currentAnalysis.incident_id}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#8d8d8d]">Input Type: </span>
+                            <span className="text-[#161616] uppercase">{currentAnalysis.input_type}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#8d8d8d]">Analysis Mode: </span>
+                            <span className="text-[#161616]">{currentAnalysis.analysis_mode}</span>
+                          </div>
+                          <div>
+                            <span className="text-[#8d8d8d]">AI Provider: </span>
+                            <span className="text-[#161616]">{currentAnalysis.ai_provider}</span>
+                          </div>
+                        </motion.div>
                       )}
                     </div>
                   </div>
-                )}
-
-                {/* Highlighted Evidence Breakdown */}
-                <div>
-                  <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-2 text-[11px] flex items-center justify-between">
-                    <span>Evidence & Threat Indicators</span>
-                    <span className="text-[#525252] font-normal">
-                      {currentAnalysis.detected_signals.length} signals evaluated
-                    </span>
-                  </h4>
-
-                  <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-                    {currentAnalysis.detected_signals.length === 0 ? (
-                      <p className="text-[#525252] p-3 bg-[#f4f4f4] border border-[#e0e0e0] text-center">
-                        No malicious threat indicators detected.
-                      </p>
-                    ) : (
-                      currentAnalysis.detected_signals.map((sig, idx) => (
-                        <div
-                          key={idx}
-                          className={`p-3 border text-xs ${
-                            sig.weight < 0
-                              ? 'bg-[#edfcf2] border-[#a7f0ba] text-[#0e6027]'
-                              : sig.severity === 'HIGH'
-                              ? 'bg-[#fff1f1] border-[#ffb3b8] text-[#750e13]'
-                              : 'bg-[#fef7e0] border-[#f1c21b] text-[#483700]'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between font-semibold text-[11px]">
-                            <span className="flex items-center gap-1.5">
-                              {sig.weight < 0 ? (
-                                <CheckmarkFilled size={16} className="text-[#24a148]" />
-                              ) : (
-                                <WarningFilled size={16} className="text-[#da1e28]" />
-                              )}
-                              <span>{sig.signal_type.replace(/_/g, ' ')}</span>
-                            </span>
-                            <span
-                              className={`font-mono text-[10px] px-1.5 py-0.5 rounded ${
-                                sig.weight < 0 ? 'bg-[#a7f0ba] text-[#0e6027]' : 'bg-[#e0e0e0] text-[#161616]'
-                              }`}
-                            >
-                              {sig.weight > 0 ? `+${sig.weight}` : `${sig.weight}`}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-[11px] text-[#161616] leading-relaxed">{sig.reason}</p>
-                          {sig.excerpt && (
-                            <p className="mt-1.5 font-mono text-[10px] text-[#525252] bg-white/90 p-1.5 border border-[#e0e0e0] truncate">
-                              "{sig.excerpt}"
-                            </p>
-                          )}
-                        </div>
-                      ))
-                    )}
+                </Tile>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="blueprint-empty"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs space-y-4"
+              >
+                <div className="flex items-center gap-2.5 pb-3 border-b border-[#E2E8F0]">
+                  <div className="w-8 h-8 rounded-lg bg-[#E6F4F2] text-[#0F766E] flex items-center justify-center">
+                    <Security size={18} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-[#182230]">Forensic Report Blueprint</h3>
+                    <p className="text-[11px] text-[#586474]">What you will receive upon analyzing your input</p>
                   </div>
                 </div>
 
-                {/* Counter-Signals & Legitimacy Indicators */}
-                {currentAnalysis.counter_signals && currentAnalysis.counter_signals.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-[#0e6027] uppercase tracking-wider mb-2 text-[11px] flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <CheckmarkFilled size={16} className="text-[#24a148]" />
-                        <span>Observed Legitimacy Indicators ({currentAnalysis.counter_signals.length})</span>
-                      </span>
-                    </h4>
-                    <div className="space-y-1.5">
-                      {currentAnalysis.counter_signals.map((cs, i) => (
-                        <div key={i} className="p-2.5 bg-[#edfcf2] border border-[#a7f0ba] text-xs text-[#0e6027]">
-                          <p className="font-medium text-[11px]">{cs.reason}</p>
-                          {cs.excerpt && (
-                            <p className="mt-1 font-mono text-[10px] text-[#0e6027] bg-white/90 p-1 border border-[#a7f0ba] truncate">
-                              "{cs.excerpt}"
-                            </p>
-                          )}
-                        </div>
-                      ))}
+                <div className="space-y-3 text-xs">
+                  <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-[#0F766E] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+                    <div>
+                      <span className="font-bold text-[#182230] block">Explainable Risk Score (0–100)</span>
+                      <span className="text-[#586474]">Severity rating with clear policy tier (Red / Amber / Green) and confidence classification.</span>
                     </div>
                   </div>
-                )}
 
-                {/* Immediate Protective Actions */}
-                {currentAnalysis.recommended_actions.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-2 text-[11px]">
-                      Immediate Protective Actions
-                    </h4>
-                    <ul className="space-y-1.5">
-                      {currentAnalysis.recommended_actions.map((act, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-start gap-2 p-2.5 bg-[#edf5ff] border border-[#d0e2ff] text-[#002d9c] text-xs leading-relaxed"
-                        >
-                          <CheckmarkFilled size={16} className="text-[#0f62fe] shrink-0 mt-0.5" />
-                          <span>{act}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Independent Verification Steps */}
-                {currentAnalysis.verification_steps.length > 0 && (
-                  <div>
-                    <h4 className="font-semibold text-[#161616] uppercase tracking-wider mb-2 text-[11px]">
-                      Independent Verification Steps
-                    </h4>
-                    <ul className="space-y-1 text-[#161616]">
-                      {currentAnalysis.verification_steps.map((step, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-xs">
-                          <span className="font-bold text-[#8d8d8d]">•</span>
-                          <span>{step}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Primary Safety Buttons */}
-                <div className="pt-3 border-t border-[#e0e0e0] flex flex-col gap-2">
-                  {currentAnalysis.should_alert_family && (
-                    <Button
-                      kind="danger"
-                      size="md"
-                      renderIcon={Share}
-                      onClick={() => setIsAlertModalOpen(true)}
-                    >
-                      Alert Family Shield Guardians
-                    </Button>
-                  )}
-
-                  <Button
-                    kind="tertiary"
-                    size="md"
-                    renderIcon={Help}
-                    onClick={handleEscalateToRecovery}
-                  >
-                    File Golden Hour Incident Report
-                  </Button>
-
-                  <Button
-                    kind="ghost"
-                    size="sm"
-                    renderIcon={copiedReport ? Checkmark : Copy}
-                    onClick={handleCopyFullReport}
-                  >
-                    {copiedReport ? 'Report Copied to Clipboard' : 'Copy Full Investigation Report'}
-                  </Button>
-                </div>
-
-                {/* Progressive Disclosure: Technical Details */}
-                <div className="pt-2 border-t border-[#e0e0e0]">
-                  <button
-                    type="button"
-                    onClick={() => setShowTechnicalDetails(!showTechnicalDetails)}
-                    className="w-full flex items-center justify-between text-[11px] text-[#525252] hover:text-[#161616] py-1 cursor-pointer"
-                  >
-                    <span className="font-medium flex items-center gap-1.5">
-                      <Chip size={16} />
-                      <span>Technical Metadata & Model Boundaries</span>
-                    </span>
-                    {showTechnicalDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </button>
-
-                  {showTechnicalDetails && (
-                    <div className="mt-2 p-3.5 bg-[#f4f4f4] border border-[#e0e0e0] space-y-2 text-[11px] text-[#525252] font-mono">
-                      <div>
-                        <span className="text-[#8d8d8d]">Incident ID: </span>
-                        <span className="text-[#161616] font-semibold">{currentAnalysis.incident_id}</span>
-                      </div>
-                      <div>
-                        <span className="text-[#8d8d8d]">Input Type: </span>
-                        <span className="text-[#161616] uppercase">{currentAnalysis.input_type}</span>
-                      </div>
-                      <div>
-                        <span className="text-[#8d8d8d]">Analysis Mode: </span>
-                        <span className="text-[#161616]">{currentAnalysis.analysis_mode}</span>
-                      </div>
-                      <div>
-                        <span className="text-[#8d8d8d]">AI Provider: </span>
-                        <span className="text-[#161616]">{currentAnalysis.ai_provider}</span>
-                      </div>
+                  <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-[#0F62FE] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+                    <div>
+                      <span className="font-bold text-[#182230] block">Signal Evidence Breakdown</span>
+                      <span className="text-[#586474]">Detection of lookalike banking domains, APK remote-access calls, and artificial time ultimatums.</span>
                     </div>
-                  )}
-                </div>
-              </div>
-            </Tile>
-          ) : (
-            <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs space-y-4">
-              <div className="flex items-center gap-2.5 pb-3 border-b border-[#E2E8F0]">
-                <div className="w-8 h-8 rounded-lg bg-[#E6F4F2] text-[#0F766E] flex items-center justify-center">
-                  <Security size={18} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-[#182230]">Forensic Report Blueprint</h3>
-                  <p className="text-[11px] text-[#586474]">What you will receive upon analyzing your input</p>
-                </div>
-              </div>
+                  </div>
 
-              <div className="space-y-3 text-xs">
-                <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-[#0F766E] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
-                  <div>
-                    <span className="font-bold text-[#182230] block">Explainable Risk Score (0–100)</span>
-                    <span className="text-[#586474]">Severity rating with clear policy tier (Red / Amber / Green) and confidence classification.</span>
+                  <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
+                    <span className="w-5 h-5 rounded-full bg-[#D92D20] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+                    <div>
+                      <span className="font-bold text-[#182230] block">Proportionate Next Steps</span>
+                      <span className="text-[#586474]">Independent bank verification channels, Family Shield alert trigger, or 1930 police dossier filing.</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-[#0F62FE] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
-                  <div>
-                    <span className="font-bold text-[#182230] block">Signal Evidence Breakdown</span>
-                    <span className="text-[#586474]">Detection of lookalike banking domains, APK remote-access calls, and artificial time ultimatums.</span>
-                  </div>
+                <div className="p-3 bg-[#E6F4F2] border border-[#BCE3DE] rounded-lg text-[11px] text-[#0F766E] leading-relaxed">
+                  <strong>Zero False Sense of Safety:</strong> Clean messages without overt signals are explicitly flagged with a cautionary advisory, reminding citizens that absence of evidence is not proof of safety.
                 </div>
-
-                <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
-                  <span className="w-5 h-5 rounded-full bg-[#D92D20] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
-                  <div>
-                    <span className="font-bold text-[#182230] block">Proportionate Next Steps</span>
-                    <span className="text-[#586474]">Independent bank verification channels, Family Shield alert trigger, or 1930 police dossier filing.</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-3 bg-[#E6F4F2] border border-[#BCE3DE] rounded-lg text-[11px] text-[#0F766E] leading-relaxed">
-                <strong>Zero False Sense of Safety:</strong> Clean messages without overt signals are explicitly flagged with a cautionary advisory, reminding citizens that absence of evidence is not proof of safety.
-              </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

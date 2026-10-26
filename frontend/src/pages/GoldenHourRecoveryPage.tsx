@@ -48,6 +48,8 @@ import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { SimulationBanner } from '../components/common/SimulationBanner';
 import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader';
 import { useToast } from '../context/ToastContext';
+import { motion, AnimatePresence } from 'motion/react';
+import { staggerContainer, staggerItem } from '../utils/motionVariants';
 
 export const GoldenHourRecoveryPage: React.FC = () => {
   const location = useLocation();
@@ -423,267 +425,306 @@ export const GoldenHourRecoveryPage: React.FC = () => {
         </div>
       </Tile>
 
-      {/* Wizard Step 1: Incident Particulars */}
-      {wizardStep === 1 && (
-        <Tile className="p-6 shadow-sm space-y-5">
-          <div className="border-b border-[#e0e0e0] pb-3">
-            <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
-              <Time size={20} className="text-[#0f62fe]" />
-              Step 1: Incident Particulars
-            </h2>
-            <p className="text-xs text-[#525252] mt-0.5">
-              Record when the incident began and describe the sequence in your own words.
-            </p>
-          </div>
+      {/* Wizard Step Content with AnimatePresence */}
+      <AnimatePresence mode="wait">
+        {/* Wizard Step 1: Incident Particulars */}
+        {wizardStep === 1 && (
+          <motion.div
+            key="wizard-step-1"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Tile className="p-6 shadow-sm space-y-5">
+              <div className="border-b border-[#e0e0e0] pb-3">
+                <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
+                  <Time size={20} className="text-[#0f62fe]" />
+                  Step 1: Incident Particulars
+                </h2>
+                <p className="text-xs text-[#525252] mt-0.5">
+                  Record when the incident began and describe the sequence in your own words.
+                </p>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <TextInput
-                id="gh-incident-datetime"
-                labelText="Approximate Date & Time of Incident *"
-                type="datetime-local"
-                value={incidentDate}
-                onChange={(e) => setIncidentDate(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Select
-                id="gh-scam-type"
-                labelText="Category of Cyber Fraud *"
-                value={scamType}
-                onChange={(e) => setScamType(e.target.value)}
-              >
-                <SelectItem value="Digital Arrest Scam" text="Digital Arrest Scam (Fake Police / CBI / ED)" />
-                <SelectItem value="Utility Impersonation Phishing" text="Electricity Bill Disconnection Threat" />
-                <SelectItem value="Part-Time Job / Telegram Task Fraud" text="Prepaid Task / Job Offer Fraud" />
-                <SelectItem value="Fake Investment Scheme" text="High-Yield Guaranteed Investment Ponzi" />
-                <SelectItem value="Courier / Customs Duty Fraud" text="Customs / Fedex Parcel Extortion" />
-                <SelectItem value="Bank KYC / SIM Block Fraud" text="Bank Account KYC Deactivation Phishing" />
-              </Select>
-            </div>
-          </div>
-
-          <div>
-            <TextInput
-              id="gh-contact-channel"
-              labelText="Contact Channel Used by Scammer *"
-              value={channel}
-              onChange={(e) => setChannel(e.target.value)}
-              placeholder="e.g. WhatsApp Video Call (+91 98201 98201), Skype, Telegram"
-            />
-          </div>
-
-          <div>
-            <TextArea
-              id="gh-narrative"
-              labelText="Incident Narrative / Statement of Facts *"
-              rows={4}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Explain clearly what happened: who called, what claims were made, what pressure was applied..."
-              helperText="Be as detailed as possible. This narrative is incorporated into official complaint drafts."
-            />
-          </div>
-
-          <div className="flex justify-end pt-3 border-t border-[#e0e0e0]">
-            <Button
-              kind="primary"
-              renderIcon={ArrowRight}
-              onClick={() => setWizardStep(2)}
-              disabled={!description.trim()}
-            >
-              Continue to Financial Details
-            </Button>
-          </div>
-        </Tile>
-      )}
-
-      {/* Wizard Step 2: Financial Details */}
-      {wizardStep === 2 && (
-        <Tile className="p-6 shadow-sm space-y-5">
-          <div className="border-b border-[#e0e0e0] pb-3">
-            <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
-              <Enterprise size={20} className="text-[#0f62fe]" />
-              Step 2: Financial Details &amp; Transaction References
-            </h2>
-            <p className="text-xs text-[#525252] mt-0.5">
-              Specify debited accounts, amounts, and transaction references if available.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <TextInput
-                id="gh-financial-loss"
-                labelText="Amount Lost or at Risk (INR) *"
-                type="number"
-                min="0"
-                value={financialLoss}
-                onChange={(e) => setFinancialLoss(e.target.value)}
-                placeholder="e.g. 25000"
-              />
-            </div>
-
-            <div>
-              <TextInput
-                id="gh-bank-name"
-                labelText="Complainant Bank / Payment App"
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                placeholder="e.g. State Bank of India, HDFC Bank, Google Pay"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <TextInput
-                id="gh-transaction-ref"
-                labelText="Transaction Reference / UTR Number"
-                value={transactionRef}
-                onChange={(e) => setTransactionRef(e.target.value)}
-                placeholder="Leave blank if UTR is not yet available"
-                helperText="Missing UTR explicitly allowed. If omitted, the draft will indicate '[UTR PENDING BANK STATEMENT]' without fabricating fake numbers."
-              />
-            </div>
-
-            <div>
-              <Select
-                id="gh-transfer-status"
-                labelText="Transfer Status"
-                value={transferStatus}
-                onChange={(e) => setTransferStatus(e.target.value as any)}
-              >
-                <SelectItem value="COMPLETED" text="Completed (Amount already debited)" />
-                <SelectItem value="PENDING" text="Pending / In-Transit (Dispute immediately)" />
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-3 border-t border-[#e0e0e0]">
-            <Button
-              kind="secondary"
-              renderIcon={ArrowLeft}
-              onClick={() => setWizardStep(1)}
-            >
-              Back
-            </Button>
-            <Button
-              kind="primary"
-              renderIcon={ArrowRight}
-              onClick={() => setWizardStep(3)}
-            >
-              Continue to Evidence &amp; Timeline
-            </Button>
-          </div>
-        </Tile>
-      )}
-
-      {/* Wizard Step 3: Evidence & Timeline */}
-      {wizardStep === 3 && (
-        <Tile className="p-6 shadow-sm space-y-5">
-          <div className="border-b border-[#e0e0e0] pb-3">
-            <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
-              <Time size={20} className="text-[#0f62fe]" />
-              Step 3: Evidence &amp; Incident Timeline
-            </h2>
-            <p className="text-xs text-[#525252] mt-0.5">
-              Record suspect contact handles and step-by-step chronology for cyber authorities.
-            </p>
-          </div>
-
-          <div>
-            <TextInput
-              id="gh-suspect-contact"
-              labelText="Suspect Identifiers (Phone, UPI ID, Bank Account)"
-              value={suspectContact}
-              onChange={(e) => setSuspectContact(e.target.value)}
-              placeholder="e.g. +91 98201 98201, officer-cbi@ybl"
-            />
-          </div>
-
-          <div>
-            <TextArea
-              id="gh-message-transcript"
-              labelText="Message / Voice-Note Transcript Excerpt (Optional)"
-              rows={3}
-              value={messageTranscript}
-              onChange={(e) => setMessageTranscript(e.target.value)}
-              placeholder="Paste exact text received from scammer..."
-              helperText="Verbatim text from SMS, WhatsApp, or recorded conversation."
-            />
-          </div>
-
-          {/* Timeline Events Builder */}
-          <div>
-            <label className="cds--label mb-2 block">
-              Chronological Timeline of Events
-            </label>
-            <div className="space-y-2 mb-3">
-              {timelineEvents.map((evt, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-[#f4f4f4] border border-[#e0e0e0] text-xs text-[#161616]">
-                  <span className="font-medium">
-                    {idx + 1}. {evt}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveTimelineEvent(idx)}
-                    className="text-[#da1e28] hover:text-[#750e13] p-1 cursor-pointer"
-                    title="Remove event"
-                  >
-                    <TrashCan size={16} />
-                  </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <TextInput
+                    id="gh-incident-datetime"
+                    labelText="Approximate Date & Time of Incident *"
+                    type="datetime-local"
+                    value={incidentDate}
+                    onChange={(e) => setIncidentDate(e.target.value)}
+                  />
                 </div>
-              ))}
-            </div>
 
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
+                <div>
+                  <Select
+                    id="gh-scam-type"
+                    labelText="Category of Cyber Fraud *"
+                    value={scamType}
+                    onChange={(e) => setScamType(e.target.value)}
+                  >
+                    <SelectItem value="Digital Arrest Scam" text="Digital Arrest Scam (Fake Police / CBI / ED)" />
+                    <SelectItem value="Utility Impersonation Phishing" text="Electricity Bill Disconnection Threat" />
+                    <SelectItem value="Part-Time Job / Telegram Task Fraud" text="Prepaid Task / Job Offer Fraud" />
+                    <SelectItem value="Fake Investment Scheme" text="High-Yield Guaranteed Investment Ponzi" />
+                    <SelectItem value="Courier / Customs Duty Fraud" text="Customs / Fedex Parcel Extortion" />
+                    <SelectItem value="Bank KYC / SIM Block Fraud" text="Bank Account KYC Deactivation Phishing" />
+                  </Select>
+                </div>
+              </div>
+
+              <div>
                 <TextInput
-                  id="gh-new-event"
-                  labelText=""
-                  hideLabel
-                  value={newTimelineEvent}
-                  onChange={(e) => setNewTimelineEvent(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTimelineEvent())}
-                  placeholder="Add milestone (e.g. 11:30 AM caller threatened immediate arrest)..."
+                  id="gh-contact-channel"
+                  labelText="Contact Channel Used by Scammer *"
+                  value={channel}
+                  onChange={(e) => setChannel(e.target.value)}
+                  placeholder="e.g. WhatsApp Video Call (+91 98201 98201), Skype, Telegram"
                 />
               </div>
-              <Button
-                kind="tertiary"
-                size="md"
-                renderIcon={Add}
-                onClick={handleAddTimelineEvent}
-              >
-                Add Event
-              </Button>
-            </div>
-          </div>
 
-          <div className="flex items-center justify-between pt-3 border-t border-[#e0e0e0]">
-            <Button
-              kind="secondary"
-              renderIcon={ArrowLeft}
-              onClick={() => setWizardStep(2)}
-            >
-              Back
-            </Button>
-            <Button
-              kind="danger"
-              renderIcon={isGenerating ? Renew : Flash}
-              onClick={handleExecuteWizard}
-              disabled={isGenerating}
-            >
-              {isGenerating ? 'Activating Golden Hour Response…' : 'Activate Golden Hour Response'}
-            </Button>
-          </div>
-        </Tile>
-      )}
+              <div>
+                <TextArea
+                  id="gh-narrative"
+                  labelText="Incident Narrative / Statement of Facts *"
+                  rows={4}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Explain clearly what happened: who called, what claims were made, what pressure was applied..."
+                  helperText="Be as detailed as possible. This narrative is incorporated into official complaint drafts."
+                />
+              </div>
 
-      {/* Wizard Step 4: Recovery Actions & Draft Review */}
-      {wizardStep === 4 && generatedDraft && (
-        <Tile className="p-0 overflow-hidden shadow-sm space-y-0">
+              <div className="flex justify-end pt-3 border-t border-[#e0e0e0]">
+                <Button
+                  kind="primary"
+                  renderIcon={ArrowRight}
+                  onClick={() => setWizardStep(2)}
+                  disabled={!description.trim()}
+                >
+                  Continue to Financial Details
+                </Button>
+              </div>
+            </Tile>
+          </motion.div>
+        )}
+
+        {/* Wizard Step 2: Financial Details */}
+        {wizardStep === 2 && (
+          <motion.div
+            key="wizard-step-2"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Tile className="p-6 shadow-sm space-y-5">
+              <div className="border-b border-[#e0e0e0] pb-3">
+                <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
+                  <Enterprise size={20} className="text-[#0f62fe]" />
+                  Step 2: Financial Details &amp; Transaction References
+                </h2>
+                <p className="text-xs text-[#525252] mt-0.5">
+                  Specify debited accounts, amounts, and transaction references if available.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <TextInput
+                    id="gh-financial-loss"
+                    labelText="Amount Lost or at Risk (INR) *"
+                    type="number"
+                    min="0"
+                    value={financialLoss}
+                    onChange={(e) => setFinancialLoss(e.target.value)}
+                    placeholder="e.g. 25000"
+                  />
+                </div>
+
+                <div>
+                  <TextInput
+                    id="gh-bank-name"
+                    labelText="Complainant Bank / Payment App"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                    placeholder="e.g. State Bank of India, HDFC Bank, Google Pay"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <TextInput
+                    id="gh-transaction-ref"
+                    labelText="Transaction Reference / UTR Number"
+                    value={transactionRef}
+                    onChange={(e) => setTransactionRef(e.target.value)}
+                    placeholder="Leave blank if UTR is not yet available"
+                    helperText="Missing UTR explicitly allowed. If omitted, the draft will indicate '[UTR PENDING BANK STATEMENT]' without fabricating fake numbers."
+                  />
+                </div>
+
+                <div>
+                  <Select
+                    id="gh-transfer-status"
+                    labelText="Transfer Status"
+                    value={transferStatus}
+                    onChange={(e) => setTransferStatus(e.target.value as any)}
+                  >
+                    <SelectItem value="COMPLETED" text="Completed (Amount already debited)" />
+                    <SelectItem value="PENDING" text="Pending / In-Transit (Dispute immediately)" />
+                  </Select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-[#e0e0e0]">
+                <Button
+                  kind="secondary"
+                  renderIcon={ArrowLeft}
+                  onClick={() => setWizardStep(1)}
+                >
+                  Back
+                </Button>
+                <Button
+                  kind="primary"
+                  renderIcon={ArrowRight}
+                  onClick={() => setWizardStep(3)}
+                >
+                  Continue to Evidence &amp; Timeline
+                </Button>
+              </div>
+            </Tile>
+          </motion.div>
+        )}
+
+        {/* Wizard Step 3: Evidence & Timeline */}
+        {wizardStep === 3 && (
+          <motion.div
+            key="wizard-step-3"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Tile className="p-6 shadow-sm space-y-5">
+              <div className="border-b border-[#e0e0e0] pb-3">
+                <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
+                  <Time size={20} className="text-[#0f62fe]" />
+                  Step 3: Evidence &amp; Incident Timeline
+                </h2>
+                <p className="text-xs text-[#525252] mt-0.5">
+                  Record suspect contact handles and step-by-step chronology for cyber authorities.
+                </p>
+              </div>
+
+              <div>
+                <TextInput
+                  id="gh-suspect-contact"
+                  labelText="Suspect Identifiers (Phone, UPI ID, Bank Account)"
+                  value={suspectContact}
+                  onChange={(e) => setSuspectContact(e.target.value)}
+                  placeholder="e.g. +91 98201 98201, officer-cbi@ybl"
+                />
+              </div>
+
+              <div>
+                <TextArea
+                  id="gh-message-transcript"
+                  labelText="Message / Voice-Note Transcript Excerpt (Optional)"
+                  rows={3}
+                  value={messageTranscript}
+                  onChange={(e) => setMessageTranscript(e.target.value)}
+                  placeholder="Paste exact text received from scammer..."
+                  helperText="Verbatim text from SMS, WhatsApp, or recorded conversation."
+                />
+              </div>
+
+              {/* Timeline Events Builder */}
+              <div>
+                <label className="cds--label mb-2 block">
+                  Chronological Timeline of Events
+                </label>
+                <div className="space-y-2 mb-3">
+                  {timelineEvents.map((evt, idx) => (
+                    <motion.div
+                      key={idx}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.15, delay: idx * 0.04 }}
+                      className="flex items-center justify-between p-3 bg-[#f4f4f4] border border-[#e0e0e0] text-xs text-[#161616]"
+                    >
+                      <span className="font-medium">
+                        {idx + 1}. {evt}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTimelineEvent(idx)}
+                        className="text-[#da1e28] hover:text-[#750e13] p-1 cursor-pointer"
+                        title="Remove event"
+                      >
+                        <TrashCan size={16} />
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex-1">
+                    <TextInput
+                      id="gh-new-event"
+                      labelText=""
+                      hideLabel
+                      value={newTimelineEvent}
+                      onChange={(e) => setNewTimelineEvent(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTimelineEvent())}
+                      placeholder="Add milestone (e.g. 11:30 AM caller threatened immediate arrest)..."
+                    />
+                  </div>
+                  <Button
+                    kind="tertiary"
+                    size="md"
+                    renderIcon={Add}
+                    onClick={handleAddTimelineEvent}
+                  >
+                    Add Event
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-3 border-t border-[#e0e0e0]">
+                <Button
+                  kind="secondary"
+                  renderIcon={ArrowLeft}
+                  onClick={() => setWizardStep(2)}
+                >
+                  Back
+                </Button>
+                <Button
+                  kind="danger"
+                  renderIcon={isGenerating ? Renew : Flash}
+                  onClick={handleExecuteWizard}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? 'Activating Golden Hour Response…' : 'Activate Golden Hour Response'}
+                </Button>
+              </div>
+            </Tile>
+          </motion.div>
+        )}
+
+        {/* Wizard Step 4: Recovery Actions & Draft Review */}
+        {wizardStep === 4 && generatedDraft && (
+          <motion.div
+            key="wizard-step-4"
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Tile className="p-0 overflow-hidden shadow-sm space-y-0">
           <div className="p-6 border-b border-[#e0e0e0] bg-[#f4f4f4] flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <Tag type="teal" size="sm">
@@ -880,7 +921,9 @@ export const GoldenHourRecoveryPage: React.FC = () => {
             </div>
           </div>
         </Tile>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Verified Indian Bank Desks Grid */}
       <Tile className="p-6 shadow-sm">
@@ -888,9 +931,19 @@ export const GoldenHourRecoveryPage: React.FC = () => {
           <Enterprise size={20} className="text-[#0f62fe]" />
           Verified Indian Bank 24x7 Emergency Hotlines &amp; Freeze Desks
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
           {helplines.map((b, idx) => (
-            <div key={idx} className="p-4 border border-[#e0e0e0] bg-[#f4f4f4] hover:bg-[#e8e8e8] transition-colors">
+            <motion.div
+              key={idx}
+              variants={staggerItem}
+              whileHover={{ y: -2, transition: { duration: 0.15 } }}
+              className="p-4 border border-[#e0e0e0] bg-[#f4f4f4] hover:bg-[#e8e8e8] transition-colors"
+            >
               <h4 className="font-semibold text-xs text-[#161616]">{b.bank}</h4>
               <p className="text-xs font-mono text-[#0f62fe] font-bold mt-1">📞 {b.toll_free}</p>
               {b.sms_block && <p className="text-[11px] text-[#525252] mt-1 font-mono">{b.sms_block}</p>}
@@ -905,9 +958,9 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                   Dispute Portal <Launch size={12} />
                 </a>
               )}
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </Tile>
     </div>
   );

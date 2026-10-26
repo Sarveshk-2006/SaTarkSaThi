@@ -33,6 +33,8 @@ import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader'
 import { useToast } from '../context/ToastContext';
 import { useNotification } from '../context/NotificationContext';
 import { GuardianInbox } from '../components/family/GuardianInbox';
+import { motion } from 'motion/react';
+import { staggerContainer, staggerItem } from '../utils/motionVariants';
 
 const MAX_TRUSTED_CONTACTS = 2;
 
@@ -399,14 +401,19 @@ export const FamilyShieldPage: React.FC = () => {
       </div>
 
       {/* Trusted Contacts Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <motion.div
+        variants={staggerContainer}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+      >
         {contacts.map((c) => (
-          <Tile
-            key={c.id}
-            className={`bg-white border p-5 flex flex-col justify-between ${
-              c.is_primary ? 'border-[#0f62fe] ring-1 ring-[#0f62fe]' : 'border-[#e0e0e0]'
-            }`}
-          >
+          <motion.div key={c.id} variants={staggerItem} whileHover={{ y: -3, transition: { duration: 0.15 } }}>
+            <Tile
+              className={`bg-white border p-5 flex flex-col justify-between h-full ${
+                c.is_primary ? 'border-[#0f62fe] ring-1 ring-[#0f62fe]' : 'border-[#e0e0e0]'
+              }`}
+            >
             <div>
               <div className="flex items-start justify-between gap-2 mb-3">
                 <div className="flex items-center gap-2.5">
@@ -528,8 +535,9 @@ export const FamilyShieldPage: React.FC = () => {
               </div>
             </div>
           </Tile>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       {contacts.length === 0 && (
         <EmptyState
@@ -573,8 +581,14 @@ export const FamilyShieldPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#e0e0e0] text-[#161616]">
-              {alerts.map((alert) => (
-                <tr key={alert.id} className="hover:bg-[#f4f4f4] transition-colors">
+              {alerts.map((alert, idx) => (
+                <motion.tr
+                  key={alert.id}
+                  initial={{ opacity: 0, y: 4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: idx * 0.03 }}
+                  className="hover:bg-[#f4f4f4] transition-colors"
+                >
                   <td className="py-3.5 px-4 font-mono font-semibold text-[#161616]">
                     {alert.incident_id ? (
                       <button
@@ -659,7 +673,7 @@ export const FamilyShieldPage: React.FC = () => {
                       </Button>
                     </div>
                   </td>
-                </tr>
+                </motion.tr>
               ))}
               {alerts.length === 0 && (
                 <tr>

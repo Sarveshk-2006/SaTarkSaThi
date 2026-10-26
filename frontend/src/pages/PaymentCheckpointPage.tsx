@@ -30,6 +30,7 @@ import { SimulationBanner } from '../components/common/SimulationBanner';
 import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader';
 import { SafetyCheckIn, toCheckinLanguage } from '../components/payment/SafetyCheckIn';
 import { GuardianApprovalPanel, RiskSignalList } from '../components/payment/PaymentSafetyWidgets';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface PresetSimulation {
   title: string;
@@ -668,201 +669,259 @@ export const PaymentCheckpointPage: React.FC = () => {
 
         {/* Right Column: Assessment Dossier / Terminal */}
         <div className="lg:col-span-5 space-y-6">
-          {result ? (
-            <Tile className="bg-white p-0 border border-[#e0e0e0] overflow-hidden">
-              {/* Outcome Header Banner */}
-              <div
-                className={`p-5 text-white ${
-                  result.outcome === 'SEEK_TRUSTED_HELP'
-                    ? 'bg-[#da1e28]'
-                    : result.outcome === 'PAUSE_AND_VERIFY'
-                    ? 'bg-[#b28600]'
-                    : 'bg-[#0f62fe]'
-                }`}
+          <AnimatePresence mode="wait">
+            {simulating ? (
+              <motion.div
+                key="simulating-state"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+                className="bg-white border border-[#0f62fe]/30 rounded-xl p-6 space-y-4 relative overflow-hidden"
               >
-                <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-black/20 border border-white/20">
-                      SIMULATION #{result.simulation_id}
-                    </span>
-                    {result.policy_tier && (
-                      <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-white/20 border border-white/30">
-                        TIER: {result.policy_tier}
-                      </span>
-                    )}
-                  </div>
-                  <span className="text-xs font-mono font-bold">
-                    Risk Score: {result.risk_score}/100
-                  </span>
+                <div className="absolute top-0 left-0 right-0 h-1 bg-[#edf5ff] overflow-hidden">
+                  <motion.div
+                    className="h-full bg-[#0f62fe] w-1/3"
+                    animate={{ x: ['-100%', '350%'] }}
+                    transition={{ repeat: Infinity, duration: 1.1, ease: 'easeInOut' }}
+                  />
                 </div>
-                <h3 className="text-lg font-bold tracking-tight">
-                  {result.outcome.replace(/_/g, ' ')}
-                </h3>
-                <p className="text-xs text-white/90 mt-1 leading-relaxed">
-                  {result.decision_rationale}
-                </p>
-              </div>
-
-              <div className="p-5 sm:p-6 space-y-5 text-xs">
-                {result.risk_signals && result.risk_signals.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-[#525252] mb-2">
-                      Why this result (contributing signals):
-                    </h4>
-                    <RiskSignalList signals={result.risk_signals} />
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-[#edf5ff] border border-[#d0e2ff] text-[#0f62fe] flex items-center justify-center animate-spin">
+                    <Renew size={18} />
                   </div>
-                )}
-
-                {/* Verification Checklist */}
-                {result.verification_steps && result.verification_steps.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-semibold uppercase tracking-wider text-[#525252] mb-2">
-                      Recommended Verification Protocol:
-                    </h4>
-                    <div className="space-y-2">
-                      {result.verification_steps.map((step, idx) => (
-                        <label
-                          key={idx}
-                          className="flex items-start gap-2.5 text-xs text-[#161616] p-2.5 bg-[#f4f4f4] border border-[#e0e0e0] cursor-pointer hover:bg-[#e0e0e0] transition-colors"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={Boolean(checkedChecklist[idx])}
-                            onChange={(e) => setCheckedChecklist({ ...checkedChecklist, [idx]: e.target.checked })}
-                            className="mt-0.5"
-                          />
-                          <span className={checkedChecklist[idx] ? 'line-through text-[#8d8d8d]' : 'text-[#161616] font-medium'}>
-                            {step}
+                    <h3 className="text-sm font-semibold text-[#161616]">Evaluating Payment Safety Signals</h3>
+                    <p className="text-[11px] text-[#525252]">Analyzing coercive pressure, unknown beneficiary risk, and call context</p>
+                  </div>
+                </div>
+                <div className="p-3 bg-[#f8fafc] border border-[#e0e0e0] text-xs space-y-1.5 text-[#525252]">
+                  <div className="flex items-center justify-between">
+                    <span>Beneficiary VPA reputation check</span>
+                    <span className="font-mono text-[#0f62fe] font-semibold text-[11px]">ACTIVE</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Extortion & urgency pattern analysis</span>
+                    <span className="font-mono text-[#525252] text-[11px]">RUNNING</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span>Guardian checkpoint eligibility</span>
+                    <span className="font-mono text-[#525252] text-[11px]">EVALUATING</span>
+                  </div>
+                </div>
+              </motion.div>
+            ) : result ? (
+              <motion.div
+                key={result.simulation_id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+              >
+                <Tile className="bg-white p-0 border border-[#e0e0e0] overflow-hidden">
+                  {/* Outcome Header Banner */}
+                  <div
+                    className={`p-5 text-white ${
+                      result.outcome === 'SEEK_TRUSTED_HELP'
+                        ? 'bg-[#da1e28]'
+                        : result.outcome === 'PAUSE_AND_VERIFY'
+                        ? 'bg-[#b28600]'
+                        : 'bg-[#0f62fe]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-black/20 border border-white/20">
+                          SIMULATION #{result.simulation_id}
+                        </span>
+                        {result.policy_tier && (
+                          <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-white/20 border border-white/30">
+                            TIER: {result.policy_tier}
                           </span>
-                        </label>
-                      ))}
+                        )}
+                      </div>
+                      <span className="text-xs font-mono font-bold">
+                        Risk Score: {result.risk_score}/100
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold tracking-tight">
+                      {result.outcome.replace(/_/g, ' ')}
+                    </h3>
+                    <p className="text-xs text-white/90 mt-1 leading-relaxed">
+                      {result.decision_rationale}
+                    </p>
+                  </div>
+
+                  <div className="p-5 sm:p-6 space-y-5 text-xs">
+                    {result.risk_signals && result.risk_signals.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#525252] mb-2">
+                          Why this result (contributing signals):
+                        </h4>
+                        <RiskSignalList signals={result.risk_signals} />
+                      </div>
+                    )}
+
+                    {/* Verification Checklist */}
+                    {result.verification_steps && result.verification_steps.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold uppercase tracking-wider text-[#525252] mb-2">
+                          Recommended Verification Protocol:
+                        </h4>
+                        <div className="space-y-2">
+                          {result.verification_steps.map((step, idx) => (
+                            <label
+                              key={idx}
+                              className="flex items-start gap-2.5 text-xs text-[#161616] p-2.5 bg-[#f4f4f4] border border-[#e0e0e0] cursor-pointer hover:bg-[#e0e0e0] transition-colors"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={Boolean(checkedChecklist[idx])}
+                                onChange={(e) => setCheckedChecklist({ ...checkedChecklist, [idx]: e.target.checked })}
+                                className="mt-0.5"
+                              />
+                              <span className={checkedChecklist[idx] ? 'line-through text-[#8d8d8d]' : 'text-[#161616] font-medium'}>
+                                {step}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="pt-2 border-t border-[#e0e0e0] flex flex-col gap-2.5">
+                      {result.outcome === 'SEEK_TRUSTED_HELP' && (
+                        <Button
+                          kind="danger"
+                          size="md"
+                          renderIcon={Phone}
+                          onClick={() => navigate('/family-shield')}
+                        >
+                          Contact Family Shield Guardian Now
+                        </Button>
+                      )}
+
+                      <Button
+                        kind="secondary"
+                        size="md"
+                        renderIcon={Flash}
+                        onClick={() => setIsCheckInOpen(true)}
+                      >
+                        {result.checkin_status === 'COMPLETED' ? 'Redo Safety Check-in' : 'Start Safety Check-in'} (सुरक्षा जाँच)
+                      </Button>
+
+                      {(result.outcome !== 'PROCEED_WITH_CAUTION' || result.guardian_approval_recommended) && (
+                        <GuardianApprovalPanel
+                          simulationId={result.simulation_id}
+                          eligibleGuardianCount={result.eligible_guardian_count ?? 0}
+                        />
+                      )}
+
+                      {/* Save as Authoritative Incident Dossier */}
+                      <Button
+                        kind="tertiary"
+                        size="md"
+                        renderIcon={Save}
+                        disabled={isSavingIncident || !!savedIncidentId}
+                        onClick={handleSaveIncident}
+                      >
+                        {isSavingIncident
+                          ? 'Saving Authoritative Case...'
+                          : savedIncidentId
+                          ? `Saved as Incident Case #${savedIncidentId}`
+                          : 'Save as Incident Record (Dossier)'}
+                      </Button>
+
+                      {result.outcome !== 'PROCEED_WITH_CAUTION' && (
+                        <Button
+                          kind="primary"
+                          size="md"
+                          renderIcon={ArrowRight}
+                          onClick={() => {
+                            const incidentQuery = savedIncidentId ? `?incident_id=${encodeURIComponent(savedIncidentId)}` : '';
+                            navigate(`/golden-hour${incidentQuery}`, {
+                              state: {
+                                incidentId: savedIncidentId || undefined,
+                                classification: `Suspicious Coerced Payment (${result.outcome})`,
+                                summary: `Simulation #${result.simulation_id}: Recipient ${result.vpa_or_account} for ₹${result.requested_amount.toLocaleString()}. Rationale: ${result.decision_rationale}`,
+                                financialLoss: result.requested_amount,
+                                recipient: result.vpa_or_account,
+                                bankName: result.vpa_or_account.includes('@') ? 'UPI Payment App' : 'Bank Transfer',
+                              },
+                            });
+                          }}
+                        >
+                          Open Golden Hour Recovery Dossier
+                        </Button>
+                      )}
+
+                      <p className="text-[11px] text-[#8d8d8d] text-center italic">
+                        {result.disclaimer}
+                      </p>
                     </div>
                   </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="pt-2 border-t border-[#e0e0e0] flex flex-col gap-2.5">
-                  {result.outcome === 'SEEK_TRUSTED_HELP' && (
-                    <Button
-                      kind="danger"
-                      size="md"
-                      renderIcon={Phone}
-                      onClick={() => navigate('/family-shield')}
-                    >
-                      Contact Family Shield Guardian Now
-                    </Button>
-                  )}
-
-                  <Button
-                    kind="secondary"
-                    size="md"
-                    renderIcon={Flash}
-                    onClick={() => setIsCheckInOpen(true)}
-                  >
-                    {result.checkin_status === 'COMPLETED' ? 'Redo Safety Check-in' : 'Start Safety Check-in'} (सुरक्षा जाँच)
-                  </Button>
-
-                  {(result.outcome !== 'PROCEED_WITH_CAUTION' || result.guardian_approval_recommended) && (
-                    <GuardianApprovalPanel
-                      simulationId={result.simulation_id}
-                      eligibleGuardianCount={result.eligible_guardian_count ?? 0}
-                    />
-                  )}
-
-                  {/* Save as Authoritative Incident Dossier */}
-                  <Button
-                    kind="tertiary"
-                    size="md"
-                    renderIcon={Save}
-                    disabled={isSavingIncident || !!savedIncidentId}
-                    onClick={handleSaveIncident}
-                  >
-                    {isSavingIncident
-                      ? 'Saving Authoritative Case...'
-                      : savedIncidentId
-                      ? `Saved as Incident Case #${savedIncidentId}`
-                      : 'Save as Incident Record (Dossier)'}
-                  </Button>
-
-                  {result.outcome !== 'PROCEED_WITH_CAUTION' && (
-                    <Button
-                      kind="primary"
-                      size="md"
-                      renderIcon={ArrowRight}
-                      onClick={() => {
-                        const incidentQuery = savedIncidentId ? `?incident_id=${encodeURIComponent(savedIncidentId)}` : '';
-                        navigate(`/golden-hour${incidentQuery}`, {
-                          state: {
-                            incidentId: savedIncidentId || undefined,
-                            classification: `Suspicious Coerced Payment (${result.outcome})`,
-                            summary: `Simulation #${result.simulation_id}: Recipient ${result.vpa_or_account} for ₹${result.requested_amount.toLocaleString()}. Rationale: ${result.decision_rationale}`,
-                            financialLoss: result.requested_amount,
-                            recipient: result.vpa_or_account,
-                            bankName: result.vpa_or_account.includes('@') ? 'UPI Payment App' : 'Bank Transfer',
-                          },
-                        });
-                      }}
-                    >
-                      Open Golden Hour Recovery Dossier
-                    </Button>
-                  )}
-
-                  <p className="text-[11px] text-[#8d8d8d] text-center italic">
-                    {result.disclaimer}
-                  </p>
-                </div>
-              </div>
-            </Tile>
-          ) : (
-            /* Terminal Preview */
-            <Tile className="bg-white p-6 border border-[#e0e0e0] space-y-4">
-              <div className="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
-                <span className="text-xs font-semibold text-[#161616]">UPI Transaction Interception Terminal</span>
-                <Tag type="cool-gray" size="sm">LIVE PREVIEW</Tag>
-              </div>
-
-              <div className="p-4 bg-[#161616] text-white space-y-4">
-                <div className="flex items-center justify-between text-[11px] text-[#c6c6c6] border-b border-[#393939] pb-2">
-                  <span className="font-semibold text-white">Satark Saathi Guard</span>
-                  <span className="font-mono text-[10px]">PRE-FLIGHT</span>
-                </div>
-
-                <div className="text-center py-2">
-                  <p className="text-[11px] text-[#8d8d8d]">Paying to</p>
-                  <h4 className="text-sm font-semibold text-white truncate px-2 mt-0.5">
-                    {recipientName || 'Unverified Beneficiary'}
-                  </h4>
-                  <p className="font-mono text-xs text-[#c6c6c6] mt-0.5">
-                    {vpa || 'handle@upi'}
-                  </p>
-
-                  <div className="mt-3">
-                    <span className="text-2xl font-bold font-mono tracking-tight text-white">
-                      ₹ {amount ? parseFloat(amount).toLocaleString('en-IN') : '0'}
-                    </span>
+                </Tile>
+              </motion.div>
+            ) : (
+              /* Terminal Preview */
+              <motion.div
+                key="terminal-preview"
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Tile className="bg-white p-6 border border-[#e0e0e0] space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
+                    <span className="text-xs font-semibold text-[#161616]">UPI Transaction Interception Terminal</span>
+                    <Tag type="cool-gray" size="sm">LIVE PREVIEW</Tag>
                   </div>
-                </div>
 
-                <div className="p-2.5 bg-[#262626] border border-[#393939] text-[11px] text-[#c6c6c6] flex items-center justify-between">
-                  <span>Transfer Status:</span>
-                  <span className="text-[#f1c21b] font-semibold flex items-center gap-1">
-                    <Time size={14} />
-                    <span>Awaiting Checkpoint</span>
-                  </span>
-                </div>
-              </div>
+                  <div className="p-4 bg-[#161616] text-white space-y-4">
+                    <div className="flex items-center justify-between text-[11px] text-[#c6c6c6] border-b border-[#393939] pb-2">
+                      <span className="font-semibold text-white">Satark Saathi Guard</span>
+                      <span className="font-mono text-[10px]">PRE-FLIGHT</span>
+                    </div>
 
-              <div className="p-3 bg-[#f4f4f4] border border-[#e0e0e0] text-xs text-[#525252] space-y-1">
-                <p className="font-semibold text-[#161616] flex items-center gap-1.5">
-                  <Information size={16} className="text-[#0f62fe]" />
-                  <span>How This Protects You:</span>
-                </p>
-                <p className="text-[11px] leading-relaxed">
-                  UPI transfers are instantaneous and irreversible. Satark Saathi detects psychological coercion, fraudulent VPA handles, and active call pressure before money leaves your account.
-                </p>
-              </div>
-            </Tile>
-          )}
+                    <div className="text-center py-2">
+                      <p className="text-[11px] text-[#8d8d8d]">Paying to</p>
+                      <h4 className="text-sm font-semibold text-white truncate px-2 mt-0.5">
+                        {recipientName || 'Unverified Beneficiary'}
+                      </h4>
+                      <p className="font-mono text-xs text-[#c6c6c6] mt-0.5">
+                        {vpa || 'handle@upi'}
+                      </p>
+
+                      <div className="mt-3">
+                        <span className="text-2xl font-bold font-mono tracking-tight text-white">
+                          ₹ {amount ? parseFloat(amount).toLocaleString('en-IN') : '0'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="p-2.5 bg-[#262626] border border-[#393939] text-[11px] text-[#c6c6c6] flex items-center justify-between">
+                      <span>Transfer Status:</span>
+                      <span className="text-[#f1c21b] font-semibold flex items-center gap-1">
+                        <Time size={14} />
+                        <span>Awaiting Checkpoint</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-[#f4f4f4] border border-[#e0e0e0] text-xs text-[#525252] space-y-1">
+                    <p className="font-semibold text-[#161616] flex items-center gap-1.5">
+                      <Information size={16} className="text-[#0f62fe]" />
+                      <span>How This Protects You:</span>
+                    </p>
+                    <p className="text-[11px] leading-relaxed">
+                      UPI transfers are instantaneous and irreversible. Satark Saathi detects psychological coercion, fraudulent VPA handles, and active call pressure before money leaves your account.
+                    </p>
+                  </div>
+                </Tile>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Past Simulations */}
           {pastSimulations.length > 0 && (

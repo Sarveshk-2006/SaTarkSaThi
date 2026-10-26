@@ -37,6 +37,8 @@ import { EmptyState } from '../components/common/EmptyState';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useToast } from '../context/ToastContext';
 import { useLanguage } from '../context/LanguageContext';
+import { motion } from 'motion/react';
+import { staggerContainer, staggerItem } from '../utils/motionVariants';
 
 export const OverviewPage: React.FC = () => {
   const navigate = useNavigate();
@@ -217,82 +219,95 @@ export const OverviewPage: React.FC = () => {
       ) : (
         <>
           {/* Core Metric Tiles (Derived from SQLite Records) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
             {/* 1. Analyzed Incidents */}
-            <Tile className="p-4 bg-white border border-[#e0e0e0]">
-              <div className="flex items-center justify-between text-[#525252] mb-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider">Messages Analyzed</span>
-                <div className="w-7 h-7 bg-[#f4f4f4] border border-[#e0e0e0] flex items-center justify-center">
-                  <Scan size={16} className="text-[#0f62fe]" />
+            <motion.div variants={staggerItem} whileHover={{ y: -3, transition: { duration: 0.15 } }}>
+              <Tile className="p-4 bg-white border border-[#e0e0e0] h-full">
+                <div className="flex items-center justify-between text-[#525252] mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider">Messages Analyzed</span>
+                  <div className="w-7 h-7 bg-[#f4f4f4] border border-[#e0e0e0] flex items-center justify-center">
+                    <Scan size={16} className="text-[#0f62fe]" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[#161616]">{stats.total_analyses}</span>
-                <span className="text-[11px] text-[#525252] font-medium">total verified</span>
-              </div>
-              <div className="mt-2 text-[11px] text-[#525252] flex items-center gap-1.5">
-                <Tag type="green" size="sm">{stats.safe_analyses} safe</Tag>
-                <Tag type="warm-gray" size="sm">{stats.caution_analyses} caution</Tag>
-              </div>
-            </Tile>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-[#161616]">{stats.total_analyses}</span>
+                  <span className="text-[11px] text-[#525252] font-medium">total verified</span>
+                </div>
+                <div className="mt-2 text-[11px] text-[#525252] flex items-center gap-1.5">
+                  <Tag type="green" size="sm">{stats.safe_analyses} safe</Tag>
+                  <Tag type="warm-gray" size="sm">{stats.caution_analyses} caution</Tag>
+                </div>
+              </Tile>
+            </motion.div>
 
             {/* 2. High-Risk Threats */}
-            <Tile className="p-4 bg-white border border-[#e0e0e0]">
-              <div className="flex items-center justify-between text-[#525252] mb-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider">High-Risk Scams</span>
-                <div className="w-7 h-7 bg-[#fff1f1] border border-[#ffb3b8] flex items-center justify-center">
-                  <WarningFilled size={16} className="text-[#da1e28]" />
+            <motion.div variants={staggerItem} whileHover={{ y: -3, transition: { duration: 0.15 } }}>
+              <Tile className="p-4 bg-white border border-[#e0e0e0] h-full">
+                <div className="flex items-center justify-between text-[#525252] mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider">High-Risk Scams</span>
+                  <div className="w-7 h-7 bg-[#fff1f1] border border-[#ffb3b8] flex items-center justify-center">
+                    <WarningFilled size={16} className="text-[#da1e28]" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[#da1e28]">{stats.high_risk_analyses}</span>
-                <Tag type="red" size="sm">action flagged</Tag>
-              </div>
-              <p className="mt-2 text-[11px] text-[#525252]">
-                Coercive threats blocked by pattern recognition
-              </p>
-            </Tile>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-[#da1e28]">{stats.high_risk_analyses}</span>
+                  <Tag type="red" size="sm">action flagged</Tag>
+                </div>
+                <p className="mt-2 text-[11px] text-[#525252]">
+                  Coercive threats blocked by pattern recognition
+                </p>
+              </Tile>
+            </motion.div>
 
             {/* 3. Family Alerts Delivered */}
-            <Tile className="p-4 bg-white border border-[#e0e0e0]">
-              <div className="flex items-center justify-between text-[#525252] mb-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider">Family Alerts Sent</span>
-                <div className="w-7 h-7 bg-[#edf5ff] border border-[#d0e2ff] flex items-center justify-center">
-                  <UserMultiple size={16} className="text-[#0f62fe]" />
+            <motion.div variants={staggerItem} whileHover={{ y: -3, transition: { duration: 0.15 } }}>
+              <Tile className="p-4 bg-white border border-[#e0e0e0] h-full">
+                <div className="flex items-center justify-between text-[#525252] mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider">Family Alerts Sent</span>
+                  <div className="w-7 h-7 bg-[#edf5ff] border border-[#d0e2ff] flex items-center justify-center">
+                    <UserMultiple size={16} className="text-[#0f62fe]" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[#161616]">{stats.total_family_alerts}</span>
-                <span className="text-[11px] text-[#525252] font-medium">notifications</span>
-              </div>
-              <p className="mt-2 text-[11px] text-[#525252]">
-                {stats.active_trusted_contacts} active guardians in Family Shield
-              </p>
-            </Tile>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-[#161616]">{stats.total_family_alerts}</span>
+                  <span className="text-[11px] text-[#525252] font-medium">notifications</span>
+                </div>
+                <p className="mt-2 text-[11px] text-[#525252]">
+                  {stats.active_trusted_contacts} active guardians in Family Shield
+                </p>
+              </Tile>
+            </motion.div>
 
             {/* 4. Recovery Cases & Disputed Loss */}
-            <Tile className="p-4 bg-white border border-[#e0e0e0]">
-              <div className="flex items-center justify-between text-[#525252] mb-2">
-                <span className="text-[11px] font-semibold uppercase tracking-wider">Recovery Cases</span>
-                <div className="w-7 h-7 bg-[#fef7e0] border border-[#f1c21b] flex items-center justify-center">
-                  <Help size={16} className="text-[#b28600]" />
+            <motion.div variants={staggerItem} whileHover={{ y: -3, transition: { duration: 0.15 } }}>
+              <Tile className="p-4 bg-white border border-[#e0e0e0] h-full">
+                <div className="flex items-center justify-between text-[#525252] mb-2">
+                  <span className="text-[11px] font-semibold uppercase tracking-wider">Recovery Cases</span>
+                  <div className="w-7 h-7 bg-[#fef7e0] border border-[#f1c21b] flex items-center justify-center">
+                    <Help size={16} className="text-[#b28600]" />
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-[#161616]">{stats.total_incidents}</span>
-                <span className="text-[11px] text-[#525252] font-medium">disputes logged</span>
-              </div>
-              <div className="mt-2 text-[11px] text-[#525252] font-medium">
-                {stats.total_loss_recorded > 0 ? (
-                  <span className="text-[#da1e28] font-bold">
-                    ₹{stats.total_loss_recorded.toLocaleString('en-IN')} disputed
-                  </span>
-                ) : (
-                  <span className="text-[#8d8d8d]">₹0.00 disputed</span>
-                )}
-              </div>
-            </Tile>
-          </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl font-bold text-[#161616]">{stats.total_incidents}</span>
+                  <span className="text-[11px] text-[#525252] font-medium">disputes logged</span>
+                </div>
+                <div className="mt-2 text-[11px] text-[#525252] font-medium">
+                  {stats.total_loss_recorded > 0 ? (
+                    <span className="text-[#da1e28] font-bold">
+                      ₹{stats.total_loss_recorded.toLocaleString('en-IN')} disputed
+                    </span>
+                  ) : (
+                    <span className="text-[#8d8d8d]">₹0.00 disputed</span>
+                  )}
+                </div>
+              </Tile>
+            </motion.div>
+          </motion.div>
 
           {/* Guided Protection Steps Checklist */}
           <Tile className="bg-white p-5 border border-[#e0e0e0]">
@@ -311,8 +326,15 @@ export const OverviewPage: React.FC = () => {
               </Tag>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-              <div
+            <motion.div
+              variants={staggerContainer}
+              initial="hidden"
+              animate="visible"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs"
+            >
+              <motion.div
+                variants={staggerItem}
+                whileHover={{ y: -2, transition: { duration: 0.15 } }}
                 onClick={() => navigate('/scanner')}
                 className="p-3.5 border border-[#e0e0e0] bg-[#f8fafc] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-all rounded-lg space-y-2 flex flex-col justify-between"
               >
@@ -333,9 +355,11 @@ export const OverviewPage: React.FC = () => {
                   <span>Analyze Message</span>
                   <ArrowRight size={14} />
                 </div>
-              </div>
+              </motion.div>
 
-              <div
+              <motion.div
+                variants={staggerItem}
+                whileHover={{ y: -2, transition: { duration: 0.15 } }}
                 onClick={() => navigate('/payment-checkpoint')}
                 className="p-3.5 border border-[#e0e0e0] bg-[#f8fafc] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-all rounded-lg space-y-2 flex flex-col justify-between"
               >
@@ -352,9 +376,11 @@ export const OverviewPage: React.FC = () => {
                   <span>Verify Payment</span>
                   <ArrowRight size={14} />
                 </div>
-              </div>
+              </motion.div>
 
-              <div
+              <motion.div
+                variants={staggerItem}
+                whileHover={{ y: -2, transition: { duration: 0.15 } }}
                 onClick={() => navigate('/family-shield')}
                 className="p-3.5 border border-[#e0e0e0] bg-[#f8fafc] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-all rounded-lg space-y-2 flex flex-col justify-between"
               >
@@ -375,9 +401,11 @@ export const OverviewPage: React.FC = () => {
                   <span>Manage Guardians</span>
                   <ArrowRight size={14} />
                 </div>
-              </div>
+              </motion.div>
 
-              <div
+              <motion.div
+                variants={staggerItem}
+                whileHover={{ y: -2, transition: { duration: 0.15 } }}
                 onClick={() => navigate('/golden-hour')}
                 className="p-3.5 border border-[#e0e0e0] bg-[#f8fafc] hover:bg-[#fff1f1] hover:border-[#da1e28] cursor-pointer transition-all rounded-lg space-y-2 flex flex-col justify-between"
               >
@@ -394,8 +422,8 @@ export const OverviewPage: React.FC = () => {
                   <span>Launch Recovery</span>
                   <ArrowRight size={14} />
                 </div>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </Tile>
 
           {/* Middle Row: Threat Distribution & Protection Status */}
@@ -577,8 +605,14 @@ export const OverviewPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#e0e0e0] text-[#161616]">
-                  {stats.recent_incidents.map((incident) => (
-                    <tr key={incident.id} className="hover:bg-[#f4f4f4] transition-colors">
+                  {stats.recent_incidents.map((incident, idx) => (
+                    <motion.tr
+                      key={incident.id}
+                      initial={{ opacity: 0, y: 4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2, delay: idx * 0.04 }}
+                      className="hover:bg-[#f4f4f4] transition-colors"
+                    >
                       <td className="px-4 py-3 font-medium text-[#161616]">
                         <div>
                           <span>{incident.title}</span>
@@ -619,7 +653,7 @@ export const OverviewPage: React.FC = () => {
                           Inspect Details
                         </Button>
                       </td>
-                    </tr>
+                    </motion.tr>
                   ))}
                 </tbody>
               </table>
