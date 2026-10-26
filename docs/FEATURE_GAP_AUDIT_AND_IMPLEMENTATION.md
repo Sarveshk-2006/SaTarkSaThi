@@ -90,3 +90,13 @@ New columns are added automatically on startup, but existing contacts start as `
 4. **Mock UPI App** → *Known grocery store* (ALLOW → confirm) and *"CBI officer" on video call* (check-in required → blocked).
 5. **Settings** → turn on **Senior Mode**; set a **discreet safety phrase**; review **Integration status**.
 6. **Golden Hour** → generate drafts → **Download PDF Complaint Pack**.
+
+## 7. Phase 7 additions (landing, login, Web/App mode, active Golden Hour)
+
+| Change | Where | Notes |
+|--------|-------|-------|
+| Public landing page | `/welcome` (`pages/LandingPage.tsx`) | Signed-out visitors opening `/` are sent here. |
+| Demo login | `/login` (`pages/LoginPage.tsx`, `context/AuthSessionContext.tsx`) | Checks the seeded demo accounts (Rajesh / Aarav, passcode `1234`) via `/api/auth/login`. Only a demo session flag is stored; the persona switcher keeps working. All app routes require it. Sign out is in the header and mobile menu. |
+| Web / App toggle | Header + mobile header (`components/appmode/ViewModeToggle.tsx`) | Web (default) shows the dashboard; App switches the whole UI to the mock UPI app experience (`AppModeShell`). The "Mock UPI App" menu item was removed; old `/mock-upi` links switch to App mode. |
+| One-tap Golden Hour response | `POST /api/recovery/drafts/{id}/activate-response`, `components/recovery/GoldenHourResponsePanel.tsx` | After the details are entered, one button generates the drafts and shows three dispatches in sequence: complaint to the cyber crime cell, bank request to block the amount, cyber police intimation. Each has a reference, the prepared message and the real next step (call 1930, e-mail draft to the bank, cybercrime.gov.in). **All three are labelled DEMO SIMULATION — nothing is actually sent.** Repeat clicks return the same result; other users get 404. |
+| Pitch story | [`STORY.md`](../STORY.md) | Narrative and 90-second pitch, with an honest "real vs simulated" table. |

@@ -225,7 +225,9 @@ curl -X POST http://127.0.0.1:8000/api/settings/reset-database -H "Content-Type:
 
 ## 🤖 IBM watsonx.ai Configuration
 
-Satark Saathi includes a production integration boundary for IBM watsonx.ai utilizing the **IBM Granite 13B Chat model** (`ibm/granite-13b-chat-v2`).
+Satark Saathi includes an **optional, unverified** client for IBM watsonx.ai text generation. It is off by default; all analysis runs on the local rule engine unless credentials are configured. No watsonx Orchestrate, Granite Guardian or IBM Safer Payments integration exists — see `GET /api/integrations/status` and [docs/FEATURE_GAP_AUDIT_AND_IMPLEMENTATION.md](docs/FEATURE_GAP_AUDIT_AND_IMPLEMENTATION.md).
+
+The default model is `ibm/granite-4-h-small`. The previous default, `ibm/granite-13b-chat-v2`, is listed by IBM only as deploy-on-demand, so it does not work with the pay-per-token `model_id` call this client makes. Confirm the model is available to your project and region before relying on it.
 
 ### Configuring Watsonx Credentials
 Copy `.env.example` to `backend/.env` (or set environment variables):
@@ -234,8 +236,9 @@ ANALYSIS_PROVIDER="watsonx"
 WATSONX_APIKEY="your-ibm-cloud-api-key"
 WATSONX_PROJECT_ID="your-watsonx-project-id"
 WATSONX_URL="https://us-south.ml.cloud.ibm.com"
-WATSONX_MODEL_ID="ibm/granite-13b-chat-v2"
+WATSONX_MODEL_ID="ibm/granite-4-h-small"
 ```
+Then call `POST /api/integrations/watsonx/verify` to perform a real IAM token exchange and a 1-token generation call.
 
 ### Deterministic Local Fallback Guarantee
 If IBM credentials are not configured or the IBM Cloud endpoint is unreachable, Satark Saathi **gracefully falls back to the internal deterministic rule engine**.
@@ -258,14 +261,28 @@ The fallback is **always clearly labelled** — API responses carry `ai_provider
 | `POST` | `/api/contacts` | Add new trusted contact |
 | `POST` | `/api/contacts/{id}/verify/request` | Request 6-digit verification OTP |
 | `POST` | `/api/contacts/{id}/verify/confirm` | Confirm 6-digit OTP verification |
+| `POST` | `/api/contacts/{id}/invite` | Create a one-time invitation code (demo: returned in response) |
+| `GET` | `/api/contacts/invitations` | Invitations addressed to the signed-in user |
+| `POST` | `/api/contacts/invitations/{id}/respond` | Invited user accepts / declines in-app |
+| `POST` | `/api/contacts/invitations/respond-with-code` | Invited person accepts / declines with a code |
 | `POST` | `/api/alerts/dispatch` | Dispatch in-app / simulated family alert |
 | `POST` | `/api/alerts/{id}/acknowledge` | Acknowledge emergency alert |
 | `WS` | `/api/ws/alerts` | Live WebSocket notification transport |
-| `POST` | `/api/payment/simulate` | Interactive sandbox payment risk assessment |
+| `POST` | `/api/payment/simulate` | Explained payment risk assessment (sandbox) |
 | `GET` | `/api/payment/simulations` | Retrieve simulation ledger history |
+| `POST` | `/api/payment/simulations/{id}/checkin` | Adaptive multilingual Safety Check-in |
+| `POST` / `GET` | `/api/payment/simulations/{id}/guardian-approval` | Request / read guardian approval |
+| `GET` | `/api/guardian/approvals` | Approval requests you created or may decide |
+| `POST` | `/api/guardian/approvals/{ref}/decision` | Guardian approves / declines |
+| `GET` / `PUT` / `DELETE` | `/api/safety/duress` | Opt-in discreet safety phrase (hash only) |
+| `POST` | `/api/sdk/v1/pre-transaction-check` | Prototype SDK boundary used by App mode (mock UPI) |
+| `GET` | `/api/sdk/v1/transactions/{id}/decision` | Current SDK decision |
+| `POST` | `/api/sdk/v1/transactions/{id}/complete` / `cancel` | Finish a mock payment (refused unless allowed) |
+| `GET` | `/api/integrations/status` | What is real, simulated or not integrated |
 | `POST` | `/api/recovery/wizard` | 4-step Golden Hour recovery dossier generation |
+| `POST` | `/api/recovery/drafts/{id}/activate-response` | One-tap Golden Hour response (simulated complaint, bank lien request, police intimation) |
 | `PUT` | `/api/recovery/drafts/{id}` | Update and save edited complaint drafts |
-| `GET` | `/api/recovery/drafts/{id}/export` | Export recovery dossier (.txt) |
+| `GET` | `/api/recovery/drafts/{id}/export?format=txt\|pdf` | Export dossier as TXT or PDF complaint pack |
 | `GET` | `/api/incidents` | Filterable incident history records |
 | `GET` | `/api/incidents/{id}` | Incident details with ownership check |
 | `GET` | `/api/incidents/{id}/audit` | Incident chronological audit trail |
@@ -320,7 +337,7 @@ Follow this 5-minute presentation script for a live demonstration:
 
 3. **Family Shield Emergency Alert (2:00 - 3:00)**:
    - Click **Alert Family Shield Guardians**.
-   - Confirm dispatch to 3 contacts.
+   - Confirm dispatch to the 2 accepted guardians.
    - Observe the live in-app notification banner at the top of the screen with audio chime and Incident ID (`SA-XXXXXX`).
    - Click **Acknowledge Alert**.
    - Show the header persona switcher (`Rajesh Sharma` vs `Aarav Sharma`).
@@ -367,6 +384,14 @@ Follow this 5-minute presentation script for a live demonstration:
 - **IBM watsonx.ai**: When IBM credentials are not provided in `.env`, the system runs on the internal deterministic rule engine.
 - **Telecom SMS/WhatsApp Delivery**: Simulated in-app via WebSockets to enable cross-device demonstration without external telecom API costs.
 - **Bank Interception**: Simulated pre-transaction sandbox (real UPI payment apps do not permit third-party interception).
+
+### Phase 6 Safety Upgrades
+Adaptive multilingual Safety Check-in (English/Hindi/Marathi/Kannada, anti-coaching), explained transaction-risk signals from a mock payment history, explicit call-state signal, two-sided Family Shield consent with a two-guardian cap and guardian approvals, discreet duress phrase, Senior Mode, Golden Hour PDF complaint pack, a mock UPI app with an SDK boundary, and honest IBM integration status. Details and limitations: [docs/FEATURE_GAP_AUDIT_AND_IMPLEMENTATION.md](docs/FEATURE_GAP_AUDIT_AND_IMPLEMENTATION.md).
+
+> Upgrading an existing demo database: run **Settings → Restore Realistic Demo Data** once so the two seeded guardians are marked as accepted and the mock payment history is created.
+
+### Phase 7: Landing, Login, Web/App Mode, One-tap Golden Hour
+Open `http://127.0.0.1:5173` → landing page → **Sign in** (demo accounts Rajesh `+91 98765 43210` or Aarav `+91 98101 23456`, passcode `1234`). Use the **Web / App** toggle in the header to switch between the dashboard and the mobile payment-app experience. In Golden Hour, one button activates the complaint to the cyber crime cell, the bank lien request and the cyber police intimation — **simulated and clearly labelled in this demo**. Pitch narrative: [STORY.md](STORY.md).
 
 ### Future Roadmap:
 - Direct integration with DigiLocker for Aadhaar/PAN complaint attachment authentication.
