@@ -142,6 +142,7 @@ const STATUS_BADGE: Record<string, string> = {
   NOT_CONFIGURED: 'bg-slate-100 text-slate-800 border-slate-300',
   SIMULATED: 'bg-amber-50 text-amber-900 border-amber-300',
   CONFIGURED_UNVERIFIED: 'bg-blue-50 text-blue-900 border-blue-300',
+  BLOCKED_BY_EXTERNAL_CONFIGURATION: 'bg-rose-50 text-rose-900 border-rose-300',
 };
 
 export const IntegrationStatusPanel: React.FC = () => {

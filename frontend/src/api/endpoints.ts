@@ -35,6 +35,10 @@ import {
   MockLedgerEntry,
   IntegrationStatus,
   GoldenHourResponse,
+  ProviderVerifyResult,
+  MyAccess,
+  AdminUser,
+  AdminAuditEvent,
 } from './types';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
@@ -171,6 +175,20 @@ export const api = {
   // Integration truth
   getIntegrationStatus: () =>
     apiClient.get<{ analysis_engine: string; integrations: IntegrationStatus[] }>('/integrations/status'),
+  verifyBob: () => apiClient.post<ProviderVerifyResult>('/integrations/bob/verify'),
+  verifyWatsonx: () => apiClient.post<ProviderVerifyResult>('/integrations/watsonx/verify'),
+
+  // Administration (backend-enforced roles)
+  getMyAccess: () => apiClient.get<MyAccess>('/admin/me'),
+  adminListUsers: () => apiClient.get<AdminUser[]>('/admin/users'),
+  adminCreateUser: (data: { full_name: string; phone_number: string; email?: string; passcode: string; access_role: string }) =>
+    apiClient.post<AdminUser>('/admin/users', data),
+  adminUpdateUser: (id: number, data: { access_role?: string; is_active?: boolean }) =>
+    apiClient.patch<AdminUser>(`/admin/users/${id}`, data),
+  adminAuditEvents: (limit = 50) => apiClient.get<AdminAuditEvent[]>(`/admin/audit-events?limit=${limit}`),
+  adminRetentionPurge: () =>
+    apiClient.post<{ redacted_analyses: number; redacted_evidence: number; retention_days: number }>('/admin/retention/purge'),
+  whatsappSimulate: (text: string) => apiClient.post<{ simulated: boolean; reply: string }>('/whatsapp/simulate', { text }),
 
   // Family Alerts
   getAlerts: () => apiClient.get<FamilyAlert[]>('/alerts'),
