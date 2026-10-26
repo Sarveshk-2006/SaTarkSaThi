@@ -1,0 +1,24 @@
+# Python virtual environments & caches
+backend/venv/
+backend/__pycache__/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Node dependencies
+node_modules/
+frontend/node_modules/
+
+# Local build artifacts
+.vercel/
+.idea/
+.vscode/
+
+# Private evaluation and env files
+evaluation_governance/
+.env
+.env.local
+.env.*.local
+
+# Keep database file for seeding Vercel serverless
+!satark_saathi.db

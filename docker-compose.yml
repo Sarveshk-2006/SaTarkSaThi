@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  satark-saathi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: satark-saathi:latest
+    container_name: satark_saathi_app
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=Satark Saathi API
+      - APP_ENV=production
+      - DEBUG=false
+      - PORT=8000
+      - HOST=0.0.0.0
+      - DATABASE_URL=sqlite:///./satark_saathi.db
+      # AI Engine — set to "rule_based" by default.
+      # Set ANALYSIS_PROVIDER=watsonx and supply WATSONX_APIKEY + WATSONX_PROJECT_ID
+      # to enable IBM watsonx.ai inference. Never hardcode credentials here;
+      # use a .env file or a secrets manager instead.
+      - ANALYSIS_PROVIDER=rule_based
+      - WATSONX_APIKEY=
+      - WATSONX_PROJECT_ID=
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    volumes:
+      - satark_data:/app
+    restart: unless-stopped
+
+volumes:
+  satark_data:

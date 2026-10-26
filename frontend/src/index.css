@@ -1,0 +1,191 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Master Design Tokens */
+    --color-midnight: #142A36;
+    --color-trust: #176B58;
+    --color-ivory: #F7F8F4;
+    --color-white: #FFFFFF;
+    --color-sage: #DCEDE5;
+    --color-secondary-text: #64748B;
+    --color-border: #E2E8F0;
+    --color-amber: #D69B36;
+    --color-red: #B91C1C;
+    --color-blue: #1D4ED8;
+
+    /* Semantic Application Roles */
+    --bg-main: var(--color-ivory);
+    --bg-surface: var(--color-white);
+    --text-primary: var(--color-midnight);
+    --text-secondary: var(--color-secondary-text);
+    --border-color: var(--color-border);
+    --brand-trust: var(--color-trust);
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  /* Accessible, restrained focus indicators inspired by Linear / Stripe */
+  :focus-visible {
+    outline: 2px solid #176B58;
+    outline-offset: 2px;
+  }
+}
+
+/* Restrained scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F1F3EE;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Linear & Stripe Component Patterns */
+@layer components {
+  .stripe-surface {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px 0 rgba(20, 42, 54, 0.05), 0 1px 2px -1px rgba(20, 42, 54, 0.03);
+    border-radius: 16px;
+    transition: all 0.15s ease-in-out;
+  }
+
+  .stripe-surface-interactive {
+    background-color: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 1px 3px 0 rgba(20, 42, 54, 0.04);
+    border-radius: 16px;
+    transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .stripe-surface-interactive:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 4px 12px 0 rgba(20, 42, 54, 0.07), 0 2px 4px -1px rgba(20, 42, 54, 0.04);
+    transform: translateY(-1px);
+  }
+
+  .linear-segmented-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #EAECE6;
+    padding: 3px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+  }
+
+  .linear-shortcut {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1px 5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    color: #94A3B8;
+    background: #1C3341;
+    border: 1px solid #284455;
+    border-radius: 5px;
+  }
+}
+
+/* Reduced motion preference respect */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Senior Mode: larger type, higher contrast, bigger touch targets.
+   Many components use fixed pixel sizes, so those are overridden too.
+   ------------------------------------------------------------------ */
+html.senior-mode {
+  font-size: 112.5%;
+}
+
+html.senior-mode body {
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+html.senior-mode .text-\[9px\],
+html.senior-mode .text-\[10px\],
+html.senior-mode .text-\[11px\] {
+  font-size: 0.875rem !important;
+  line-height: 1.45 !important;
+}
+
+html.senior-mode .text-xs {
+  font-size: 0.9375rem !important;
+  line-height: 1.5 !important;
+}
+
+html.senior-mode .text-sm {
+  font-size: 1.0625rem !important;
+}
+
+/* Raise low-contrast greys to near-black on light surfaces (dark panels keep their light text) */
+html.senior-mode :is(.text-slate-400, .text-slate-500, .text-\[\#94A3B8\], .text-\[\#64748B\]):not(:is(aside, .bg-\[\#142A36\], .bg-\[\#0E1E27\], .bg-slate-900, .bg-slate-800, [class*='from-\[\#142A36\]']) *) {
+  color: #1F2937 !important;
+}
+
+html.senior-mode :is(.text-slate-600, .text-slate-700):not(:is(aside, .bg-\[\#142A36\], .bg-\[\#0E1E27\], .bg-slate-900, .bg-slate-800) *) {
+  color: #111827 !important;
+}
+
+html.senior-mode .border-\[\#E2E8F0\],
+html.senior-mode .border-slate-200,
+html.senior-mode .border-\[\#F1F5F9\] {
+  border-color: #64748B !important;
+}
+
+html.senior-mode button,
+html.senior-mode a[href],
+html.senior-mode select,
+html.senior-mode input:not([type='checkbox']):not([type='radio']) {
+  min-height: 44px;
+}
+
+html.senior-mode input[type='checkbox'],
+html.senior-mode input[type='radio'] {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+html.senior-mode :focus-visible {
+  outline: 3px solid #B45309;
+  outline-offset: 3px;
+}
+
+html.senior-mode .animate-pulse,
+html.senior-mode .animate-ping {
+  animation: none !important;
+}
