@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import gsap from 'gsap';
@@ -267,7 +267,17 @@ export const LandingPage: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [quickInput, setQuickInput] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
   const heroMockupRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const currentScenario = SCENARIOS[selectedScenarioIdx];
 
@@ -443,15 +453,25 @@ export const LandingPage: React.FC = () => {
       {/* -------------------------------------------------------------------------
           HEADER: Floating Pill Capsule Header (Exact CyberWall Style)
           ------------------------------------------------------------------------- */}
-      <header className="sticky top-0 z-50 px-3 pt-3">
-        <div className="mx-auto flex h-fit w-full max-w-7xl items-center justify-between rounded-full border border-neutral-200/80 bg-white/85 px-4 py-2.5 shadow-sm shadow-neutral-950/5 backdrop-blur-xl md:px-6">
+      <header className="fixed top-0 inset-x-0 z-50 pointer-events-none px-3 pt-3 sm:px-6 sm:pt-4 transition-all duration-300">
+        <div
+          className={`mx-auto flex w-full items-center justify-between rounded-full border transition-all duration-300 pointer-events-auto ${
+            isScrolled
+              ? 'max-w-5xl bg-white/90 backdrop-blur-2xl border-neutral-200/90 shadow-[0_12px_36px_-6px_rgba(15,98,254,0.08),0_2px_8px_rgba(0,0,0,0.04)] py-2 px-4 sm:px-6'
+              : 'max-w-6xl bg-white/80 backdrop-blur-xl border-white/80 shadow-[0_4px_25px_-5px_rgba(0,0,0,0.05),0_1px_3px_rgba(0,0,0,0.02)] py-2 px-4 sm:px-6'
+          }`}
+        >
           {/* Logo on Left */}
-          <Link to="/welcome" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00C8F0] via-[#00AEEF] to-[#1767F2] text-white flex items-center justify-center shadow-sm">
+          <Link to="/welcome" className="flex items-center gap-2.5 group shrink-0">
+            <motion.div
+              whileHover={{ rotate: 8, scale: 1.05 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 15 }}
+              className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00C8F0] via-[#00AEEF] to-[#1767F2] text-white flex items-center justify-center shadow-xs ring-2 ring-white/90"
+            >
               <Security size={18} />
-            </div>
+            </motion.div>
             <div className="flex flex-col leading-tight">
-              <span className="font-bold text-sm tracking-tight text-neutral-950">
+              <span className="font-bold text-sm tracking-tight text-neutral-950 group-hover:text-[#0f62fe] transition-colors">
                 Satark Saathi
               </span>
               <span className="text-[10px] text-neutral-500 font-medium">
@@ -460,30 +480,71 @@ export const LandingPage: React.FC = () => {
             </div>
           </Link>
 
-          {/* Centered Navigation */}
-          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-neutral-600">
-            <a href="#why-satark" className="hover:text-[#1767F2] transition-colors">Why Satark</a>
-            <a href="#how-it-works" className="hover:text-[#1767F2] transition-colors">How it Works</a>
-            <a href="#inputs" className="hover:text-[#1767F2] transition-colors">Engine</a>
-            <a href="#recovery" className="hover:text-[#1767F2] transition-colors">Recovery 1930</a>
-            <a href="#faq" className="hover:text-[#1767F2] transition-colors">FAQ</a>
+          {/* Centered Fluid Navigation Pill Dock (CyberWall Style) */}
+          <nav className="hidden md:flex items-center gap-1 p-1 rounded-full bg-neutral-100/80 border border-neutral-200/60 backdrop-blur-sm shadow-[inset_0_1px_2px_rgba(0,0,0,0.04)]">
+            <a
+              href="#why-satark"
+              className="px-3.5 py-1 rounded-full text-xs font-semibold text-neutral-600 hover:text-neutral-950 hover:bg-white hover:shadow-xs transition-all duration-150"
+            >
+              Why Satark
+            </a>
+            <a
+              href="#how-it-works"
+              className="px-3.5 py-1 rounded-full text-xs font-semibold text-neutral-600 hover:text-neutral-950 hover:bg-white hover:shadow-xs transition-all duration-150"
+            >
+              How it Works
+            </a>
+            <a
+              href="#inputs"
+              className="px-3.5 py-1 rounded-full text-xs font-semibold text-neutral-600 hover:text-neutral-950 hover:bg-white hover:shadow-xs transition-all duration-150"
+            >
+              Engine
+            </a>
+            <a
+              href="#recovery"
+              className="px-3.5 py-1 rounded-full text-xs font-semibold text-neutral-600 hover:text-neutral-950 hover:bg-white hover:shadow-xs transition-all duration-150"
+            >
+              Recovery 1930
+            </a>
+            <a
+              href="#faq"
+              className="px-3.5 py-1 rounded-full text-xs font-semibold text-neutral-600 hover:text-neutral-950 hover:bg-white hover:shadow-xs transition-all duration-150"
+            >
+              FAQ
+            </a>
           </nav>
 
           {/* Right Action */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
             <Link to="/scanner">
-              <Button kind="primary" size="sm" renderIcon={ArrowRight}>
-                Try Now
-              </Button>
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-[#00C8F0] via-[#00AEEF] to-[#1767F2] text-white text-xs sm:text-sm font-semibold shadow-xs hover:shadow-md hover:shadow-blue-500/20 transition-all cursor-pointer"
+              >
+                <span>Try Now</span>
+                <ArrowRight size={14} />
+              </motion.button>
             </Link>
 
             {session ? (
               <Link to="/" className="hidden sm:inline-block">
-                <Button kind="ghost" size="sm">Dashboard</Button>
+                <button
+                  type="button"
+                  className="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100/90 border border-neutral-200/50 hover:border-neutral-300 transition-all cursor-pointer"
+                >
+                  Dashboard
+                </button>
               </Link>
             ) : (
               <Link to="/login" className="hidden sm:inline-block">
-                <Button kind="ghost" size="sm">Sign In</Button>
+                <button
+                  type="button"
+                  className="px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-medium text-neutral-600 hover:text-neutral-950 hover:bg-neutral-100/90 border border-neutral-200/50 hover:border-neutral-300 transition-all cursor-pointer"
+                >
+                  Sign In
+                </button>
               </Link>
             )}
 
@@ -491,7 +552,7 @@ export const LandingPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 md:hidden text-neutral-700 hover:text-neutral-950"
+              className="p-1.5 md:hidden text-neutral-700 hover:text-neutral-950 rounded-full hover:bg-neutral-100/80 transition-colors"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <Close size={20} /> : <Menu size={20} />}
@@ -507,14 +568,14 @@ export const LandingPage: React.FC = () => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.98 }}
               transition={{ duration: 0.22, ease: 'easeOut' }}
-              className="md:hidden mx-auto max-w-7xl mt-2 rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl space-y-3"
+              className="pointer-events-auto md:hidden mx-auto max-w-lg mt-2 rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-xl p-4 shadow-xl space-y-3"
             >
-              <nav className="flex flex-col space-y-2 text-sm font-medium text-neutral-700">
-                <a href="#why-satark" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">Why Satark</a>
-                <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">How it Works</a>
-                <a href="#inputs" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">Engine &amp; Inputs</a>
-                <a href="#recovery" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">Recovery 1930</a>
-                <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">FAQ</a>
+              <nav className="flex flex-col space-y-1.5 text-sm font-medium text-neutral-700">
+                <a href="#why-satark" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">Why Satark</a>
+                <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">How it Works</a>
+                <a href="#inputs" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">Engine &amp; Inputs</a>
+                <a href="#recovery" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">Recovery 1930</a>
+                <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">FAQ</a>
               </nav>
               <div className="pt-2 border-t border-neutral-100 flex flex-col gap-2">
                 <Link to="/scanner" onClick={() => setMobileMenuOpen(false)}>
@@ -532,7 +593,7 @@ export const LandingPage: React.FC = () => {
         {/* -------------------------------------------------------------------------
             HERO SECTION: CyberWall Centered Typography + Wavy Ribbon + Phone Mockup
             ------------------------------------------------------------------------- */}
-        <section className="relative isolate overflow-hidden pt-8 pb-12 sm:pt-12 md:pt-14 lg:pb-16">
+        <section className="relative isolate overflow-hidden pt-24 pb-12 sm:pt-28 md:pt-32 lg:pb-16">
           {/* Scoped CSS Keyframes for Purposeful Cybersecurity Motion */}
           <style>{`
             @keyframes scanline {
@@ -1195,7 +1256,7 @@ export const LandingPage: React.FC = () => {
         {/* -------------------------------------------------------------------------
             SECTION 3: Why Satark Saathi (Exact CyberWall 2-Card Layout)
             ------------------------------------------------------------------------- */}
-        <section id="why-satark" className="cw-section py-16 md:py-24 bg-white border-b border-neutral-200">
+        <section id="why-satark" className="cw-section scroll-mt-24 md:scroll-mt-28 py-16 md:py-24 bg-white border-b border-neutral-200">
           <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
             <div className="cw-reveal max-w-2xl space-y-4 mb-12">
               <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-[#1767F2]">
@@ -1367,7 +1428,7 @@ export const LandingPage: React.FC = () => {
         {/* -------------------------------------------------------------------------
             SECTION 4: How It Works (Exact CyberWall S-Curve Wavy Path)
             ------------------------------------------------------------------------- */}
-        <section id="how-it-works" className="cw-section py-20 bg-[#F8FAFC] border-b border-neutral-200 relative">
+        <section id="how-it-works" className="cw-section scroll-mt-24 md:scroll-mt-28 py-20 bg-[#F8FAFC] border-b border-neutral-200 relative">
           <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
             <div className="cw-reveal max-w-2xl text-center mx-auto mb-16 space-y-3">
               <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-[#1767F2]">
@@ -1507,7 +1568,7 @@ export const LandingPage: React.FC = () => {
         {/* -------------------------------------------------------------------------
             SECTION 5: Input Methods (Exact CyberWall 3-Card Layout)
             ------------------------------------------------------------------------- */}
-        <section id="inputs" className="cw-section py-20 bg-white border-b border-neutral-200">
+        <section id="inputs" className="cw-section scroll-mt-24 md:scroll-mt-28 py-20 bg-white border-b border-neutral-200">
           <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
             <div className="cw-reveal flex flex-col md:flex-row md:items-end justify-between gap-4 mb-14">
               <div>
@@ -1602,7 +1663,7 @@ export const LandingPage: React.FC = () => {
         {/* -------------------------------------------------------------------------
             SECTION 6: Emergency Recovery 1930 & Golden Hour
             ------------------------------------------------------------------------- */}
-        <section id="recovery" className="cw-section py-20 bg-[#F8FAFC] border-b border-neutral-200">
+        <section id="recovery" className="cw-section scroll-mt-24 md:scroll-mt-28 py-20 bg-[#F8FAFC] border-b border-neutral-200">
           <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
             <motion.div
               whileHover={{ scale: 1.006 }}
@@ -1673,7 +1734,7 @@ export const LandingPage: React.FC = () => {
         {/* -------------------------------------------------------------------------
             SECTION 7: Frequently Asked Questions
             ------------------------------------------------------------------------- */}
-        <section id="faq" className="cw-section py-20 bg-white border-b border-neutral-200">
+        <section id="faq" className="cw-section scroll-mt-24 md:scroll-mt-28 py-20 bg-white border-b border-neutral-200">
           <div className="mx-auto w-full max-w-4xl px-5 md:px-6">
             <div className="cw-reveal text-center max-w-2xl mx-auto mb-14 space-y-3">
               <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-[#1767F2]">
