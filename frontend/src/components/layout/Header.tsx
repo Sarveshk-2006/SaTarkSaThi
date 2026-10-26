@@ -112,7 +112,7 @@ export const Header: React.FC = () => {
   const unacknowledgedAlerts = alerts.filter((a) => a.status !== 'ACKNOWLEDGED');
 
   return (
-    <header className="hidden lg:flex flex-col bg-white border-b border-[#e0e0e0] px-6 py-3 sticky top-0 z-30 font-sans">
+    <header className="hidden lg:flex flex-col bg-white/95 backdrop-blur-md shadow-xs border-b border-[#e0e0e0] px-6 py-3 sticky top-0 z-30 font-sans">
       <div className="flex items-center justify-between gap-4">
         {/* Page Title & Contextual Description */}
         <div className="min-w-[11rem] flex-1">
