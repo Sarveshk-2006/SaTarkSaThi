@@ -1,27 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import {
-  LifeBuoy,
-  PhoneCall,
-  Building2,
-  ExternalLink,
-  CheckCircle2,
+  Phone,
+  Enterprise,
+  Launch,
+  CheckmarkFilled,
   Download,
-  FileText,
-  Edit3,
+  DocumentPdf,
+  Document,
+  Edit,
   Save,
-  ChevronRight,
-  ChevronLeft,
-  Paperclip,
-  Calendar,
-  Info,
-  Zap,
-  Send,
-  ShieldAlert,
-  AlertOctagon,
-  RotateCcw,
+  ArrowRight,
+  ArrowLeft,
+  Time,
+  Information,
+  Flash,
+  Renew,
   Printer,
-} from 'lucide-react';
+  WarningAlt,
+  Add,
+  TrashCan,
+  Help,
+} from '@carbon/icons-react';
+import {
+  Tile,
+  Button,
+  Tag,
+  ProgressIndicator,
+  ProgressStep,
+  TextInput,
+  TextArea,
+  Select,
+  SelectItem,
+  InlineNotification,
+  Loading,
+} from '@carbon/react';
 import { api } from '../api/endpoints';
 import {
   RecoveryDraft,
@@ -33,6 +46,7 @@ import { GoldenHourResponsePanel } from '../components/recovery/GoldenHourRespon
 import { CopyButton } from '../components/common/CopyButton';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { SimulationBanner } from '../components/common/SimulationBanner';
+import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader';
 import { useToast } from '../context/ToastContext';
 
 export const GoldenHourRecoveryPage: React.FC = () => {
@@ -67,7 +81,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
   const [timelineEvents, setTimelineEvents] = useState<string[]>([
     'Received threat message citing PMLA investigation',
     'Instructed to stay on Skype video call in isolated room',
-    'Transferred funds to purported police clearing account'
+    'Transferred funds to purported police clearing account',
   ]);
   const [newTimelineEvent, setNewTimelineEvent] = useState('');
 
@@ -82,6 +96,11 @@ export const GoldenHourRecoveryPage: React.FC = () => {
   const [editedBankText, setEditedBankText] = useState('');
   const [editedPoliceText, setEditedPoliceText] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+
+  // One-tap Golden Hour response
+  const [ghResponse, setGhResponse] = useState<GoldenHourResponse | null>(null);
+  const [isActivating, setIsActivating] = useState(false);
+  const [isExporting, setIsExporting] = useState<'txt' | 'pdf' | null>(null);
 
   useEffect(() => {
     const qId = searchParams.get('incident_id') || searchParams.get('incidentId');
@@ -167,6 +186,19 @@ export const GoldenHourRecoveryPage: React.FC = () => {
     setTimelineEvents(timelineEvents.filter((_, i) => i !== idx));
   };
 
+  const activateResponse = async (draftId: number) => {
+    setIsActivating(true);
+    try {
+      const res = await api.activateGoldenHourResponse(draftId);
+      setGhResponse(res);
+      setLinkedIncidentId(res.incident_reference || linkedIncidentId);
+    } catch (err: any) {
+      showToast({ type: 'error', title: 'Activation failed', message: err.message });
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
   const handleExecuteWizard = async () => {
     if (!description.trim()) {
       showToast({ type: 'warning', title: 'Narrative Required', message: 'Please describe the incident in Step 1.' });
@@ -215,7 +247,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
         portal_complaint_text: editedPortalText,
         bank_complaint_text: editedBankText,
         police_complaint_text: editedPoliceText,
-        status: 'REVIEWED'
+        status: 'REVIEWED',
       });
       setGeneratedDraft(updated);
       setIsEditingDraft(false);
@@ -226,8 +258,6 @@ export const GoldenHourRecoveryPage: React.FC = () => {
       setIsSavingEdit(false);
     }
   };
-
-  const [isExporting, setIsExporting] = useState<'txt' | 'pdf' | null>(null);
 
   const handleExport = async (format: 'txt' | 'pdf') => {
     if (!generatedDraft) return;
@@ -241,28 +271,11 @@ export const GoldenHourRecoveryPage: React.FC = () => {
     }
   };
 
-  // One-tap Golden Hour response (simulated dispatches)
-  const [ghResponse, setGhResponse] = useState<GoldenHourResponse | null>(null);
-  const [isActivating, setIsActivating] = useState(false);
-
-  const activateResponse = async (draftId: number) => {
-    setIsActivating(true);
-    try {
-      const res = await api.activateGoldenHourResponse(draftId);
-      setGhResponse(res);
-      setLinkedIncidentId(res.incident_reference || linkedIncidentId);
-    } catch (err: any) {
-      showToast({ type: 'error', title: 'Activation failed', message: err.message });
-    } finally {
-      setIsActivating(false);
-    }
-  };
-
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="border-b border-slate-200 pb-4">
-          <h1 className="text-xl font-bold text-slate-900">Golden Hour Recovery Desk</h1>
+        <div className="border-b border-[#e0e0e0] pb-4">
+          <h1 className="text-xl font-semibold text-[#161616]">Golden Hour Recovery Desk</h1>
         </div>
         <LoadingSkeleton rows={4} />
       </div>
@@ -273,28 +286,39 @@ export const GoldenHourRecoveryPage: React.FC = () => {
     <div className="space-y-6">
       <SimulationBanner message="Enter what happened, then press one button. Satark Saathi prepares the complaint, the bank lien request and the police intimation at once. In this demo the dispatches are simulated — nothing reaches a real bank, police station or government portal." />
 
+      <ServiceJourneyHeader
+        title="Golden Hour Recovery Desk & Incident Wizard"
+        badge="EMERGENCY RESPONSE"
+        badgeKind="red"
+        tagline="Time-critical multi-desk recovery protocol for citizens within the first 2-3 hours of an unauthorized or fraudulent transfer."
+        inputs="Incident narrative, disputed financial amount, bank name, suspect contact info, and timeline events."
+        deliverables="Simultaneous multi-desk drafts: 1930 portal complaint text, bank lien recall request, and police intimation."
+        nextAction="Dial 1930 immediately with the formatted complaint, contact your bank nodal officer, and file at cybercrime.gov.in."
+        icon={Help}
+      />
+
       {/* 1930 Cyber Fraud Helpline Urgent Banner (Mandatory Requirement) */}
-      <div className="bg-[#991B1B] text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-red-700/60">
+      <div className="bg-[#da1e28] text-white p-6 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border-l-4 border-l-[#750e13]">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-white/10 rounded-2xl border border-white/20 shrink-0">
-            <PhoneCall className="w-8 h-8 text-white animate-bounce-short" />
+          <div className="p-3 bg-white/20 shrink-0">
+            <Phone size={28} className="text-white" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white text-[#991B1B]">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider bg-white text-[#da1e28]">
                 CRITICAL GOLDEN HOUR ACTION
               </span>
-              <span className="text-xs text-red-100 font-medium">Within 2 to 3 Hours</span>
+              <span className="text-xs text-white/90 font-medium">Within 2 to 3 Hours</span>
             </div>
-            <h2 className="text-xl font-bold mt-1 tracking-tight">
+            <h2 className="text-xl font-bold tracking-tight">
               Dial 1930 &bull; Citizen Cyber Fraud Reporting System
             </h2>
-            <p className="text-xs text-red-100 mt-1 max-w-xl leading-relaxed">
+            <p className="text-xs text-white/90 mt-1 max-w-xl leading-relaxed">
               If money has been debited, call <strong>1930 immediately</strong> and register at{' '}
-              <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="underline font-bold text-white hover:text-amber-200">
+              <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="underline font-bold text-white hover:text-[#f4f4f4]">
                 cybercrime.gov.in
               </a>. Initiates inter-bank lien marking to freeze funds before mule ATM withdrawals.
-              <span className="block mt-1 text-[11px] text-red-200 font-normal">
+              <span className="block mt-1 text-[11px] text-white/80 font-normal">
                 *Notice: Official reporting initiates immediate tracing, but does not guarantee recovery.
               </span>
             </p>
@@ -304,480 +328,477 @@ export const GoldenHourRecoveryPage: React.FC = () => {
         <div className="flex items-center gap-2.5 shrink-0">
           <a
             href="tel:1930"
-            className="px-5 py-3 rounded-xl bg-white hover:bg-slate-100 text-[#991B1B] font-bold text-sm flex items-center gap-2 shadow-sm transition-transform active:scale-95 cursor-pointer"
+            className="cds--btn cds--btn--secondary bg-white text-[#da1e28] hover:bg-[#f4f4f4] font-bold text-sm inline-flex items-center gap-2"
           >
-            <PhoneCall className="w-4 h-4 text-[#991B1B]" />
+            <Phone size={16} />
             Call 1930 Now
           </a>
           <a
             href="https://cybercrime.gov.in"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-3 rounded-xl bg-red-950/60 hover:bg-red-950 text-white font-medium text-xs flex items-center gap-1.5 border border-red-400/30 cursor-pointer"
+            className="cds--btn cds--btn--tertiary bg-black/40 hover:bg-black/60 text-white font-medium text-xs inline-flex items-center gap-1.5 border border-white/30"
           >
             Portal
-            <ExternalLink className="w-3.5 h-3.5" />
+            <Launch size={14} />
           </a>
         </div>
       </div>
 
       {/* Step Wizard Progress Header */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+      <Tile className="p-5 shadow-sm space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#e0e0e0] pb-4 gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                <LifeBuoy className="w-5 h-5 text-[#176B58]" />
+              <h1 className="text-lg font-semibold text-[#161616] flex items-center gap-2">
+                <Help size={20} className="text-[#0f62fe]" />
                 Golden Hour Incident Recovery Wizard
               </h1>
               {linkedIncidentId && (
-                <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#DCEDE5] text-[#176B58] border border-teal-200">
+                <Tag type="teal" size="sm">
                   Case #{linkedIncidentId}
-                </span>
+                </Tag>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-[#525252] mt-0.5">
               Compile non-fabricated, structured dispute drafts for cyber authorities and bank nodal desks.
             </p>
           </div>
-          <span className="text-xs font-semibold text-slate-700 bg-slate-100 px-3 py-1 rounded-xl">
+          <Tag type="warm-gray" size="md">
             Step {wizardStep} of 4
-          </span>
+          </Tag>
         </div>
 
         {/* Case Hydration Loading State */}
         {caseLoading && (
-          <div className="p-3 bg-[#DCEDE5] border border-teal-200 rounded-xl text-xs text-[#176B58] flex items-center gap-2">
-            <RotateCcw className="w-4 h-4 text-[#176B58] animate-spin" />
+          <div className="p-3 bg-[#edf5ff] border-l-4 border-l-[#0f62fe] text-xs text-[#0043ce] flex items-center gap-2">
+            <Renew size={16} className="animate-spin text-[#0043ce]" />
             <span>Retrieving authoritative incident dossier from backend...</span>
           </div>
         )}
 
         {/* Case Hydration Error State */}
         {caseLoadError && (
-          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-900 flex items-start gap-2.5">
-            <AlertOctagon className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold">Record Access Alert</p>
-              <p className="mt-0.5 text-[11px]">{caseLoadError}</p>
-              <p className="mt-1 text-[10px] text-slate-500">
-                You can continue entering details manually. Note that only authorized owners or consented guardians may link official recovery cases.
-              </p>
-            </div>
-          </div>
+          <InlineNotification
+            kind="error"
+            title="Record Access Alert"
+            subtitle={`${caseLoadError}. You can continue entering details manually.`}
+            hideCloseButton
+            lowContrast
+          />
         )}
 
-        <div className="grid grid-cols-4 gap-2 text-center text-xs">
-          {[
-            { step: 1, label: '1. Incident Info' },
-            { step: 2, label: '2. Financial Details' },
-            { step: 3, label: '3. Evidence & Timeline' },
-            { step: 4, label: '4. Recovery Actions' },
-          ].map((s) => (
-            <button
-              key={s.step}
-              type="button"
+        {/* Carbon Progress Indicator */}
+        <div className="overflow-x-auto py-2">
+          <ProgressIndicator currentIndex={wizardStep - 1}>
+            <ProgressStep
+              label="Incident Particulars"
+              secondaryLabel="Date, scam type & narrative"
               onClick={() => {
-                if (generatedDraft || s.step < wizardStep) setWizardStep(s.step as any);
+                if (generatedDraft || wizardStep > 1) setWizardStep(1);
               }}
-              className={`py-2 px-1 rounded-xl font-semibold transition-all border ${
-                wizardStep === s.step
-                  ? 'bg-[#176B58] text-white border-[#176B58] shadow-sm'
-                  : wizardStep > s.step
-                  ? 'bg-[#DCEDE5] text-[#176B58] border-teal-200 cursor-pointer'
-                  : 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed'
-              }`}
-            >
-              {s.label}
-            </button>
-          ))}
+            />
+            <ProgressStep
+              label="Financial Details"
+              secondaryLabel="Loss & bank transaction info"
+              onClick={() => {
+                if (generatedDraft || wizardStep > 2) setWizardStep(2);
+              }}
+            />
+            <ProgressStep
+              label="Evidence & Timeline"
+              secondaryLabel="Suspect & milestone events"
+              onClick={() => {
+                if (generatedDraft || wizardStep > 3) setWizardStep(3);
+              }}
+            />
+            <ProgressStep
+              label="Recovery Actions"
+              secondaryLabel="Drafts, dispatches & export"
+              onClick={() => {
+                if (generatedDraft) setWizardStep(4);
+              }}
+            />
+          </ProgressIndicator>
         </div>
-      </div>
+      </Tile>
 
-      {/* Wizard Step 1: Incident Info */}
+      {/* Wizard Step 1: Incident Particulars */}
       {wizardStep === 1 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
-          <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-[#176B58]" />
-            Step 1: Incident Particulars
-          </h2>
+        <Tile className="p-6 shadow-sm space-y-5">
+          <div className="border-b border-[#e0e0e0] pb-3">
+            <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
+              <Time size={20} className="text-[#0f62fe]" />
+              Step 1: Incident Particulars
+            </h2>
+            <p className="text-xs text-[#525252] mt-0.5">
+              Record when the incident began and describe the sequence in your own words.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Approximate Date & Time of Incident *
-              </label>
-              <input
+              <TextInput
+                id="gh-incident-datetime"
+                labelText="Approximate Date & Time of Incident *"
                 type="datetime-local"
                 value={incidentDate}
                 onChange={(e) => setIncidentDate(e.target.value)}
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Category of Cyber Fraud *
-              </label>
-              <select
+              <Select
+                id="gh-scam-type"
+                labelText="Category of Cyber Fraud *"
                 value={scamType}
                 onChange={(e) => setScamType(e.target.value)}
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               >
-                <option value="Digital Arrest Scam">Digital Arrest Scam (Fake Police / CBI)</option>
-                <option value="Utility Impersonation Phishing">Electricity Bill Disconnection Threat</option>
-                <option value="Part-Time Job / Telegram Task Fraud">Prepaid Task / Job Offer Fraud</option>
-                <option value="Fake Investment Scheme">High-Yield Guaranteed Investment Ponzi</option>
-                <option value="Courier / Customs Duty Fraud">Customs / Fedex Parcel Extortion</option>
-                <option value="Bank KYC / SIM Block Fraud">Bank Account KYC Deactivation Phishing</option>
-              </select>
+                <SelectItem value="Digital Arrest Scam" text="Digital Arrest Scam (Fake Police / CBI / ED)" />
+                <SelectItem value="Utility Impersonation Phishing" text="Electricity Bill Disconnection Threat" />
+                <SelectItem value="Part-Time Job / Telegram Task Fraud" text="Prepaid Task / Job Offer Fraud" />
+                <SelectItem value="Fake Investment Scheme" text="High-Yield Guaranteed Investment Ponzi" />
+                <SelectItem value="Courier / Customs Duty Fraud" text="Customs / Fedex Parcel Extortion" />
+                <SelectItem value="Bank KYC / SIM Block Fraud" text="Bank Account KYC Deactivation Phishing" />
+              </Select>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Contact Channel Used by Scammer *
-            </label>
-            <input
-              type="text"
+            <TextInput
+              id="gh-contact-channel"
+              labelText="Contact Channel Used by Scammer *"
               value={channel}
               onChange={(e) => setChannel(e.target.value)}
               placeholder="e.g. WhatsApp Video Call (+91 98201 98201), Skype, Telegram"
-              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Incident Narrative / Statement of Facts *
-            </label>
-            <textarea
+            <TextArea
+              id="gh-narrative"
+              labelText="Incident Narrative / Statement of Facts *"
               rows={4}
-              required
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Explain clearly what happened: who called, what claims were made, what pressure was applied..."
-              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] leading-relaxed"
+              helperText="Be as detailed as possible. This narrative is incorporated into official complaint drafts."
             />
           </div>
 
-          <div className="flex justify-end pt-2">
-            <button
-              type="button"
+          <div className="flex justify-end pt-3 border-t border-[#e0e0e0]">
+            <Button
+              kind="primary"
+              renderIcon={ArrowRight}
               onClick={() => setWizardStep(2)}
               disabled={!description.trim()}
-              className="px-6 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
               Continue to Financial Details
-              <ChevronRight className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
-        </div>
+        </Tile>
       )}
 
-      {/* Wizard Step 2: Financial Information */}
+      {/* Wizard Step 2: Financial Details */}
       {wizardStep === 2 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
-          <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-            <Building2 className="w-5 h-5 text-[#176B58]" />
-            Step 2: Financial Details &amp; Transaction References
-          </h2>
+        <Tile className="p-6 shadow-sm space-y-5">
+          <div className="border-b border-[#e0e0e0] pb-3">
+            <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
+              <Enterprise size={20} className="text-[#0f62fe]" />
+              Step 2: Financial Details &amp; Transaction References
+            </h2>
+            <p className="text-xs text-[#525252] mt-0.5">
+              Specify debited accounts, amounts, and transaction references if available.
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Amount Lost or at Risk (INR) *
-              </label>
-              <input
+              <TextInput
+                id="gh-financial-loss"
+                labelText="Amount Lost or at Risk (INR) *"
                 type="number"
                 min="0"
                 value={financialLoss}
                 onChange={(e) => setFinancialLoss(e.target.value)}
                 placeholder="e.g. 25000"
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] font-mono font-bold"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Complainant Bank / Payment App
-              </label>
-              <input
-                type="text"
+              <TextInput
+                id="gh-bank-name"
+                labelText="Complainant Bank / Payment App"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
                 placeholder="e.g. State Bank of India, HDFC Bank, Google Pay"
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Transaction Reference / UTR Number
-                </label>
-                <span className="text-[10px] text-[#176B58] font-semibold bg-[#DCEDE5] px-2 py-0.5 rounded">
-                  Optional / Missing UTR Allowed
-                </span>
-              </div>
-              <input
-                type="text"
+              <TextInput
+                id="gh-transaction-ref"
+                labelText="Transaction Reference / UTR Number"
                 value={transactionRef}
                 onChange={(e) => setTransactionRef(e.target.value)}
                 placeholder="Leave blank if UTR is not yet available"
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] font-mono"
+                helperText="Missing UTR explicitly allowed. If omitted, the draft will indicate '[UTR PENDING BANK STATEMENT]' without fabricating fake numbers."
               />
-              <p className="text-[11px] text-slate-500 mt-1">
-                If omitted, the complaint draft will explicitly indicate &quot;[UTR PENDING BANK STATEMENT]&quot; without fabricating numbers.
-              </p>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                Transfer Status
-              </label>
-              <select
+              <Select
+                id="gh-transfer-status"
+                labelText="Transfer Status"
                 value={transferStatus}
                 onChange={(e) => setTransferStatus(e.target.value as any)}
-                className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               >
-                <option value="COMPLETED">Completed (Amount already debited)</option>
-                <option value="PENDING">Pending / In-Transit (Dispute immediately)</option>
-              </select>
+                <SelectItem value="COMPLETED" text="Completed (Amount already debited)" />
+                <SelectItem value="PENDING" text="Pending / In-Transit (Dispute immediately)" />
+              </Select>
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-            <button
-              type="button"
+          <div className="flex items-center justify-between pt-3 border-t border-[#e0e0e0]">
+            <Button
+              kind="secondary"
+              renderIcon={ArrowLeft}
               onClick={() => setWizardStep(1)}
-              className="px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <ChevronLeft className="w-4 h-4" />
               Back
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              kind="primary"
+              renderIcon={ArrowRight}
               onClick={() => setWizardStep(3)}
-              className="px-6 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold text-xs flex items-center gap-2 cursor-pointer"
             >
-              Continue to Evidence & Timeline
-              <ChevronRight className="w-4 h-4" />
-            </button>
+              Continue to Evidence &amp; Timeline
+            </Button>
           </div>
-        </div>
+        </Tile>
       )}
 
       {/* Wizard Step 3: Evidence & Timeline */}
       {wizardStep === 3 && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-5">
-          <h2 className="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-            <Paperclip className="w-5 h-5 text-[#176B58]" />
-            Step 3: Evidence &amp; Incident Timeline
-          </h2>
+        <Tile className="p-6 shadow-sm space-y-5">
+          <div className="border-b border-[#e0e0e0] pb-3">
+            <h2 className="text-base font-semibold text-[#161616] flex items-center gap-2">
+              <Time size={20} className="text-[#0f62fe]" />
+              Step 3: Evidence &amp; Incident Timeline
+            </h2>
+            <p className="text-xs text-[#525252] mt-0.5">
+              Record suspect contact handles and step-by-step chronology for cyber authorities.
+            </p>
+          </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Suspect Identifiers (Phone, UPI ID, Bank Account)
-            </label>
-            <input
-              type="text"
+            <TextInput
+              id="gh-suspect-contact"
+              labelText="Suspect Identifiers (Phone, UPI ID, Bank Account)"
               value={suspectContact}
               onChange={(e) => setSuspectContact(e.target.value)}
               placeholder="e.g. +91 98201 98201, officer-cbi@ybl"
-              className="w-full py-2.5 px-3.5 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Message / Voice-Note Transcript Excerpt (Optional)
-            </label>
-            <textarea
+            <TextArea
+              id="gh-message-transcript"
+              labelText="Message / Voice-Note Transcript Excerpt (Optional)"
               rows={3}
               value={messageTranscript}
               onChange={(e) => setMessageTranscript(e.target.value)}
               placeholder="Paste exact text received from scammer..."
-              className="w-full py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] leading-relaxed"
+              helperText="Verbatim text from SMS, WhatsApp, or recorded conversation."
             />
           </div>
 
           {/* Timeline Events Builder */}
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+            <label className="cds--label mb-2 block">
               Chronological Timeline of Events
             </label>
             <div className="space-y-2 mb-3">
               {timelineEvents.map((evt, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800">
-                  <span className="font-medium">{idx + 1}. {evt}</span>
+                <div key={idx} className="flex items-center justify-between p-3 bg-[#f4f4f4] border border-[#e0e0e0] text-xs text-[#161616]">
+                  <span className="font-medium">
+                    {idx + 1}. {evt}
+                  </span>
                   <button
                     type="button"
                     onClick={() => handleRemoveTimelineEvent(idx)}
-                    className="text-slate-400 hover:text-red-600 text-xs font-bold px-1"
+                    className="text-[#da1e28] hover:text-[#750e13] p-1 cursor-pointer"
+                    title="Remove event"
                   >
-                    &times;
+                    <TrashCan size={16} />
                   </button>
                 </div>
               ))}
             </div>
 
             <div className="flex items-center gap-2">
-              <input
-                type="text"
-                value={newTimelineEvent}
-                onChange={(e) => setNewTimelineEvent(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTimelineEvent())}
-                placeholder="Add milestone (e.g. 11:30 AM caller threatened arrest)..."
-                className="flex-1 py-2 px-3 text-sm rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
-              />
-              <button
-                type="button"
+              <div className="flex-1">
+                <TextInput
+                  id="gh-new-event"
+                  labelText=""
+                  hideLabel
+                  value={newTimelineEvent}
+                  onChange={(e) => setNewTimelineEvent(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTimelineEvent())}
+                  placeholder="Add milestone (e.g. 11:30 AM caller threatened immediate arrest)..."
+                />
+              </div>
+              <Button
+                kind="tertiary"
+                size="md"
+                renderIcon={Add}
                 onClick={handleAddTimelineEvent}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold cursor-pointer shrink-0"
               >
                 Add Event
-              </button>
+              </Button>
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
-            <button
-              type="button"
+          <div className="flex items-center justify-between pt-3 border-t border-[#e0e0e0]">
+            <Button
+              kind="secondary"
+              renderIcon={ArrowLeft}
               onClick={() => setWizardStep(2)}
-              className="px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-semibold text-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <ChevronLeft className="w-4 h-4" />
               Back
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
+              kind="danger"
+              renderIcon={isGenerating ? Renew : Flash}
               onClick={handleExecuteWizard}
               disabled={isGenerating}
-              className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <Zap className="w-4 h-4" />
               {isGenerating ? 'Activating Golden Hour Response…' : 'Activate Golden Hour Response'}
-              <CheckCircle2 className="w-4 h-4" />
-            </button>
+            </Button>
           </div>
-        </div>
+        </Tile>
       )}
 
       {/* Wizard Step 4: Recovery Actions & Draft Review */}
       {wizardStep === 4 && generatedDraft && (
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm space-y-0">
-          <div className="p-6 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <Tile className="p-0 overflow-hidden shadow-sm space-y-0">
+          <div className="p-6 border-b border-[#e0e0e0] bg-[#f4f4f4] flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#176B58] bg-[#DCEDE5] px-2.5 py-0.5 rounded-full">
+              <Tag type="teal" size="sm">
                 Step 4: Formal Recovery Dossier
-              </span>
-              <h2 className="text-lg font-bold text-slate-900 mt-1">
+              </Tag>
+              <h2 className="text-lg font-semibold text-[#161616] mt-1">
                 Review, Edit &amp; Export Complaint Drafts
               </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-[#525252] mt-0.5">
                 Every detail is editable before submission. Do NOT auto-submit to police; review thoroughly first.
               </p>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2">
               {isEditingDraft ? (
-                <button
-                  type="button"
+                <Button
+                  kind="primary"
+                  size="sm"
+                  renderIcon={Save}
                   onClick={handleSaveDraftEdits}
                   disabled={isSavingEdit}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Save className="w-4 h-4" />
                   {isSavingEdit ? 'Saving...' : 'Save Edits'}
-                </button>
+                </Button>
               ) : (
-                <button
-                  type="button"
+                <Button
+                  kind="secondary"
+                  size="sm"
+                  renderIcon={Edit}
                   onClick={() => setIsEditingDraft(true)}
-                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Edit3 className="w-4 h-4 text-slate-600" />
                   Edit Draft
-                </button>
+                </Button>
               )}
 
-              <button
-                type="button"
+              <Button
+                kind="tertiary"
+                size="sm"
+                renderIcon={DocumentPdf}
                 onClick={() => handleExport('pdf')}
                 disabled={isExporting !== null}
-                className="px-4 py-2 rounded-xl bg-red-700 hover:bg-red-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
                 title="Structured PDF: case summary, missing-information checklist, evidence references, timeline, audit trail and all three drafts"
               >
-                <FileText className="w-4 h-4" />
-                {isExporting === 'pdf' ? 'Building PDF…' : 'Download PDF Complaint Pack'}
-              </button>
+                {isExporting === 'pdf' ? 'Building PDF…' : 'Download PDF Pack'}
+              </Button>
 
-              <button
-                type="button"
+              <Button
+                kind="tertiary"
+                size="sm"
+                renderIcon={Download}
                 onClick={() => handleExport('txt')}
                 disabled={isExporting !== null}
-                className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
               >
-                <Download className="w-4 h-4" />
                 {isExporting === 'txt' ? 'Exporting…' : 'Export TXT Dossier'}
-              </button>
+              </Button>
 
-              <button
-                type="button"
+              <Button
+                kind="ghost"
+                size="sm"
+                renderIcon={Printer}
                 onClick={() => window.print()}
-                className="px-3.5 py-2 rounded-xl bg-[#176B58] hover:bg-[#135948] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
-                <Printer className="w-4 h-4" />
-                Print / Save PDF
-              </button>
+                Print
+              </Button>
             </div>
           </div>
 
           {/* Missing Fields Notice */}
           {generatedDraft.missing_fields_notice && (
-            <div className="mx-6 mt-6 p-3.5 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
-              <Info className="w-4 h-4 text-amber-600 shrink-0" />
-              <span>{generatedDraft.missing_fields_notice}</span>
+            <div className="m-6">
+              <InlineNotification
+                kind="warning"
+                title="Missing Information Notice"
+                subtitle={generatedDraft.missing_fields_notice}
+                hideCloseButton
+                lowContrast
+              />
             </div>
           )}
 
           {/* One-tap Golden Hour response */}
-          {ghResponse ? (
-            <GoldenHourResponsePanel key={ghResponse.activated_at} response={ghResponse} />
-          ) : (
-            <div className="mx-6 mt-6 p-5 rounded-2xl bg-[#142A36] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <h3 className="text-sm font-bold">Act now with one tap</h3>
-                <p className="text-xs text-slate-300 mt-1 max-w-xl">
-                  Sends the complaint to the cyber crime cell, asks your bank to block the amount in the fraudster&apos;s account,
-                  and informs the cyber police — <strong className="text-amber-300">simulated in this demo</strong>.
-                </p>
+          <div className="px-6">
+            {ghResponse ? (
+              <GoldenHourResponsePanel key={ghResponse.activated_at} response={ghResponse} />
+            ) : (
+              <div className="p-5 bg-[#161616] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 my-4">
+                <div>
+                  <h3 className="text-sm font-semibold">Act now with one tap</h3>
+                  <p className="text-xs text-[#c6c6c6] mt-1 max-w-xl">
+                    Sends the complaint to the cyber crime cell, asks your bank to block the amount in the fraudster&apos;s account,
+                    and informs the cyber police — <strong className="text-[#f1c21b]">simulated in this demo</strong>.
+                  </p>
+                </div>
+                <Button
+                  kind="danger"
+                  renderIcon={isActivating ? Renew : Flash}
+                  onClick={() => activateResponse(generatedDraft.id)}
+                  disabled={isActivating}
+                >
+                  {isActivating ? 'Activating…' : 'Activate Golden Hour Response'}
+                </Button>
               </div>
-              <button
-                type="button"
-                onClick={() => activateResponse(generatedDraft.id)}
-                disabled={isActivating}
-                className="shrink-0 min-h-[48px] px-6 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm flex items-center gap-2 cursor-pointer disabled:opacity-60"
-              >
-                <Zap className="w-5 h-5" />
-                {isActivating ? 'Activating…' : 'Activate Golden Hour Response'}
-              </button>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Draft Selection Tabs */}
-          <div className="px-6 pt-5">
-            <div className="flex border-b border-slate-200 gap-2">
+          <div className="px-6 pt-4">
+            <div className="flex border-b border-[#e0e0e0] gap-2">
               <button
                 type="button"
                 onClick={() => setActiveTab('PORTAL')}
-                className={`py-2.5 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer ${
+                className={`py-3 px-4 font-semibold text-xs border-b-2 transition-all cursor-pointer ${
                   activeTab === 'PORTAL'
-                    ? 'border-[#176B58] text-[#176B58]'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                    ? 'border-[#0f62fe] text-[#0f62fe]'
+                    : 'border-transparent text-[#525252] hover:text-[#161616]'
                 }`}
               >
                 1. Cyber Crime Portal 1930 Draft
@@ -785,10 +806,10 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('BANK')}
-                className={`py-2.5 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer ${
+                className={`py-3 px-4 font-semibold text-xs border-b-2 transition-all cursor-pointer ${
                   activeTab === 'BANK'
-                    ? 'border-[#176B58] text-[#176B58]'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                    ? 'border-[#0f62fe] text-[#0f62fe]'
+                    : 'border-transparent text-[#525252] hover:text-[#161616]'
                 }`}
               >
                 2. Bank Nodal Officer Recall Dispute
@@ -796,10 +817,10 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setActiveTab('POLICE')}
-                className={`py-2.5 px-4 font-bold text-xs border-b-2 transition-all cursor-pointer ${
+                className={`py-3 px-4 font-semibold text-xs border-b-2 transition-all cursor-pointer ${
                   activeTab === 'POLICE'
-                    ? 'border-[#176B58] text-[#176B58]'
-                    : 'border-transparent text-slate-500 hover:text-slate-800'
+                    ? 'border-[#0f62fe] text-[#0f62fe]'
+                    : 'border-transparent text-[#525252] hover:text-[#161616]'
                 }`}
               >
                 3. Police Cyber Crime Cell Format
@@ -810,7 +831,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
           {/* Draft Content Box */}
           <div className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-slate-600">
+              <span className="text-xs font-semibold text-[#525252]">
                 {isEditingDraft ? 'Editable Draft Content:' : 'Pre-Formatted Dispute Text:'}
               </span>
               <CopyButton
@@ -839,10 +860,10 @@ export const GoldenHourRecoveryPage: React.FC = () => {
                   else if (activeTab === 'BANK') setEditedBankText(e.target.value);
                   else setEditedPoliceText(e.target.value);
                 }}
-                className="w-full p-4 font-mono text-xs text-slate-800 bg-slate-50 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#176B58] leading-relaxed"
+                className="w-full p-4 font-mono text-xs text-[#161616] bg-[#f4f4f4] border border-[#8d8d8d] focus:outline-none focus:ring-2 focus:ring-[#0f62fe] leading-relaxed"
               />
             ) : (
-              <pre className="p-4 bg-slate-900 text-slate-100 rounded-xl font-mono text-xs whitespace-pre-wrap overflow-x-auto max-h-[500px] leading-relaxed border border-slate-800">
+              <pre className="p-4 bg-[#161616] text-[#f4f4f4] font-mono text-xs whitespace-pre-wrap overflow-x-auto max-h-[500px] leading-relaxed border border-[#393939]">
                 {activeTab === 'PORTAL'
                   ? editedPortalText
                   : activeTab === 'BANK'
@@ -851,43 +872,43 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               </pre>
             )}
 
-            <div className="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-1">
-              <p className="font-semibold text-slate-800">Next Steps Under Golden Hour Protocol:</p>
-              <p>1. Copy Section 1 text and submit directly on <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="text-[#176B58] underline font-bold">cybercrime.gov.in</a>.</p>
+            <div className="mt-5 p-4 bg-[#f4f4f4] border-l-4 border-l-[#0f62fe] text-xs text-[#525252] space-y-1">
+              <p className="font-semibold text-[#161616]">Next Steps Under Golden Hour Protocol:</p>
+              <p>1. Copy Section 1 text and submit directly on <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="text-[#0f62fe] underline font-bold">cybercrime.gov.in</a>.</p>
               <p>2. Email Section 2 text to your bank fraud dispute cell ({bankName}).</p>
               <p>3. Note complaint acknowledgement number and keep bank statement copy ready.</p>
             </div>
           </div>
-        </div>
+        </Tile>
       )}
 
       {/* Verified Indian Bank Desks Grid */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-        <h3 className="text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <Building2 className="w-5 h-5 text-[#176B58]" />
+      <Tile className="p-6 shadow-sm">
+        <h3 className="text-base font-semibold text-[#161616] mb-4 flex items-center gap-2">
+          <Enterprise size={20} className="text-[#0f62fe]" />
           Verified Indian Bank 24x7 Emergency Hotlines &amp; Freeze Desks
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {helplines.map((b, idx) => (
-            <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
-              <h4 className="font-bold text-xs text-slate-900">{b.bank}</h4>
-              <p className="text-xs font-mono text-[#176B58] font-bold mt-1">📞 {b.toll_free}</p>
-              {b.sms_block && <p className="text-[11px] text-slate-600 mt-1 font-mono">{b.sms_block}</p>}
-              {b.email && <p className="text-[11px] text-slate-500 mt-0.5 truncate">{b.email}</p>}
+            <div key={idx} className="p-4 border border-[#e0e0e0] bg-[#f4f4f4] hover:bg-[#e8e8e8] transition-colors">
+              <h4 className="font-semibold text-xs text-[#161616]">{b.bank}</h4>
+              <p className="text-xs font-mono text-[#0f62fe] font-bold mt-1">📞 {b.toll_free}</p>
+              {b.sms_block && <p className="text-[11px] text-[#525252] mt-1 font-mono">{b.sms_block}</p>}
+              {b.email && <p className="text-[11px] text-[#525252] mt-0.5 truncate">{b.email}</p>}
               {b.portal && (
                 <a
                   href={b.portal}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[11px] text-[#176B58] font-semibold hover:underline mt-2"
+                  className="inline-flex items-center gap-1 text-[11px] text-[#0f62fe] font-semibold hover:underline mt-2"
                 >
-                  Dispute Portal <ExternalLink className="w-3 h-3" />
+                  Dispute Portal <Launch size={12} />
                 </a>
               )}
             </div>
           ))}
         </div>
-      </div>
+      </Tile>
     </div>
   );
 };

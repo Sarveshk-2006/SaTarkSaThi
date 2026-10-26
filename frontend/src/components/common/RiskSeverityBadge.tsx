@@ -1,5 +1,11 @@
 import React from 'react';
-import { ShieldAlert, ShieldCheck, AlertTriangle, AlertOctagon } from 'lucide-react';
+import { Tag } from '@carbon/react';
+import {
+  WarningFilled,
+  WarningAltFilled,
+  CheckmarkFilled,
+  MisuseOutline,
+} from '@carbon/icons-react';
 import { RiskSeverity } from '../../api/types';
 
 interface RiskSeverityBadgeProps {
@@ -21,29 +27,11 @@ export const RiskSeverityBadge: React.FC<RiskSeverityBadgeProps> = ({
   const isCaution = norm === 'CAUTION' || norm === 'MEDIUM' || norm === 'AMBER' || norm === 'ELEVATED';
   const isSafe = !isCritical && !isHigh && !isCaution;
 
-  const sizeClasses = {
-    sm: 'text-[11px] px-2 py-0.5 gap-1',
-    md: 'text-xs px-2.5 py-1 gap-1.5',
-    lg: 'text-sm px-3.5 py-1.5 gap-2 font-medium',
-  };
-
-  const iconSizes = {
-    sm: 'w-3 h-3 shrink-0',
-    md: 'w-3.5 h-3.5 shrink-0',
-    lg: 'w-4 h-4 shrink-0',
-  };
-
-  const getStyle = () => {
-    if (isCritical) {
-      return 'bg-red-50 text-red-900 border-red-300 ring-1 ring-red-400/20';
-    }
-    if (isHigh) {
-      return 'bg-red-50 text-red-800 border-red-200';
-    }
-    if (isCaution) {
-      return 'bg-amber-50 text-amber-900 border-amber-300';
-    }
-    return 'bg-emerald-50 text-emerald-900 border-emerald-300';
+  const getTagType = (): 'red' | 'magenta' | 'warm-gray' | 'green' => {
+    if (isCritical) return 'red';
+    if (isHigh) return 'red';
+    if (isCaution) return 'warm-gray';
+    return 'green';
   };
 
   const getLabel = () => {
@@ -53,24 +41,26 @@ export const RiskSeverityBadge: React.FC<RiskSeverityBadgeProps> = ({
     return 'Safe';
   };
 
+  const tagSize = size === 'sm' ? 'sm' : 'md';
+
   return (
-    <span
-      className={`inline-flex items-center rounded-md border font-semibold tracking-wide ${getStyle()} ${
-        sizeClasses[size]
-      }`}
+    <Tag
+      type={getTagType()}
+      size={tagSize}
+      className="cds--risk-badge inline-flex items-center gap-1 font-semibold"
     >
       {showIcon && (
-        <>
-          {isCritical && <AlertOctagon className={iconSizes[size]} />}
-          {isHigh && !isCritical && <ShieldAlert className={iconSizes[size]} />}
-          {isCaution && <AlertTriangle className={iconSizes[size]} />}
-          {isSafe && <ShieldCheck className={iconSizes[size]} />}
-        </>
+        <span className="inline-flex shrink-0 mr-1" aria-hidden="true">
+          {isCritical && <MisuseOutline size={16} />}
+          {isHigh && !isCritical && <WarningFilled size={16} />}
+          {isCaution && <WarningAltFilled size={16} />}
+          {isSafe && <CheckmarkFilled size={16} />}
+        </span>
       )}
       <span>{getLabel()}</span>
       {score !== undefined && (
-        <span className="font-mono opacity-80 pl-0.5 font-normal">({score}/100)</span>
+        <span className="cds--risk-score ml-1 font-mono font-normal opacity-90">({score}/100)</span>
       )}
-    </span>
+    </Tag>
   );
 };

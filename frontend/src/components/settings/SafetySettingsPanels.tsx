@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2, CircleSlash, Eye, Lock, PlugZap, ShieldQuestion } from 'lucide-react';
+import {
+  CheckmarkFilled,
+  MisuseOutline,
+  View,
+  Locked,
+  Plug,
+  Help,
+} from '@carbon/icons-react';
+import { Tile, Toggle, TextInput, Checkbox, Button, Tag } from '@carbon/react';
 import { api } from '../../api/endpoints';
 import { DuressSettings, IntegrationStatus } from '../../api/types';
 import { useToast } from '../../context/ToastContext';
@@ -8,27 +16,26 @@ import { useSeniorMode } from '../../context/SeniorModeContext';
 export const SeniorModeCard: React.FC = () => {
   const { seniorMode, setSeniorMode } = useSeniorMode();
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-      <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-        <Eye className="w-4 h-4 text-[#176B58]" />
-        <span>Senior Mode</span>
+    <Tile className="p-6 shadow-sm space-y-4">
+      <div className="flex items-center gap-2 text-[#161616] font-semibold text-sm border-b border-[#e0e0e0] pb-3">
+        <View size={18} className="text-[#0f62fe]" />
+        <span>Senior Citizen High-Accessibility Mode</span>
       </div>
-      <p className="text-xs text-slate-600 leading-relaxed">
-        Larger text, stronger contrast, bigger buttons, fewer menu items and a simple home screen with one-tap calls to 1930 and your guardian.
-        The choice is remembered on this device.
+      <p className="text-xs text-[#525252] leading-relaxed">
+        Larger text, high-contrast visual cues, minimum 44px tap targets, streamlined navigation, and rapid one-tap calls to 1930 and trusted family guardians.
+        Selection persists locally on this device.
       </p>
-      <label className="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-300 cursor-pointer">
-        <span className="text-sm font-bold text-slate-900">{seniorMode ? 'Senior Mode is ON' : 'Senior Mode is OFF'}</span>
-        <input
-          type="checkbox"
-          role="switch"
-          aria-checked={seniorMode}
-          checked={seniorMode}
-          onChange={(e) => setSeniorMode(e.target.checked)}
-          className="w-6 h-6 accent-[#176B58]"
+      <div className="pt-2">
+        <Toggle
+          id="senior-mode-toggle"
+          labelText="Senior Citizen Interface Optimization"
+          labelA="Inactive"
+          labelB="Active"
+          toggled={seniorMode}
+          onToggle={(checked) => setSeniorMode(checked)}
         />
-      </label>
-    </div>
+      </div>
+    </Tile>
   );
 };
 
@@ -72,76 +79,84 @@ export const DuressPhraseSettings: React.FC = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-      <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-        <Lock className="w-4 h-4 text-[#176B58]" />
-        <span>Discreet safety phrase (optional)</span>
+    <Tile className="p-6 shadow-sm space-y-4">
+      <div className="flex items-center gap-2 text-[#161616] font-semibold text-sm border-b border-[#e0e0e0] pb-3">
+        <Locked size={18} className="text-[#0f62fe]" />
+        <span>Discreet Coercion Safety Phrase (Optional)</span>
       </div>
-      <p className="text-xs text-slate-600 leading-relaxed">
+      <p className="text-xs text-[#525252] leading-relaxed">
         {settings?.how_it_works ||
-          "If your secret phrase appears in your answer to the check-in question about what a payment is for, the app shows an ordinary 'family check needed' screen while quietly asking your accepted guardians to call you."}
+          "If your secret phrase appears in your answer to the check-in question about what a payment is for, the app displays an ordinary 'family check needed' screen while quietly alerting your accepted guardians to contact you."}
       </p>
-      <ul className="text-[11px] text-slate-600 list-disc pl-5 space-y-0.5">
-        <li>Your phrase is never shown again, never sent in alerts, and never written to logs — only a salted hash is kept.</li>
-        <li>Guardians receive “Please call now” with no mention of the phrase.</li>
-        <li>It works only if at least one guardian has accepted your invitation.</li>
+      <ul className="text-[11px] text-[#525252] list-disc pl-5 space-y-0.5">
+        <li>Your phrase is never displayed again, never transmitted in plain text alerts, and never logged — only a cryptographically salted hash is stored.</li>
+        <li>Guardians receive a generic &ldquo;Please call now&rdquo; without revealing the phrase.</li>
+        <li>Requires at least one accepted guardian linked to your profile.</li>
       </ul>
 
       {settings && (
-        <p className={`text-xs font-semibold flex items-center gap-1.5 ${settings.enabled ? 'text-emerald-700' : 'text-slate-600'}`}>
-          {settings.enabled ? <CheckCircle2 className="w-4 h-4" /> : <CircleSlash className="w-4 h-4" />}
-          {settings.enabled ? 'Enabled' : 'Not enabled'} &bull; {settings.eligible_guardian_count} accepted guardian(s)
-        </p>
-      )}
-      {settings && settings.eligible_guardian_count === 0 && (
-        <p className="text-[11px] text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2">
-          No guardian has accepted your invitation yet, so an escalation would reach no one.
-        </p>
+        <div className="flex items-center gap-2 pt-1">
+          <Tag type={settings.enabled ? 'green' : 'gray'} size="sm">
+            {settings.enabled ? 'Safety Phrase Active' : 'Not Configured'}
+          </Tag>
+          <span className="text-xs text-[#525252]">
+            &bull; {settings.eligible_guardian_count} accepted guardian(s) linked
+          </span>
+        </div>
       )}
 
-      <form onSubmit={save} className="space-y-2 text-xs">
-        <label className="block font-semibold text-slate-700">
-          {settings?.enabled ? 'Replace phrase' : 'Choose a phrase'} (2–8 words, something you would never say by accident)
-          <input
+      {settings && settings.eligible_guardian_count === 0 && (
+        <div className="p-3 bg-[#fdf3e1] border-l-4 border-l-[#f1c21b] text-xs text-[#161616]">
+          No guardian has accepted your invitation yet, so a coercion alert cannot reach anyone.
+        </div>
+      )}
+
+      <form onSubmit={save} className="space-y-3 text-xs pt-1">
+        <div>
+          <TextInput
+            id="duress-phrase-input"
+            labelText="Choose a phrase (2–8 words, something you would never say by accident)"
             type="password"
             autoComplete="off"
             value={phrase}
             onChange={(e) => setPhrase(e.target.value)}
             minLength={8}
             maxLength={80}
-            className="mt-1 w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
+            placeholder={settings?.enabled ? 'Enter replacement safety phrase' : 'e.g. silver river morning tea'}
           />
-        </label>
-        <label className="flex items-start gap-2 cursor-pointer">
-          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-0.5" />
-          <span className="text-slate-700">
-            I agree that when I use this phrase, Satark Saathi may discreetly ask my accepted guardians to call me and hold the payment for their review.
-          </span>
-        </label>
-        <div className="flex gap-2">
-          <button
+        </div>
+
+        <Checkbox
+          id="duress-consent-checkbox"
+          labelText="I agree that when I use this phrase, Satark Saathi may discreetly ask my accepted guardians to call me and hold the payment for their review."
+          checked={consent}
+          onChange={(_, { checked }) => setConsent(checked)}
+        />
+
+        <div className="flex gap-2 pt-2">
+          <Button
             type="submit"
+            kind="primary"
+            size="sm"
             disabled={busy || phrase.trim().length < 8 || !consent}
-            className="px-4 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold disabled:opacity-50 cursor-pointer"
           >
             {settings?.enabled ? 'Replace phrase' : 'Turn on'}
-          </button>
+          </Button>
           {settings?.enabled && (
-            <button type="button" disabled={busy} onClick={disable} className="px-4 py-2.5 rounded-xl border border-slate-300 bg-white font-semibold cursor-pointer">
+            <Button
+              type="button"
+              kind="secondary"
+              size="sm"
+              disabled={busy}
+              onClick={disable}
+            >
               Turn off
-            </button>
+            </Button>
           )}
         </div>
       </form>
-    </div>
+    </Tile>
   );
-};
-
-const STATUS_BADGE: Record<string, string> = {
-  NOT_INTEGRATED: 'bg-slate-100 text-slate-800 border-slate-300',
-  NOT_CONFIGURED: 'bg-slate-100 text-slate-800 border-slate-300',
-  SIMULATED: 'bg-amber-50 text-amber-900 border-amber-300',
-  CONFIGURED_UNVERIFIED: 'bg-blue-50 text-blue-900 border-blue-300',
 };
 
 export const IntegrationStatusPanel: React.FC = () => {
@@ -153,27 +168,36 @@ export const IntegrationStatusPanel: React.FC = () => {
 
   if (!data) return null;
   return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-      <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-        <PlugZap className="w-4 h-4 text-[#176B58]" />
-        <span>Integration status (what is real vs simulated)</span>
+    <Tile className="p-6 shadow-sm space-y-4">
+      <div className="flex items-center gap-2 text-[#161616] font-semibold text-sm border-b border-[#e0e0e0] pb-3">
+        <Plug size={18} className="text-[#0f62fe]" />
+        <span>Integration Status &amp; Real vs Simulated Transparency</span>
       </div>
-      <p className="text-xs text-slate-700 flex items-center gap-1.5">
-        <ShieldQuestion className="w-4 h-4" /> Active analysis engine: <strong>{data.analysis_engine}</strong>
+      <p className="text-xs text-[#161616] flex items-center gap-1.5">
+        <Help size={16} className="text-[#0f62fe]" /> Active analysis engine: <strong>{data.analysis_engine}</strong>
       </p>
       <ul className="space-y-2">
         {data.integrations.map((i) => (
-          <li key={i.id} className="text-xs p-2.5 rounded-xl border border-slate-200">
+          <li key={i.id} className="text-xs p-3 border border-[#e0e0e0] bg-[#f4f4f4]">
             <div className="flex items-center justify-between gap-2">
-              <span className="font-bold text-slate-900">{i.name}</span>
-              <span className={`px-1.5 py-0.5 rounded border text-[10px] font-bold ${STATUS_BADGE[i.status] || 'bg-slate-100 border-slate-300'}`}>
+              <span className="font-semibold text-[#161616]">{i.name}</span>
+              <Tag
+                type={
+                  i.status === 'SIMULATED'
+                    ? 'warm-gray'
+                    : i.status === 'CONFIGURED_UNVERIFIED'
+                    ? 'blue'
+                    : 'gray'
+                }
+                size="sm"
+              >
                 {i.status.replace(/_/g, ' ')}
-              </span>
+              </Tag>
             </div>
-            <p className="text-[11px] text-slate-600 mt-1">{i.detail}</p>
+            <p className="text-[11px] text-[#525252] mt-1">{i.detail}</p>
           </li>
         ))}
       </ul>
-    </div>
+    </Tile>
   );
 };

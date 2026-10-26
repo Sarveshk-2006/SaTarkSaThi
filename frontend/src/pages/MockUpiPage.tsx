@@ -1,5 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AlertOctagon, ArrowLeft, CheckCircle2, Clock, PhoneCall, ShieldCheck, Smartphone, XCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckmarkFilled,
+  MisuseOutline,
+  Time,
+  Phone,
+  Security,
+  WarningAlt,
+  CloseOutline,
+} from '@carbon/icons-react';
+import { Tile, Button, Tag, TextInput } from '@carbon/react';
 import { api } from '../api/endpoints';
 import { CallState, MockLedgerEntry, SdkDecision } from '../api/types';
 import { satarkSafetySdk } from '../sdk/satarkSafetySdk';
@@ -17,10 +27,10 @@ const QUICK_FILLS = [
 ];
 
 const DECISION_STYLE: Record<string, string> = {
-  ALLOW: 'bg-emerald-50 border-emerald-300 text-emerald-950',
-  CHECKIN_REQUIRED: 'bg-amber-50 border-amber-300 text-amber-950',
-  GUARDIAN_APPROVAL_REQUIRED: 'bg-amber-50 border-amber-300 text-amber-950',
-  BLOCK_RECOMMENDED: 'bg-red-50 border-red-300 text-red-950',
+  ALLOW: 'border-l-4 border-l-[#198038] bg-[#defbe6] text-[#198038]',
+  CHECKIN_REQUIRED: 'border-l-4 border-l-[#f1c21b] bg-[#fdf3e1] text-[#b28600]',
+  GUARDIAN_APPROVAL_REQUIRED: 'border-l-4 border-l-[#f1c21b] bg-[#fdf3e1] text-[#b28600]',
+  BLOCK_RECOMMENDED: 'border-l-4 border-l-[#da1e28] bg-[#fff1f1] text-[#da1e28]',
 };
 
 export const MockUpiPage: React.FC = () => {
@@ -116,15 +126,15 @@ export const MockUpiPage: React.FC = () => {
     <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
       <div className="lg:col-span-5 flex justify-center">
         {/* Phone frame */}
-        <div className="w-full max-w-[380px] rounded-[2.2rem] border-[10px] border-[#0E1E27] bg-white shadow-2xl overflow-hidden" aria-label="Mock UPI app">
-          <div className="bg-[#142A36] text-white px-4 py-3 flex items-center justify-between">
-            <span className="font-bold text-sm flex items-center gap-1.5">
-              <Smartphone className="w-4 h-4" /> Satark Demo UPI
+        <div className="w-full max-w-[380px] border-4 border-[#393939] bg-white shadow-2xl overflow-hidden" aria-label="Mock UPI app">
+          <div className="bg-[#161616] text-white px-4 py-3 flex items-center justify-between">
+            <span className="font-semibold text-xs flex items-center gap-1.5">
+              <Security size={16} className="text-[#0f62fe]" /> Satark Safety SDK &bull; Host App
             </span>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-400 text-slate-950">MOCK APP</span>
+            <Tag type="warm-gray" size="sm">MOCK UPI</Tag>
           </div>
-          <p className="text-[10px] bg-amber-50 text-amber-950 px-3 py-1.5 border-b border-amber-200">
-            Not PhonePe, Google Pay, Paytm, BHIM or a bank app. No real money moves.
+          <p className="text-[10px] bg-[#fdf3e1] text-[#b28600] px-3 py-1.5 border-b border-[#f1c21b]">
+            Simulation boundary. Zero external bank connections or real currency movements.
           </p>
 
           <div className="p-4 min-h-[520px]">
@@ -142,29 +152,49 @@ export const MockUpiPage: React.FC = () => {
                         setNote(q.note);
                         setCallState(q.call);
                       }}
-                      className="text-[11px] px-2 py-1 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 cursor-pointer"
+                      className="text-[11px] px-2 py-1 border border-[#e0e0e0] bg-[#f4f4f4] hover:bg-[#e8e8e8] cursor-pointer"
                     >
                       {q.label}
                     </button>
                   ))}
                 </div>
-                <label className="block text-xs font-semibold text-slate-800">
-                  Pay to (UPI ID)
-                  <input value={vpa} onChange={(e) => setVpa(e.target.value)} className="mt-1 w-full p-2.5 rounded-xl border border-slate-300 font-mono text-sm" placeholder="name@bank" />
-                </label>
-                <label className="block text-xs font-semibold text-slate-800">
-                  Payee name (optional)
-                  <input value={name} onChange={(e) => setName(e.target.value)} className="mt-1 w-full p-2.5 rounded-xl border border-slate-300 text-sm" />
-                </label>
-                <label className="block text-xs font-semibold text-slate-800">
-                  Amount (₹)
-                  <input value={amount} onChange={(e) => setAmount(e.target.value)} type="number" min="1" step="any" className="mt-1 w-full p-2.5 rounded-xl border border-slate-300 text-lg font-bold font-mono" />
-                </label>
-                <label className="block text-xs font-semibold text-slate-800">
-                  Note (optional)
-                  <input value={note} onChange={(e) => setNote(e.target.value)} className="mt-1 w-full p-2.5 rounded-xl border border-slate-300 text-sm" />
-                </label>
-                <label className="flex items-start gap-2 text-[11px] p-2 rounded-lg bg-purple-50 border border-purple-200 text-purple-950 cursor-pointer">
+                <div>
+                  <TextInput
+                    id="mock-vpa"
+                    labelText="Pay to (UPI ID) *"
+                    value={vpa}
+                    onChange={(e) => setVpa(e.target.value)}
+                    placeholder="name@bank"
+                  />
+                </div>
+                <div>
+                  <TextInput
+                    id="mock-name"
+                    labelText="Payee name (optional)"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <TextInput
+                    id="mock-amount"
+                    labelText="Amount (INR) *"
+                    type="number"
+                    min="1"
+                    step="any"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <TextInput
+                    id="mock-note"
+                    labelText="Transaction purpose note"
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                  />
+                </div>
+                <label className="flex items-start gap-2 text-[11px] p-2 bg-[#edf5ff] border border-[#a6c8ff] text-[#0043ce] cursor-pointer">
                   <input
                     type="checkbox"
                     checked={callState === 'DEMO_SIMULATED_ACTIVE_CALL'}
@@ -172,30 +202,41 @@ export const MockUpiPage: React.FC = () => {
                     className="mt-0.5"
                   />
                   <span>
-                    <strong>Demo: simulate an active-call signal.</strong> A real app cannot see calls in other apps; this switch only stands in for an OS signal the host app might be allowed to read.
+                    <strong>Simulate active-call telemetry signal.</strong> Stand-in for OS audio focus / call state permission granted to host app.
                   </span>
                 </label>
-                <button type="submit" disabled={busy} className="w-full min-h-[48px] rounded-xl bg-[#176B58] hover:bg-[#135948] text-white font-bold text-sm cursor-pointer disabled:opacity-50">
-                  {busy ? 'Running Satark safety check…' : 'Proceed to pay'}
-                </button>
+                <Button
+                  type="submit"
+                  kind="primary"
+                  size="md"
+                  className="w-full"
+                  disabled={busy}
+                >
+                  {busy ? 'Running Satark safety check…' : 'Proceed to Pay'}
+                </Button>
               </form>
             )}
 
             {stage === 'DECISION' && decision && (
               <div className="space-y-3">
-                <button type="button" onClick={reset} className="text-xs font-semibold text-slate-700 flex items-center gap-1 cursor-pointer">
-                  <ArrowLeft className="w-3.5 h-3.5" /> Back
-                </button>
+                <Button
+                  kind="ghost"
+                  size="sm"
+                  renderIcon={ArrowLeft}
+                  onClick={reset}
+                >
+                  Back
+                </Button>
                 <div className="text-center">
-                  <p className="text-xs text-slate-600">Paying {name || vpa}</p>
-                  <p className="text-2xl font-bold font-mono">₹{parseFloat(amount).toLocaleString('en-IN')}</p>
+                  <p className="text-xs text-[#525252]">Paying {name || vpa}</p>
+                  <p className="text-2xl font-bold font-mono text-[#161616]">₹{parseFloat(amount).toLocaleString('en-IN')}</p>
                 </div>
-                <div className={`p-3 rounded-xl border-2 text-sm ${DECISION_STYLE[decision.decision]}`} role="status">
-                  <p className="font-bold flex items-center gap-1.5">
-                    {decision.decision === 'ALLOW' ? <ShieldCheck className="w-4 h-4" /> : decision.decision === 'BLOCK_RECOMMENDED' ? <AlertOctagon className="w-4 h-4" /> : <Clock className="w-4 h-4" />}
-                    Satark: {decision.decision.replace(/_/g, ' ')}
+                <div className={`p-3 text-xs ${DECISION_STYLE[decision.decision]}`} role="status">
+                  <p className="font-semibold flex items-center gap-1.5">
+                    {decision.decision === 'ALLOW' ? <CheckmarkFilled size={16} /> : decision.decision === 'BLOCK_RECOMMENDED' ? <MisuseOutline size={16} /> : <Time size={16} />}
+                    Satark Decision: {decision.decision.replace(/_/g, ' ')}
                   </p>
-                  <p className="text-xs mt-1">{decision.user_message}</p>
+                  <p className="text-xs mt-1 text-[#161616]">{decision.user_message}</p>
                 </div>
 
                 {decision.decision === 'CHECKIN_REQUIRED' && (
@@ -207,38 +248,54 @@ export const MockUpiPage: React.FC = () => {
                 )}
 
                 {decision.decision === 'BLOCK_RECOMMENDED' && (
-                  <a href="tel:1930" className="w-full min-h-[44px] rounded-xl bg-[#142A36] text-white text-sm font-bold flex items-center justify-center gap-2">
-                    <PhoneCall className="w-4 h-4" /> Call 1930
+                  <a href="tel:1930" className="cds--btn cds--btn--danger w-full inline-flex items-center justify-center gap-2">
+                    <Phone size={16} /> Call 1930 Cyber Fraud Helpline
                   </a>
                 )}
 
                 <div className="flex gap-2 pt-1">
                   {decision.can_complete && (
-                    <button type="button" disabled={busy} onClick={() => finish(true)} className="flex-1 min-h-[48px] rounded-xl bg-[#176B58] text-white text-sm font-bold cursor-pointer disabled:opacity-50">
-                      Confirm mock payment
-                    </button>
+                    <Button
+                      kind="primary"
+                      size="md"
+                      disabled={busy}
+                      onClick={() => finish(true)}
+                      className="flex-1"
+                    >
+                      Confirm Mock Payment
+                    </Button>
                   )}
-                  <button type="button" disabled={busy} onClick={() => finish(false)} className="flex-1 min-h-[48px] rounded-xl border-2 border-slate-400 bg-white text-sm font-bold cursor-pointer disabled:opacity-50">
-                    Cancel payment
-                  </button>
+                  <Button
+                    kind="secondary"
+                    size="md"
+                    disabled={busy}
+                    onClick={() => finish(false)}
+                    className="flex-1"
+                  >
+                    Cancel Payment
+                  </Button>
                 </div>
-                <button type="button" onClick={refreshDecision} className="w-full text-[11px] underline text-slate-700 cursor-pointer">
+                <button
+                  type="button"
+                  onClick={refreshDecision}
+                  className="w-full text-[11px] underline text-[#0f62fe] cursor-pointer text-center"
+                >
                   Refresh SDK decision
                 </button>
               </div>
             )}
 
             {stage === 'DONE' && (
-              <div className="text-center space-y-3 pt-10">
+              <div className="text-center space-y-4 pt-10">
                 {doneMessage.toLowerCase().includes('cancel') ? (
-                  <XCircle className="w-14 h-14 mx-auto text-slate-500" />
+                  <CloseOutline size={48} className="mx-auto text-[#525252]" />
                 ) : (
-                  <CheckCircle2 className="w-14 h-14 mx-auto text-emerald-600" />
+                  <CheckmarkFilled size={48} className="mx-auto text-[#198038]" />
                 )}
-                <p className="text-sm font-bold">{doneMessage}</p>
-                <button type="button" onClick={reset} className="min-h-[44px] px-5 rounded-xl bg-[#142A36] text-white text-sm font-bold cursor-pointer">
-                  New payment
-                </button>
+                <p className="text-sm font-semibold text-[#161616]">{doneMessage}</p>
+                <Button kind="primary" size="md" onClick={reset}>
+                  New Payment
+                </Button>
               </div>
             )}
           </div>
@@ -246,46 +303,51 @@ export const MockUpiPage: React.FC = () => {
       </div>
 
       <div className="lg:col-span-7 space-y-4">
-        <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-2 text-xs text-slate-700">
-          <h2 className="text-sm font-bold text-slate-900">What this demonstrates</h2>
+        <Tile className="p-5 space-y-2 text-xs text-[#525252]">
+          <h2 className="text-sm font-semibold text-[#161616]">Host App SDK Integration Architecture</h2>
           <p>
-            The phone on the left is a <strong>mock</strong> payment app. Before showing a confirm button it calls the
-            <code className="mx-1 px-1 rounded bg-slate-100">satarkSafetySdk</code> boundary
-            (<code className="px-1 rounded bg-slate-100">POST /api/sdk/v1/pre-transaction-check</code>), which returns ALLOW, CHECKIN_REQUIRED,
-            GUARDIAN_APPROVAL_REQUIRED or BLOCK_RECOMMENDED. Completion is refused by the backend unless the decision allows it.
+            The device view on the left demonstrates a <strong>mock</strong> client payment application. Before presenting the biometric PIN or transaction confirmation screen, the host app calls the
+            <code className="mx-1 px-1 bg-[#f4f4f4] text-[#161616]">satarkSafetySdk</code> boundary
+            (<code className="px-1 bg-[#f4f4f4] text-[#161616]">POST /api/sdk/v1/pre-transaction-check</code>).
           </p>
-          <p>Completed mock payments are added to the demo ledger, so spending-baseline and rapid-payment signals react to what you do here.</p>
-          {decision?.integration_notice && <p className="text-amber-900 bg-amber-50 border border-amber-200 rounded-lg p-2">{decision.integration_notice}</p>}
-        </section>
+          <p>The backend returns policy evaluations (ALLOW, CHECKIN_REQUIRED, GUARDIAN_APPROVAL_REQUIRED, or BLOCK_RECOMMENDED). Payment execution is refused unless the decision allows it.</p>
+          {decision?.integration_notice && (
+            <div className="p-3 bg-[#fdf3e1] border-l-4 border-l-[#f1c21b] text-xs text-[#161616] mt-2">
+              {decision.integration_notice}
+            </div>
+          )}
+        </Tile>
 
         {decision && decision.risk_signals.length > 0 && stage === 'DECISION' && (
-          <section className="bg-white rounded-2xl border border-slate-200 p-5 space-y-2">
-            <h2 className="text-sm font-bold text-slate-900">
-              SDK risk signals (score {decision.risk_score}/100, tier {decision.policy_tier})
+          <Tile className="p-5 space-y-2">
+            <h2 className="text-sm font-semibold text-[#161616]">
+              SDK Risk Signals (Score {decision.risk_score}/100, Tier {decision.policy_tier})
             </h2>
             <RiskSignalList signals={decision.risk_signals} />
-          </section>
+          </Tile>
         )}
 
-        <section className="bg-white rounded-2xl border border-slate-200 p-5">
-          <h2 className="text-sm font-bold text-slate-900 mb-2">Mock ledger (demo history)</h2>
+        <Tile className="p-5">
+          <h2 className="text-sm font-semibold text-[#161616] mb-3">Mock Ledger (Transactional History)</h2>
           {ledger.length === 0 ? (
-            <p className="text-xs text-slate-500">No mock transactions yet.</p>
+            <p className="text-xs text-[#525252]">No mock transactions recorded yet.</p>
           ) : (
-            <ul className="divide-y divide-slate-100 text-xs max-h-72 overflow-y-auto">
+            <ul className="divide-y divide-[#e0e0e0] text-xs max-h-72 overflow-y-auto">
               {ledger.map((t) => (
-                <li key={t.id} className="py-1.5 flex items-center justify-between gap-2">
-                  <span className="font-mono truncate">{t.payee_vpa}</span>
+                <li key={t.id} className="py-2 flex items-center justify-between gap-2">
+                  <span className="font-mono truncate text-[#161616]">{t.payee_vpa}</span>
                   <span className="flex items-center gap-2 shrink-0">
-                    {t.is_seed_data && <span className="text-[10px] px-1 rounded bg-slate-100 text-slate-600">seed</span>}
-                    <span className={t.status === 'COMPLETED' ? 'text-slate-900' : 'text-slate-500 line-through'}>₹{t.amount.toLocaleString('en-IN')}</span>
-                    <span className="text-[10px] text-slate-500">{new Date(t.created_at).toLocaleDateString('en-IN')}</span>
+                    {t.is_seed_data && <Tag type="warm-gray" size="sm">seed</Tag>}
+                    <span className={t.status === 'COMPLETED' ? 'font-semibold text-[#161616]' : 'text-[#8d8d8d] line-through'}>
+                      ₹{t.amount.toLocaleString('en-IN')}
+                    </span>
+                    <span className="text-[10px] text-[#525252]">{new Date(t.created_at).toLocaleDateString('en-IN')}</span>
                   </span>
                 </li>
               ))}
             </ul>
           )}
-        </section>
+        </Tile>
       </div>
     </div>
   );

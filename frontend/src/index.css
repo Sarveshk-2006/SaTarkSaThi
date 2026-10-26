@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import '@carbon/styles/css/styles.css';
 
 @tailwind base;
 @tailwind components;
@@ -6,31 +6,35 @@
 
 @layer base {
   :root {
-    /* Master Design Tokens */
-    --color-midnight: #142A36;
-    --color-trust: #176B58;
-    --color-ivory: #F7F8F4;
-    --color-white: #FFFFFF;
-    --color-sage: #DCEDE5;
-    --color-secondary-text: #64748B;
-    --color-border: #E2E8F0;
-    --color-amber: #D69B36;
-    --color-red: #B91C1C;
-    --color-blue: #1D4ED8;
+    /* Carbon Design System - Satark Saathi Theme Integration */
+    --cds-font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --cds-font-family-mono: 'IBM Plex Mono', monospace;
+
+    /* Primary Tokens mapped to Carbon palette */
+    --color-midnight: #161616;
+    --color-trust: #0f62fe; /* Carbon Blue 60 */
+    --color-ivory: #f4f4f4; /* Carbon Gray 10 background */
+    --color-white: #ffffff;
+    --color-sage: #e0e0e0;
+    --color-secondary-text: #525252; /* Carbon Gray 70 */
+    --color-border: #e0e0e0; /* Carbon Gray 20 */
+    --color-amber: #f1c21b; /* Carbon Warning */
+    --color-red: #da1e28; /* Carbon Red 60 */
+    --color-blue: #0f62fe;
 
     /* Semantic Application Roles */
-    --bg-main: var(--color-ivory);
-    --bg-surface: var(--color-white);
-    --text-primary: var(--color-midnight);
-    --text-secondary: var(--color-secondary-text);
-    --border-color: var(--color-border);
-    --brand-trust: var(--color-trust);
+    --bg-main: #f4f4f4;
+    --bg-surface: #ffffff;
+    --text-primary: #161616;
+    --text-secondary: #525252;
+    --border-color: #e0e0e0;
+    --brand-trust: #0f62fe;
   }
 
   body {
     background-color: var(--bg-main);
     color: var(--text-primary);
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: var(--cds-font-family);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
@@ -38,9 +42,9 @@
     line-height: 1.5;
   }
 
-  /* Accessible, restrained focus indicators inspired by Linear / Stripe */
+  /* Accessible Carbon-compliant focus indicators */
   :focus-visible {
-    outline: 2px solid #176B58;
+    outline: 2px solid #0f62fe;
     outline-offset: 2px;
   }
 }

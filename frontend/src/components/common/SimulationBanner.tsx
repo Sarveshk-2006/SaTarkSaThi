@@ -1,5 +1,6 @@
 import React from 'react';
-import { Info, ShieldAlert } from 'lucide-react';
+import { Tag } from '@carbon/react';
+import { Information, Security } from '@carbon/icons-react';
 
 interface SimulationBannerProps {
   title?: string;
@@ -11,32 +12,32 @@ interface SimulationBannerProps {
 export const SimulationBanner: React.FC<SimulationBannerProps> = ({
   title = 'Simulation Sandbox',
   message,
-  variant = 'amber',
   badgeText = 'SIMULATION ONLY',
 }) => {
   return (
     <div
       role="region"
       aria-label="Simulation Environment Notice"
-      className="p-3 sm:p-3.5 rounded-xl border border-amber-200/90 bg-gradient-to-r from-amber-50/90 via-white to-amber-50/60 shadow-xs flex items-center justify-between gap-3 text-xs"
+      className="cds--simulation-banner p-3.5 bg-[#f4f4f4] border-l-4 border-l-[#f1c21b] border border-[#e0e0e0] flex items-center justify-between gap-3 text-xs mb-4"
     >
-      <div className="flex items-center gap-2.5 min-w-0">
-        <span className="p-1.5 rounded-lg bg-amber-100/90 text-amber-800 shrink-0">
-          <Info className="w-4 h-4" />
+      <div className="flex items-center gap-3 min-w-0">
+        <span className="text-[#8d6b00] shrink-0" aria-hidden="true">
+          <Information size={20} />
         </span>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-[#142A36] text-xs">{title}</span>
-            <span className="px-2 py-0.5 rounded-md text-[9px] font-bold tracking-wider uppercase bg-amber-200/80 text-amber-900 border border-amber-300/80">
+            <span className="font-semibold text-[#161616] text-xs">{title}</span>
+            <Tag type="warm-gray" size="sm" className="font-mono uppercase font-bold tracking-wider">
               {badgeText}
-            </span>
+            </Tag>
           </div>
-          <p className="text-[11px] text-[#64748B] mt-0.5 leading-snug line-clamp-1 sm:line-clamp-none">
+          <p className="text-[12px] text-[#525252] mt-0.5 leading-snug">
             {message}
           </p>
         </div>
       </div>
-      <div className="hidden lg:flex items-center gap-1.5 text-[11px] font-semibold text-amber-800 shrink-0">
+      <div className="hidden lg:flex items-center gap-1.5 text-[11px] font-medium text-[#525252] shrink-0">
+        <Security size={16} className="text-[#0f62fe]" />
         <span>Protected Safe Environment</span>
       </div>
     </div>
