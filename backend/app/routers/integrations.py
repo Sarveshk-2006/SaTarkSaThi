@@ -10,7 +10,7 @@ import httpx
 from fastapi import APIRouter, Depends
 
 from backend.app.config import settings
-from backend.app.dependencies import get_current_user_id
+from backend.app.dependencies import get_current_user_id, require_admin
 
 logger = logging.getLogger("satark_saathi.integrations")
 
@@ -21,7 +21,32 @@ IBM_IAM_URL = "https://iam.cloud.ibm.com/identity/token"
 
 def integration_statuses() -> List[Dict]:
     watsonx_active = settings.analysis_provider == "watsonx" and settings.watsonx_configured
+    bob_active = settings.analysis_provider == "bob" and settings.bob_configured
     return [
+        {
+            "id": "ibm_bob",
+            "name": "IBM Bob (runtime inference)",
+            "status": "CONFIGURED_UNVERIFIED" if settings.bob_configured else "NOT_CONFIGURED",
+            "active_for_scanner": bob_active,
+            "detail": (
+                f"Requests go to the configured BOB_API_ENDPOINT using format '{settings.bob_api_format}' and model "
+                f"'{settings.bob_model_id}'. Not verified until POST /api/integrations/bob/verify succeeds."
+                if settings.bob_configured else
+                "No BOB_API_KEY/BOB_API_ENDPOINT/BOB_MODEL_ID configured. Scanner uses the local rule engine."
+            ),
+            "used_by": ["Scam Analyzer text/OCR/transcript enrichment (only when ANALYSIS_PROVIDER=bob)"],
+        },
+        {
+            "id": "whatsapp_cloud_api",
+            "name": "WhatsApp Cloud API webhook",
+            "status": "CONFIGURED_UNVERIFIED" if settings.whatsapp_configured else "BLOCKED_BY_EXTERNAL_CONFIGURATION",
+            "active_for_scanner": False,
+            "detail": (
+                "Webhook at /api/whatsapp/webhook verifies Meta signatures. Live delivery requires an approved "
+                "WhatsApp Business account; test numbers are sandbox only."
+            ),
+            "used_by": ["WhatsApp message check bot"],
+        },
         {
             "id": "ibm_watsonx_ai",
             "name": "IBM watsonx.ai (Granite text generation)",
@@ -86,18 +111,29 @@ def integration_statuses() -> List[Dict]:
 
 @router.get("/status")
 def get_integration_status():
+    if settings.analysis_provider == "bob" and settings.bob_configured:
+        engine = "IBM Bob enrichment over the local rule engine (rule-engine fallback)"
+    elif settings.analysis_provider == "watsonx" and settings.watsonx_configured:
+        engine = "IBM watsonx.ai (with automatic rule-engine fallback)"
+    else:
+        engine = "Satark deterministic rule engine (local)"
     return {
-        "analysis_engine": (
-            "IBM watsonx.ai (with automatic rule-engine fallback)"
-            if settings.analysis_provider == "watsonx" and settings.watsonx_configured
-            else "Satark deterministic rule engine (local)"
-        ),
+        "analysis_engine": engine,
         "integrations": integration_statuses(),
     }
 
 
+@router.post("/bob/verify")
+async def verify_bob(current_user_id: int = Depends(require_admin)):
+    """Sends a minimal non-sensitive inference request. Never returns credentials."""
+    from backend.app.services.bob_analyzer import verify_bob_connection
+    result = await verify_bob_connection()
+    logger.info(f"Bob verification by admin {current_user_id}: {result['status']} ({result['latency_ms']} ms)")
+    return result
+
+
 @router.post("/watsonx/verify")
-async def verify_watsonx(current_user_id: int = Depends(get_current_user_id)):
+async def verify_watsonx(current_user_id: int = Depends(require_admin)):
     """
     Performs a real IAM token exchange and a 1-token generation call when credentials exist.
     Never returns credentials or tokens.
@@ -114,7 +150,8 @@ async def verify_watsonx(current_user_id: int = Depends(get_current_user_id)):
                 data={"grant_type": "urn:ibm:params:oauth:grant-type:apikey", "apikey": settings.watsonx_apikey},
             )
             if iam.status_code != 200:
-                return {"status": "FAILED", "iam_ok": False, "generation_ok": False,
+                return {"status": "AUTHENTICATION_FAILED" if iam.status_code in (400, 401, 403) else "FAILED",
+                        "iam_ok": False, "generation_ok": False,
                         "detail": f"IAM token exchange returned HTTP {iam.status_code}."}
             token = iam.json().get("access_token")
             gen = await client.post(
@@ -128,8 +165,18 @@ async def verify_watsonx(current_user_id: int = Depends(get_current_user_id)):
                 },
             )
             ok = gen.status_code == 200
+            if ok:
+                status_cat = "VERIFIED"
+            elif gen.status_code in (401, 403):
+                status_cat = "AUTHENTICATION_FAILED"
+            elif gen.status_code == 429:
+                status_cat = "RATE_LIMITED"
+            elif gen.status_code >= 500:
+                status_cat = "PROVIDER_UNAVAILABLE"
+            else:
+                status_cat = "FAILED"
             return {
-                "status": "VERIFIED" if ok else "FAILED",
+                "status": status_cat,
                 "iam_ok": True,
                 "generation_ok": ok,
                 "model_id": settings.watsonx_model_id,

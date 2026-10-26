@@ -297,7 +297,9 @@ class WatsonXScamAnalyzer(ScamAnalyzerInterface):
         if ibm_data:
             parsed = self._parse_ibm_response(ibm_data, incident_id, input_type)
             if parsed:
-                return parsed
+                from backend.app.services.ai_safety_floor import apply_local_safety_floor
+                local = await self.fallback.analyze_text(text, channel)
+                return apply_local_safety_floor(parsed, local, "IBM watsonx.ai")
             logger.warning("IBM response could not be parsed; falling back to rule engine")
 
         # Explicit fallback—clearly marked as NOT from IBM
