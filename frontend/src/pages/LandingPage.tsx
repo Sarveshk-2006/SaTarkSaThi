@@ -29,6 +29,12 @@ import { useAuthSession } from '../context/AuthSessionContext';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
+interface ScenarioCheck {
+  label: string;
+  status: 'critical' | 'warning' | 'info';
+  detail: string;
+}
+
 interface Scenario {
   id: string;
   category: string;
@@ -38,6 +44,7 @@ interface Scenario {
   body: string;
   warningNote: string;
   recoveryNote: string;
+  checks: ScenarioCheck[];
 }
 
 const SCENARIOS: Scenario[] = [
@@ -54,6 +61,11 @@ const SCENARIOS: Scenario[] = [
       'Please do not click the link, do not enter any details, and do not call the phone number provided. Banks like SBI will never ask you to update your KYC through an unofficial website link sent via text message.',
     recoveryNote:
       'If you have already entered any information on that site, please call your bank immediately to block your account and card. Also, call the national cybercrime helpline at 1930 and report the incident at cybercrime.gov.in.',
+    checks: [
+      { label: 'Domain Analysis', status: 'critical', detail: 'sbi-kycverify.in (Unofficial, 3 days old)' },
+      { label: 'Linguistic Urgency', status: 'critical', detail: 'Suspension ultimatum coerces rash action' },
+      { label: 'Threat Intelligence', status: 'critical', detail: 'Matched 1930 National Phishing Registry' },
+    ],
   },
   {
     id: 'power-bill',
@@ -68,6 +80,11 @@ const SCENARIOS: Scenario[] = [
       'Do not download or install the APK file. Check your pending electricity bill balance exclusively through your official state discom web portal or consumer app.',
     recoveryNote:
       'If the APK was already installed, turn on Airplane Mode immediately, uninstall the application from device settings, and inform your bank fraud desk.',
+    checks: [
+      { label: 'Sender Identity', status: 'critical', detail: 'Personal 10-digit mobile (No Discom header)' },
+      { label: 'Payload Inspection', status: 'critical', detail: 'Unsigned APK installs Remote Access Trojan' },
+      { label: 'Utility Policy', status: 'warning', detail: 'Power discoms never cut supply same-night' },
+    ],
   },
   {
     id: 'digital-arrest',
@@ -82,6 +99,11 @@ const SCENARIOS: Scenario[] = [
       'Disconnect the video call immediately. Do not transfer funds to any "court verification" or "RBI clearance" accounts. The callers are impersonators.',
     recoveryNote:
       'Call the National Cybercrime Helpline at 1930 right away and save caller Skype IDs and phone numbers for official cyber police filing.',
+    checks: [
+      { label: 'Legal Jurisprudence', status: 'critical', detail: 'Digital Arrest is illegal under BNSS/CrPC' },
+      { label: 'Law Enforcement Protocol', status: 'critical', detail: 'Police & CBI never conduct Skype trials' },
+      { label: 'Financial Routing', status: 'critical', detail: 'Demands fund transfer to mule clearance account' },
+    ],
   },
 ];
 
@@ -155,28 +177,32 @@ export const LandingPage: React.FC = () => {
   const { session } = useAuthSession();
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedScenarioIdx, setSelectedScenarioIdx] = useState(0);
+  const [isScanning, setIsScanning] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [quickInput, setQuickInput] = useState('');
 
   const currentScenario = SCENARIOS[selectedScenarioIdx];
 
-  // GSAP Animations matching CyberWall style
+  // GSAP Animations with clean cleanup & reduced motion support
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
 
       mm.add('(prefers-reduced-motion: reduce)', () => {
-        gsap.set('.cw-reveal, .cw-hero-phone, .cw-hero-card, .cw-wavy-path', {
-          opacity: 1,
-          y: 0,
-          scale: 1,
-          clearProps: 'all',
-        });
+        gsap.set(
+          '.cw-reveal, .cw-hero-phone, .cw-hero-card, .cw-wavy-path, .cw-step-card, .cw-input-card, .cw-recovery-card',
+          {
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            clearProps: 'all',
+          }
+        );
       });
 
       mm.add('(prefers-reduced-motion: no-preference)', () => {
-        // Hero entrance sequence
+        // Hero entrance sequence with staggered text & components
         const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
 
         tl.from('.cw-hero-badge', { y: -15, opacity: 0, duration: 0.5 })
@@ -186,7 +212,7 @@ export const LandingPage: React.FC = () => {
           .from('.cw-hero-phone', { y: 40, opacity: 0, scale: 0.95, duration: 0.9 }, '-=0.5')
           .from('.cw-hero-card', { y: 24, opacity: 0, stagger: 0.12, duration: 0.6 }, '-=0.5');
 
-        // Continuous floating motion on floating cards
+        // Continuous subtle floating motion on the 4 surrounding spatial cards
         gsap.to('.cw-float-1', { y: -8, duration: 2.8, repeat: -1, yoyo: true, ease: 'sine.inOut' });
         gsap.to('.cw-float-2', { y: -10, duration: 3.2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.4 });
         gsap.to('.cw-float-3', { y: -7, duration: 2.9, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.8 });
@@ -208,6 +234,64 @@ export const LandingPage: React.FC = () => {
             ease: 'power2.out',
           });
         });
+
+        // Staggered workflow reveals for Step 01-04
+        gsap.from('.cw-step-card', {
+          scrollTrigger: {
+            trigger: '#how-it-works',
+            start: 'top 78%',
+            toggleActions: 'play none none none',
+          },
+          y: 35,
+          opacity: 0,
+          stagger: 0.15,
+          duration: 0.65,
+          ease: 'power2.out',
+        });
+
+        // S-curve stroke drawing on scroll
+        const sCurve = containerRef.current?.querySelector('.cw-scurve-line') as SVGPathElement;
+        if (sCurve && sCurve.getTotalLength) {
+          const len = sCurve.getTotalLength();
+          gsap.set(sCurve, { strokeDasharray: len, strokeDashoffset: len });
+          gsap.to(sCurve, {
+            scrollTrigger: {
+              trigger: '#how-it-works',
+              start: 'top 75%',
+              end: 'bottom 85%',
+              scrub: 0.8,
+            },
+            strokeDashoffset: 0,
+            ease: 'none',
+          });
+        }
+
+        // Staggered reveals for 3 input cards
+        gsap.from('.cw-input-card', {
+          scrollTrigger: {
+            trigger: '#inputs',
+            start: 'top 80%',
+            toggleActions: 'play none none none',
+          },
+          y: 30,
+          opacity: 0,
+          stagger: 0.12,
+          duration: 0.6,
+          ease: 'power2.out',
+        });
+
+        // Emergency 1930 card reveal
+        gsap.from('.cw-recovery-card', {
+          scrollTrigger: {
+            trigger: '#recovery',
+            start: 'top 82%',
+            toggleActions: 'play none none none',
+          },
+          y: 25,
+          opacity: 0,
+          duration: 0.7,
+          ease: 'power2.out',
+        });
       });
     },
     { scope: containerRef }
@@ -216,12 +300,44 @@ export const LandingPage: React.FC = () => {
   const handleScenarioChange = (idx: number) => {
     if (idx === selectedScenarioIdx) return;
     setSelectedScenarioIdx(idx);
+    setIsScanning(true);
 
     gsap.fromTo(
       '.cw-phone-chat',
       { opacity: 0.5, y: 8 },
       { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
     );
+
+    setTimeout(() => {
+      setIsScanning(false);
+      gsap.fromTo(
+        '.cw-verdict-card',
+        { opacity: 0, scale: 0.97, y: 8 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+      );
+      gsap.fromTo(
+        '.cw-staged-check',
+        { opacity: 0, x: -6 },
+        { opacity: 1, x: 0, stagger: 0.08, duration: 0.25, ease: 'power2.out' }
+      );
+    }, 600);
+  };
+
+  const handleRescan = () => {
+    setIsScanning(true);
+    setTimeout(() => {
+      setIsScanning(false);
+      gsap.fromTo(
+        '.cw-verdict-card',
+        { opacity: 0, scale: 0.97, y: 8 },
+        { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+      );
+      gsap.fromTo(
+        '.cw-staged-check',
+        { opacity: 0, x: -6 },
+        { opacity: 1, x: 0, stagger: 0.08, duration: 0.25, ease: 'power2.out' }
+      );
+    }, 600);
   };
 
   const handleQuickSubmit = (e: React.FormEvent) => {
@@ -323,10 +439,48 @@ export const LandingPage: React.FC = () => {
             HERO SECTION: CyberWall Centered Typography + Wavy Ribbon + Phone Mockup
             ------------------------------------------------------------------------- */}
         <section className="relative isolate overflow-hidden pt-8 pb-12 sm:pt-12 md:pt-14 lg:pb-16">
-          {/* Ambient Blurred Colored Glow Blobs (Exact CyberWall Style) */}
+          {/* Scoped CSS Keyframes for Purposeful Cybersecurity Motion */}
+          <style>{`
+            @keyframes scanline {
+              0% { transform: translateY(-100%); opacity: 0; }
+              40% { opacity: 1; }
+              100% { transform: translateY(600%); opacity: 0; }
+            }
+            .animate-scanline {
+              animation: scanline 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+            }
+            @keyframes dashFlow {
+              to { stroke-dashoffset: -32; }
+            }
+            .cw-dash-flow {
+              animation: dashFlow 2.8s linear infinite;
+            }
+            @keyframes pulseSlow {
+              0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.15; }
+              50% { transform: scale(1.08) translate(10px, -8px); opacity: 0.25; }
+            }
+            .animate-pulse-slow {
+              animation: pulseSlow 7s ease-in-out infinite;
+            }
+            @keyframes pulseSlowRev {
+              0%, 100% { transform: scale(1) translate(0, 0); opacity: 0.15; }
+              50% { transform: scale(1.06) translate(-12px, 8px); opacity: 0.22; }
+            }
+            .animate-pulse-slow-reverse {
+              animation: pulseSlowRev 8s ease-in-out infinite;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .animate-scanline, .cw-dash-flow, .animate-pulse-slow, .animate-pulse-slow-reverse {
+                animation: none !important;
+              }
+            }
+          `}</style>
+
+          {/* Restrained Subtle Cybersecurity Mesh Grid Overlay */}
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-            <div className="absolute top-16 left-[-8rem] h-[26rem] w-[26rem] rounded-full bg-[#00C8F0]/15 blur-[90px]" />
-            <div className="absolute top-12 right-[-10rem] h-[30rem] w-[30rem] rounded-full bg-[#1767F2]/15 blur-[100px]" />
+            <div className="absolute inset-0 bg-[radial-gradient(#0f62fe_1px,transparent_1px)] [background-size:32px_32px] opacity-[0.035]" />
+            <div className="absolute top-16 left-[-8rem] h-[26rem] w-[26rem] rounded-full bg-[#00C8F0]/15 blur-[90px] animate-pulse-slow" />
+            <div className="absolute top-12 right-[-10rem] h-[30rem] w-[30rem] rounded-full bg-[#1767F2]/15 blur-[100px] animate-pulse-slow-reverse" />
             <div className="absolute bottom-0 left-1/2 h-64 w-[50rem] -translate-x-1/2 rounded-full bg-blue-500/5 blur-[90px]" />
           </div>
 
@@ -409,7 +563,7 @@ export const LandingPage: React.FC = () => {
                 SHOWCASE: Desktop Phone Mockup + Curved Ribbon SVG + 4 Floating Cards
                 ------------------------------------------------------------------------- */}
             <div className="relative mx-auto mt-10 hidden min-h-[620px] max-w-6xl lg:block">
-              {/* Exact CyberWall Hero Curved Ribbon SVG Line */}
+              {/* Exact CyberWall Hero Curved Ribbon SVG Line with Telemetry Nodes */}
               <svg
                 aria-hidden="true"
                 className="cw-wavy-path pointer-events-none absolute inset-x-0 top-12 z-0 h-[500px] w-full overflow-visible"
@@ -441,8 +595,26 @@ export const LandingPage: React.FC = () => {
                 </defs>
               </svg>
 
-              {/* Central Smartphone Mockup (iPhone with WhatsApp Simulation) */}
-              <div className="cw-hero-phone absolute top-4 left-1/2 z-10 -translate-x-1/2 w-64">
+              {/* Central Smartphone Mockup (iPhone with WhatsApp Simulation & Risk Meter) */}
+              <div className="cw-hero-phone absolute top-4 left-1/2 z-10 -translate-x-1/2 w-68">
+                {/* Demo status & rescan controls */}
+                <div className="flex items-center justify-between gap-1 mb-2 px-1">
+                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200/60 text-[9px] font-semibold text-[#0f62fe]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#0f62fe] animate-pulse" />
+                    <span>Demo Simulation</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRescan}
+                    disabled={isScanning}
+                    className="text-[9px] font-medium text-neutral-500 hover:text-[#0f62fe] flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Simulate analysis scan"
+                  >
+                    <Flash size={10} />
+                    <span>{isScanning ? 'Analyzing...' : 'Simulate Scan'}</span>
+                  </button>
+                </div>
+
                 {/* Scenario switcher pills above phone */}
                 <div className="flex items-center justify-center gap-1.5 mb-2.5">
                   {SCENARIOS.map((sc, i) => (
@@ -450,7 +622,7 @@ export const LandingPage: React.FC = () => {
                       key={sc.id}
                       type="button"
                       onClick={() => handleScenarioChange(i)}
-                      className={`text-[10px] font-medium px-3 py-1 transition-all cursor-pointer ${
+                      className={`text-[10px] font-medium px-2.5 py-1 transition-all cursor-pointer ${
                         selectedScenarioIdx === i
                           ? 'bg-[#0f62fe] text-white shadow-xs font-semibold'
                           : 'bg-white text-neutral-600 hover:text-neutral-900 border border-neutral-200 hover:border-neutral-300'
@@ -472,34 +644,90 @@ export const LandingPage: React.FC = () => {
                       </span>
                       <div className="min-w-0 flex-1 leading-tight">
                         <p className="truncate text-[10px] font-bold text-neutral-950">Satark Saathi</p>
-                        <p className="text-[7px] text-[#24a148] font-medium">online</p>
+                        <p className="text-[7px] text-[#24a148] font-medium">online &bull; Heuristic Shield</p>
                       </div>
                       <span className="text-xs text-neutral-500">⋮</span>
                     </div>
 
                     {/* Chat Area */}
-                    <div className="cw-phone-chat flex-1 overflow-y-auto px-2 py-2 space-y-2 text-[9px] bg-[#efeae2]">
+                    <div className="cw-phone-chat flex-1 overflow-y-auto px-2 py-2 space-y-2 text-[9px] bg-[#efeae2] relative">
                       <div className="flex justify-center">
                         <span className="rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-neutral-500">Today</span>
                       </div>
 
                       {/* Outgoing User Message */}
-                      <div className="ml-auto max-w-[88%] rounded-lg rounded-tr-none bg-[#d9fdd3] p-2 shadow-xs text-neutral-800 leading-relaxed">
+                      <div className="ml-auto max-w-[88%] rounded-lg rounded-tr-none bg-[#d9fdd3] p-2 shadow-xs text-neutral-800 leading-relaxed relative overflow-hidden">
                         <p>{currentScenario.userQuery}</p>
                         <div className="mt-0.5 text-right text-[6px] text-neutral-400">10:24 ✓✓</div>
+
+                        {/* Interactive Laser Scanning Line */}
+                        {isScanning && (
+                          <div className="absolute inset-0 pointer-events-none overflow-hidden bg-cyan-900/10">
+                            <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#00C8F0] to-transparent shadow-[0_0_10px_#00C8F0] animate-scanline" />
+                          </div>
+                        )}
                       </div>
 
-                      {/* Incoming Satark Saathi Analysis */}
-                      <div className="mr-auto max-w-[94%] rounded-lg rounded-tl-none bg-white p-2.5 shadow-xs text-neutral-800 space-y-1.5 leading-relaxed">
-                        <p className="font-semibold text-neutral-950">{currentScenario.responseHeadline}</p>
-                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[8px] font-bold">
-                          Trust Score: {currentScenario.trustScore}/100 &bull; DANGEROUS
+                      {/* Live Scanning Indicator */}
+                      {isScanning && (
+                        <div className="mx-auto max-w-[90%] bg-blue-900/90 text-white rounded-lg p-2 text-center shadow-md animate-pulse">
+                          <p className="text-[7.5px] font-mono tracking-wider">RUNNING 40+ HEURISTIC VALIDATIONS...</p>
                         </div>
-                        <p className="text-[8.5px] text-neutral-600">{currentScenario.body}</p>
-                        <p className="text-[8.5px] text-neutral-600">{currentScenario.warningNote}</p>
-                        <p className="text-[8px] text-neutral-500 pt-0.5 border-t border-neutral-100">{currentScenario.recoveryNote}</p>
-                        <div className="text-right text-[6px] text-neutral-400">10:25</div>
-                      </div>
+                      )}
+
+                      {/* Incoming Satark Saathi Analysis with Animated Risk Meter */}
+                      {!isScanning && (
+                        <div className="cw-verdict-card mr-auto max-w-[95%] rounded-lg rounded-tl-none bg-white p-2.5 shadow-xs text-neutral-800 space-y-2 leading-relaxed">
+                          {/* Animated Risk Meter Header */}
+                          <div className="space-y-1 pb-1.5 border-b border-neutral-100">
+                            <div className="flex items-center justify-between text-[8px]">
+                              <span className="font-bold text-neutral-700">Heuristic Trust Score</span>
+                              <span className={`font-mono font-bold ${
+                                currentScenario.trustScore < 30 ? 'text-[#da1e28]' : 'text-[#f1c21b]'
+                              }`}>
+                                {currentScenario.trustScore}/100 &bull; {currentScenario.trustScore < 30 ? 'CRITICAL RISK' : 'SUSPICIOUS'}
+                              </span>
+                            </div>
+                            <div className="w-full bg-neutral-200 h-1.5 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full transition-all duration-700 ease-out ${
+                                  currentScenario.trustScore < 30 ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'
+                                }`}
+                                style={{ width: `${currentScenario.trustScore}%` }}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Staged Indicator Reveals */}
+                          <div className="space-y-1">
+                            {currentScenario.checks.map((chk, i) => (
+                              <div key={i} className="cw-staged-check flex items-start justify-between gap-1 text-[7.5px] leading-tight">
+                                <span className="font-semibold text-neutral-800 flex items-center gap-1 shrink-0">
+                                  <span className={`w-1.5 h-1.5 rounded-full ${
+                                    chk.status === 'critical' ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'
+                                  }`} />
+                                  {chk.label}:
+                                </span>
+                                <span className="text-neutral-500 text-right truncate max-w-[130px]">{chk.detail}</span>
+                              </div>
+                            ))}
+                          </div>
+
+                          <p className="font-semibold text-neutral-950 text-[8.5px] pt-1 border-t border-neutral-100">{currentScenario.responseHeadline}</p>
+                          <p className="text-[8px] text-neutral-600 leading-snug">{currentScenario.body}</p>
+
+                          {/* Advisory Alert Box */}
+                          <div className="p-1.5 bg-red-50 border border-red-200 rounded text-[7.5px] text-red-700 font-medium leading-tight">
+                            &bull; {currentScenario.warningNote}
+                          </div>
+
+                          {/* Watermark for Demo transparency */}
+                          <div className="text-[7px] font-mono text-neutral-400 text-center pt-1 border-t border-neutral-100 flex items-center justify-center gap-1">
+                            <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
+                            <span>Demo Simulation &bull; Sample Heuristics</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Bottom Input Pill */}
@@ -691,22 +919,70 @@ export const LandingPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Right Card (5 cols) - Illuminated Shield Banner */}
-              <div className="cw-reveal lg:col-span-5 rounded-3xl bg-gradient-to-br from-[#00C8F0] via-[#1767F2] to-[#1e40af] p-8 text-white flex flex-col justify-between shadow-lg relative overflow-hidden">
-                <div className="relative z-10 flex flex-col items-center justify-center py-12">
-                  {/* Concentric Pulsing Radar Rings */}
-                  <div className="relative flex items-center justify-center">
-                    <div className="w-36 h-36 rounded-full border border-white/20 animate-ping absolute" />
-                    <div className="w-28 h-28 rounded-full border border-white/30 animate-pulse absolute" />
-                    <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-2xl">
-                      <Security size={40} className="text-white" />
+              {/* Right Card (5 cols) - Animated SVG Network Topology & Shield Illustration */}
+              <div className="cw-reveal lg:col-span-5 rounded-3xl bg-gradient-to-br from-[#00C8F0] via-[#1767F2] to-[#1e40af] p-7 sm:p-8 text-white flex flex-col justify-between shadow-lg relative overflow-hidden">
+                {/* Restrained background mesh */}
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.15)_1px,transparent_0)] [background-size:20px_20px] pointer-events-none opacity-40" />
+
+                {/* Network Topology Graphic */}
+                <div className="relative z-10 flex flex-col items-center justify-center py-6 sm:py-8">
+                  <div className="relative w-64 h-64 flex items-center justify-center">
+                    {/* Animated SVG Connection Lines from 4 orbital nodes to center */}
+                    <svg
+                      aria-hidden="true"
+                      className="absolute inset-0 w-full h-full pointer-events-none"
+                      viewBox="0 0 256 256"
+                      fill="none"
+                    >
+                      <line x1="50" y1="50" x2="128" y2="128" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeDasharray="4 4" className="cw-dash-flow" />
+                      <line x1="206" y1="50" x2="128" y2="128" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeDasharray="4 4" className="cw-dash-flow" />
+                      <line x1="50" y1="206" x2="128" y2="128" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeDasharray="4 4" className="cw-dash-flow" />
+                      <line x1="206" y1="206" x2="128" y2="128" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" strokeDasharray="4 4" className="cw-dash-flow" />
+
+                      <circle cx="128" cy="128" r="48" stroke="rgba(255,255,255,0.2)" strokeWidth="1" strokeDasharray="2 4" />
+                      <circle cx="128" cy="128" r="85" stroke="rgba(255,255,255,0.12)" strokeWidth="1" />
+                    </svg>
+
+                    {/* Orbital Node 1: DNS Heuristics */}
+                    <div className="absolute top-2 left-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl px-2 py-1 text-[8.5px] font-semibold text-white/95 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
+                      <span>DNS Threat Feeds</span>
+                    </div>
+
+                    {/* Orbital Node 2: OCR Vision */}
+                    <div className="absolute top-2 right-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl px-2 py-1 text-[8.5px] font-semibold text-white/95 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
+                      <span>OCR Vision Engine</span>
+                    </div>
+
+                    {/* Orbital Node 3: UPI Pre-Flight */}
+                    <div className="absolute bottom-2 left-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl px-2 py-1 text-[8.5px] font-semibold text-white/95 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
+                      <span>UPI Risk Checkpoint</span>
+                    </div>
+
+                    {/* Orbital Node 4: 1930 Helpline */}
+                    <div className="absolute bottom-2 right-2 bg-white/15 backdrop-blur-md border border-white/30 rounded-xl px-2 py-1 text-[8.5px] font-semibold text-white/95 flex items-center gap-1 shadow-sm">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                      <span>Helpline 1930 Sync</span>
+                    </div>
+
+                    {/* Central Shield with Concentric Rings */}
+                    <div className="relative flex items-center justify-center z-10">
+                      <div className="w-24 h-24 rounded-full border border-white/20 animate-ping absolute pointer-events-none" />
+                      <div className="w-20 h-20 rounded-2xl bg-white/25 backdrop-blur-md border border-white/40 flex items-center justify-center shadow-2xl">
+                        <Security size={38} className="text-white drop-shadow-md" />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="relative z-10 pt-4 border-t border-white/20 text-center">
-                  <p className="text-sm font-bold">The Satark Saathi Shield</p>
-                  <p className="text-xs text-white/80 mt-1">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-[10px] font-semibold tracking-wide uppercase mb-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                    <span>Multi-Signal Defense Mesh Active</span>
+                  </div>
+                  <p className="text-xs text-white/85 mt-1 leading-relaxed">
                     Continuous multi-signal verification guarding against extortion and financial loss.
                   </p>
                 </div>
@@ -735,7 +1011,7 @@ export const LandingPage: React.FC = () => {
 
             {/* S-Curve Continuous Alternating Path */}
             <div className="relative max-w-4xl mx-auto py-8">
-              {/* S-Curve Connecting Ribbon SVG */}
+              {/* S-Curve Connecting Ribbon SVG with Scroll Progress */}
               <svg
                 aria-hidden="true"
                 className="hidden md:block pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
@@ -743,6 +1019,7 @@ export const LandingPage: React.FC = () => {
                 fill="none"
               >
                 <path
+                  className="cw-scurve-line"
                   d="
                     M 200 100
                     C 650 100 650 350 400 350
@@ -764,14 +1041,17 @@ export const LandingPage: React.FC = () => {
                 </defs>
               </svg>
 
-              {/* 4 Alternating Step Cards */}
+              {/* 4 Alternating Step Cards: Detect -> Prevent -> Protect -> Recover */}
               <div className="space-y-16 relative z-10">
-                {/* Step 01 (Left) */}
-                <div className="cw-reveal flex flex-col md:flex-row items-center gap-6 md:justify-start">
-                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                {/* Step 01 (Left) - DETECT */}
+                <div className="cw-step-card flex flex-col md:flex-row items-center gap-6 md:justify-start">
+                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                     <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">01</span>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1767F2]">Incoming Content</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded bg-blue-50 text-[9px] font-bold text-[#1767F2] uppercase tracking-wider">Detect</span>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Incoming Content</p>
+                      </div>
                       <h4 className="text-base font-bold text-neutral-950 mt-0.5">Share what you received</h4>
                       <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
                         Send the suspicious call details, message, link, QR code, screenshot, or application file to Satark Saathi.
@@ -780,12 +1060,15 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Step 02 (Right) */}
-                <div className="cw-reveal flex flex-col md:flex-row items-center gap-6 md:justify-end">
-                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                {/* Step 02 (Right) - PREVENT */}
+                <div className="cw-step-card flex flex-col md:flex-row items-center gap-6 md:justify-end">
+                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                     <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">02</span>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1767F2]">AI + Heuristic Verification</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded bg-cyan-50 text-[9px] font-bold text-[#00AEEF] uppercase tracking-wider">Prevent</span>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">AI + Heuristic Verification</p>
+                      </div>
                       <h4 className="text-base font-bold text-neutral-950 mt-0.5">Satark Saathi checks the threat</h4>
                       <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
                         The verification engine analyses available signals, banking domain registries, and coercive phrasing.
@@ -794,12 +1077,15 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Step 03 (Left) */}
-                <div className="cw-reveal flex flex-col md:flex-row items-center gap-6 md:justify-start">
-                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                {/* Step 03 (Left) - PROTECT */}
+                <div className="cw-step-card flex flex-col md:flex-row items-center gap-6 md:justify-start">
+                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                     <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">03</span>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1767F2]">Safe Actions</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded bg-green-50 text-[9px] font-bold text-[#24a148] uppercase tracking-wider">Protect</span>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Safe Actions Guidance</p>
+                      </div>
                       <h4 className="text-base font-bold text-neutral-950 mt-0.5">You receive clear guidance</h4>
                       <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
                         Explains the risk and tells you whether to proceed, verify further, block, report, or avoid.
@@ -808,12 +1094,15 @@ export const LandingPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Step 04 (Right) */}
-                <div className="cw-reveal flex flex-col md:flex-row items-center gap-6 md:justify-end">
-                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                {/* Step 04 (Right) - RECOVER */}
+                <div className="cw-step-card flex flex-col md:flex-row items-center gap-6 md:justify-end">
+                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                     <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">04</span>
                     <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1767F2]">Protection Active</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="px-2 py-0.5 rounded bg-purple-50 text-[9px] font-bold text-[#8a3ffc] uppercase tracking-wider">Recover</span>
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-500">Resolution Confidence</p>
+                      </div>
                       <h4 className="text-base font-bold text-neutral-950 mt-0.5">You act with confidence</h4>
                       <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
                         The suspicious interaction is stopped before it turns into financial loss, identity theft, or malware exposure.
@@ -856,7 +1145,7 @@ export const LandingPage: React.FC = () => {
                 return (
                   <div
                     key={idx}
-                    className="cw-reveal bg-[#F8FAFC] border border-neutral-200 rounded-3xl p-6 flex flex-col justify-between hover:shadow-md transition-shadow"
+                    className="cw-input-card bg-[#F8FAFC] border border-neutral-200 rounded-3xl p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                   >
                     {/* Visual Mockup inside card */}
                     <div className={`h-40 rounded-2xl ${m.bgTone} border ${m.borderTone} p-4 flex items-center justify-center mb-6`}>
@@ -924,7 +1213,7 @@ export const LandingPage: React.FC = () => {
             ------------------------------------------------------------------------- */}
         <section id="recovery" className="cw-section py-20 bg-[#F8FAFC] border-b border-neutral-200">
           <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
-            <div className="cw-reveal bg-white border-2 border-red-200 rounded-3xl p-8 sm:p-12 shadow-md">
+            <div className="cw-recovery-card bg-white border-2 border-red-200 rounded-3xl p-8 sm:p-12 shadow-md hover:shadow-lg transition-shadow">
               <div className="max-w-3xl space-y-3 mb-8">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600">
                   <Phone size={14} />
