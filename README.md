@@ -364,6 +364,8 @@ Follow this 5-minute presentation script for a live demonstration:
 - **Zero Secret Exposure**: Watsonx API keys and server configuration reside exclusively on the backend (`.env`) and are never sent to frontend clients.
 - **Untrusted File & Evidence Handling**: All uploaded screenshots and audio files are parsed in-memory with strict MIME validation and size limits (10 MB / 25 MB). Evidence is not indefinitely retained.
 - **Ownership & Authorization**: All incident, contact, and recovery routes enforce user ownership checks. Accessing another user's incident returns HTTP 403 Forbidden.
+- **Admin-only operations**: `PUT /api/settings/system`, `POST /api/settings/reset-database` and `POST /api/integrations/watsonx/verify` require an administrator (`ADMIN_USER_IDS`, default `1` = Rajesh). Database reset additionally needs `ALLOW_DATABASE_RESET=true` (default in dev) and is always refused in production.
+- **Phase 8 hardening**: USER/OPERATOR/ADMIN access roles with an admin console, per-IP rate limiting, secret redaction in logs, evidence retention, an IBM Bob adapter (unverified until its live check passes), a Chrome extension (`extension/`) and a signed WhatsApp webhook. See [docs/PHASE8_SECURITY_BOB_CHANNELS.md](docs/PHASE8_SECURITY_BOB_CHANNELS.md).
 - **Prompt Injection Defense**: Untrusted text passed to LLM boundaries is isolated in delimiter blocks with strict system constraints.
 - **Disclaimer**: Satark Saathi provides digital fraud detection and reporting assistance. It does not replace formal law enforcement investigation or guarantee financial recovery.
 
