@@ -270,12 +270,9 @@ export const LandingPage: React.FC = () => {
           {/* Right Action */}
           <div className="flex items-center gap-3">
             <Link to="/scanner">
-              <button
-                type="button"
-                className="bg-gradient-to-r from-[#00AEEF] to-[#1767F2] hover:opacity-95 text-white font-semibold text-xs sm:text-sm rounded-full px-5 py-2 shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
-              >
+              <Button kind="primary" size="sm" renderIcon={ArrowRight}>
                 Try Now
-              </button>
+              </Button>
             </Link>
 
             {session ? (
@@ -312,9 +309,9 @@ export const LandingPage: React.FC = () => {
             </nav>
             <div className="pt-2 border-t border-neutral-100 flex flex-col gap-2">
               <Link to="/scanner" onClick={() => setMobileMenuOpen(false)}>
-                <button type="button" className="w-full bg-[#1767F2] text-white py-2 rounded-xl font-semibold text-xs">
+                <Button kind="primary" size="md" renderIcon={ArrowRight} className="w-full">
                   Launch Scam Scanner
-                </button>
+                </Button>
               </Link>
             </div>
           </div>
@@ -366,39 +363,45 @@ export const LandingPage: React.FC = () => {
               {/* Centered CTAs */}
               <div className="cw-hero-cta mt-7 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
                 <Link to="/scanner">
-                  <button
-                    type="button"
-                    className="bg-gradient-to-r from-[#00AEEF] to-[#1767F2] hover:opacity-95 text-white font-semibold text-base rounded-full px-8 py-3.5 shadow-lg shadow-blue-500/25 transition-all min-w-36 cursor-pointer"
+                  <Button
+                    kind="primary"
+                    size="lg"
+                    renderIcon={ArrowRight}
+                    className="min-h-[48px] px-6 text-sm sm:text-base font-medium tracking-normal shadow-md"
                   >
                     Try Now
-                  </button>
+                  </Button>
                 </Link>
 
                 <a
                   href="tel:1930"
-                  className="inline-flex items-center gap-1.5 font-medium underline decoration-neutral-300 underline-offset-4 text-sm text-neutral-600 hover:text-[#1767F2] transition-colors"
+                  className="inline-flex items-center gap-2 font-medium underline decoration-neutral-300 underline-offset-4 text-sm text-neutral-700 hover:text-[#0f62fe] transition-colors py-2"
                 >
-                  <Phone size={14} className="text-[#D92D20]" />
+                  <Phone size={16} className="text-[#da1e28]" />
                   <span>Already lost money? Call 1930</span>
                 </a>
               </div>
 
               {/* Quick Input Bar (Instant Free Resource) */}
-              <form onSubmit={handleQuickSubmit} className="mt-6 max-w-xl mx-auto flex items-center gap-2 bg-white border border-neutral-300 rounded-full p-1.5 shadow-sm">
+              <form onSubmit={handleQuickSubmit} className="mt-6 max-w-xl mx-auto flex items-center gap-2 bg-white border border-neutral-300 rounded p-1.5 shadow-sm">
                 <input
                   type="text"
                   value={quickInput}
                   onChange={(e) => setQuickInput(e.target.value)}
                   placeholder="Paste suspicious SMS, link or sender number to test..."
-                  className="flex-1 px-4 py-2 text-xs sm:text-sm text-neutral-900 bg-transparent focus:outline-none"
+                  className="flex-1 px-3 py-2 text-xs sm:text-sm text-neutral-900 bg-transparent focus:outline-none"
                   aria-label="Test a message"
                 />
-                <button
+                <Button
                   type="submit"
-                  className="bg-[#1767F2] hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-full transition-colors shrink-0"
+                  kind="primary"
+                  size="sm"
+                  renderIcon={ArrowRight}
+                  className="shrink-0"
+                  disabled={!quickInput.trim()}
                 >
                   Check
-                </button>
+                </Button>
               </form>
             </div>
 
@@ -447,10 +450,10 @@ export const LandingPage: React.FC = () => {
                       key={sc.id}
                       type="button"
                       onClick={() => handleScenarioChange(i)}
-                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
+                      className={`text-[10px] font-medium px-3 py-1 transition-all cursor-pointer ${
                         selectedScenarioIdx === i
-                          ? 'bg-[#1767F2] text-white shadow-xs'
-                          : 'bg-white/90 text-neutral-600 hover:bg-neutral-100 border border-neutral-200'
+                          ? 'bg-[#0f62fe] text-white shadow-xs font-semibold'
+                          : 'bg-white text-neutral-600 hover:text-neutral-900 border border-neutral-200 hover:border-neutral-300'
                       }`}
                     >
                       {sc.category.split('/')[0].trim()}
@@ -902,10 +905,11 @@ export const LandingPage: React.FC = () => {
                       <p className="text-xs text-neutral-600 mt-1 leading-relaxed">{m.subtitle}</p>
                     </div>
 
-                    <div className="pt-4 mt-4 border-t border-neutral-200/70 flex items-center justify-between text-xs font-semibold text-[#1767F2]">
-                      <Link to="/scanner" className="inline-flex items-center gap-1 hover:underline">
-                        <span>Launch in Engine</span>
-                        <ArrowRight size={14} />
+                    <div className="pt-4 mt-4 border-t border-neutral-200/70 flex items-center justify-between">
+                      <Link to="/scanner">
+                        <Button kind="tertiary" size="sm" renderIcon={ArrowRight}>
+                          Launch in Engine
+                        </Button>
                       </Link>
                     </div>
                   </div>
@@ -1035,20 +1039,24 @@ export const LandingPage: React.FC = () => {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <Link to="/scanner">
-                <button
-                  type="button"
-                  className="bg-white text-[#1767F2] hover:bg-neutral-100 font-bold text-sm sm:text-base rounded-full px-8 py-3.5 shadow-xl transition-all cursor-pointer"
+                <Button
+                  kind="primary"
+                  size="lg"
+                  renderIcon={ArrowRight}
+                  className="min-h-[48px] px-8 text-sm sm:text-base font-medium bg-[#0f62fe] hover:bg-[#0353e9] text-white shadow-md"
                 >
                   Try Satark Saathi Free
-                </button>
+                </Button>
               </Link>
               <Link to="/golden-hour">
-                <button
-                  type="button"
-                  className="bg-black/30 hover:bg-black/50 text-white font-semibold text-sm sm:text-base rounded-full px-7 py-3.5 border border-white/20 transition-all cursor-pointer"
+                <Button
+                  kind="tertiary"
+                  size="lg"
+                  renderIcon={Flash}
+                  className="min-h-[48px] px-6 text-sm sm:text-base font-medium border-white text-white hover:bg-white hover:text-[#161616]"
                 >
                   Recovery Desk
-                </button>
+                </Button>
               </Link>
             </div>
           </div>
