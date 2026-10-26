@@ -40,6 +40,7 @@ import {
   TrustedContact,
 } from '../api/types';
 import { useToast } from '../context/ToastContext';
+import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader';
 
 type ActiveTab = 'text' | 'url' | 'image' | 'audio';
 
@@ -398,26 +399,16 @@ ${currentAnalysis.limitations.join('\n')}
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Header */}
-      <div className="border-b border-[#e0e0e0] pb-4 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-semibold text-[#161616] tracking-tight">
-              Scam Intelligence Engine
-            </h1>
-            <Tag type="blue" size="sm">Evidence-Based Forensic Detection</Tag>
-          </div>
-          <p className="text-xs text-[#525252] mt-1">
-            Analyze suspicious messages, URLs, screenshots, and call transcripts for Indian social-engineering threats.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 text-xs font-medium text-[#161616] bg-white px-3 py-1.5 border border-[#e0e0e0]">
-          <Chip size={16} className="text-[#0f62fe]" />
-          <span>IBM watsonx.ai Granite Ready</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#24a148]"></span>
-        </div>
-      </div>
+      <ServiceJourneyHeader
+        title="Scam Intelligence Engine"
+        badge="FORENSIC DETECTION"
+        badgeKind="teal"
+        tagline="Multi-signal analysis of suspicious messages, lookalike URLs, payment screenshots, and call transcripts for Indian social-engineering fraud."
+        inputs="Paste SMS, WhatsApp forward, suspicious link, screenshot OCR, or call transcript text."
+        deliverables="Risk score (0-100), transparent signal breakdown, certified domain check, and plain-language reasoning."
+        nextAction="Follow immediate protective actions, dispatch Family Shield alert, or export a 1930 recovery dossier."
+        icon={Scan}
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Input Workspace (7 cols) */}
@@ -1161,13 +1152,47 @@ ${currentAnalysis.limitations.join('\n')}
               </div>
             </Tile>
           ) : (
-            <Tile className="bg-white p-8 border border-[#e0e0e0] text-center">
-              <Security size={40} className="text-[#0f62fe] mx-auto mb-3" />
-              <h3 className="text-sm font-semibold text-[#161616]">Awaiting Input to Inspect</h3>
-              <p className="text-xs text-[#525252] mt-1 max-w-xs mx-auto leading-relaxed">
-                Choose an input tab on the left or select a sample scenario to generate a complete forensic threat report.
-              </p>
-            </Tile>
+            <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 shadow-xs space-y-4">
+              <div className="flex items-center gap-2.5 pb-3 border-b border-[#E2E8F0]">
+                <div className="w-8 h-8 rounded-lg bg-[#E6F4F2] text-[#0F766E] flex items-center justify-center">
+                  <Security size={18} />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#182230]">Forensic Report Blueprint</h3>
+                  <p className="text-[11px] text-[#586474]">What you will receive upon analyzing your input</p>
+                </div>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-[#0F766E] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">1</span>
+                  <div>
+                    <span className="font-bold text-[#182230] block">Explainable Risk Score (0–100)</span>
+                    <span className="text-[#586474]">Severity rating with clear policy tier (Red / Amber / Green) and confidence classification.</span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-[#0F62FE] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">2</span>
+                  <div>
+                    <span className="font-bold text-[#182230] block">Signal Evidence Breakdown</span>
+                    <span className="text-[#586474]">Detection of lookalike banking domains, APK remote-access calls, and artificial time ultimatums.</span>
+                  </div>
+                </div>
+
+                <div className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-[#D92D20] text-white flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">3</span>
+                  <div>
+                    <span className="font-bold text-[#182230] block">Proportionate Next Steps</span>
+                    <span className="text-[#586474]">Independent bank verification channels, Family Shield alert trigger, or 1930 police dossier filing.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-3 bg-[#E6F4F2] border border-[#BCE3DE] rounded-lg text-[11px] text-[#0F766E] leading-relaxed">
+                <strong>Zero False Sense of Safety:</strong> Clean messages without overt signals are explicitly flagged with a cautionary advisory, reminding citizens that absence of evidence is not proof of safety.
+              </div>
+            </div>
           )}
         </div>
       </div>

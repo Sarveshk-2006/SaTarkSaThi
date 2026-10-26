@@ -313,63 +313,87 @@ export const OverviewPage: React.FC = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
               <div
-                onClick={() => navigate('/family-shield')}
-                className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-colors"
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-[#161616]">1. Add Guardians</span>
-                  {stats.active_trusted_contacts > 0 ? (
-                    <CheckmarkFilled size={16} className="text-[#24a148]" />
-                  ) : (
-                    <Tag type="warm-gray" size="sm">Pending</Tag>
-                  )}
-                </div>
-                <p className="text-[11px] text-[#525252] leading-relaxed">
-                  Add children, spouse, or sibling to receive emergency warnings.
-                </p>
-              </div>
-
-              <div
                 onClick={() => navigate('/scanner')}
-                className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-colors"
+                className="p-3.5 border border-[#e0e0e0] bg-[#f8fafc] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-all rounded-lg space-y-2 flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-[#161616]">2. Test Scam Analyzer</span>
-                  {stats.total_analyses > 0 ? (
-                    <CheckmarkFilled size={16} className="text-[#24a148]" />
-                  ) : (
-                    <Tag type="warm-gray" size="sm">Pending</Tag>
-                  )}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-[#161616]">1. Scam Analyzer</span>
+                    {stats.total_analyses > 0 ? (
+                      <CheckmarkFilled size={16} className="text-[#24a148]" />
+                    ) : (
+                      <Tag type="warm-gray" size="sm">Active</Tag>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-[#525252] leading-relaxed">
+                    Paste suspicious SMS, link or QR &bull; Receive instant explainable risk tier and bank verification.
+                  </p>
                 </div>
-                <p className="text-[11px] text-[#525252] leading-relaxed">
-                  Run a sample Digital Arrest or Power Cut threat to test the engine.
-                </p>
+                <div className="pt-2 border-t border-[#e0e0e0]/70 flex items-center justify-between text-[11px] font-semibold text-[#0f62fe]">
+                  <span>Analyze Message</span>
+                  <ArrowRight size={14} />
+                </div>
               </div>
 
               <div
                 onClick={() => navigate('/payment-checkpoint')}
-                className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-colors"
+                className="p-3.5 border border-[#e0e0e0] bg-[#f8fafc] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-all rounded-lg space-y-2 flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-[#161616]">3. Verify UPI VPAs</span>
-                  <ArrowRight size={16} className="text-[#525252]" />
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-[#161616]">2. UPI Checkpoint</span>
+                    <Tag type="blue" size="sm">Pre-Flight</Tag>
+                  </div>
+                  <p className="text-[11px] text-[#525252] leading-relaxed">
+                    Test transfer VPA and coercive pressure before entering your PIN to halt extortion.
+                  </p>
                 </div>
-                <p className="text-[11px] text-[#525252] leading-relaxed">
-                  Scan recipient handles before entering your UPI PIN.
-                </p>
+                <div className="pt-2 border-t border-[#e0e0e0]/70 flex items-center justify-between text-[11px] font-semibold text-[#0f62fe]">
+                  <span>Verify Payment</span>
+                  <ArrowRight size={14} />
+                </div>
+              </div>
+
+              <div
+                onClick={() => navigate('/family-shield')}
+                className="p-3.5 border border-[#e0e0e0] bg-[#f8fafc] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-all rounded-lg space-y-2 flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-[#161616]">3. Family Shield</span>
+                    {stats.active_trusted_contacts > 0 ? (
+                      <CheckmarkFilled size={16} className="text-[#24a148]" />
+                    ) : (
+                      <Tag type="warm-gray" size="sm">Setup</Tag>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-[#525252] leading-relaxed">
+                    Link elderly parents with two-way consent to broadcast real-time threat alerts to guardians.
+                  </p>
+                </div>
+                <div className="pt-2 border-t border-[#e0e0e0]/70 flex items-center justify-between text-[11px] font-semibold text-[#0f62fe]">
+                  <span>Manage Guardians</span>
+                  <ArrowRight size={14} />
+                </div>
               </div>
 
               <div
                 onClick={() => navigate('/golden-hour')}
-                className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4] hover:bg-[#edf5ff] hover:border-[#0f62fe] cursor-pointer transition-colors"
+                className="p-3.5 border border-[#e0e0e0] bg-[#f8fafc] hover:bg-[#fff1f1] hover:border-[#da1e28] cursor-pointer transition-all rounded-lg space-y-2 flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-[#161616]">4. Know 1930 Helpline</span>
-                  <ArrowRight size={16} className="text-[#525252]" />
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-[#161616]">4. 1930 Recovery Desk</span>
+                    <Tag type="red" size="sm">Emergency</Tag>
+                  </div>
+                  <p className="text-[11px] text-[#525252] leading-relaxed">
+                    Within 2–3 hours of fraud, generate simultaneous 1930 complaint, bank lien, and police filings.
+                  </p>
                 </div>
-                <p className="text-[11px] text-[#525252] leading-relaxed">
-                  Save 1930 in phone contacts for the 2-hour Golden Hour window.
-                </p>
+                <div className="pt-2 border-t border-[#e0e0e0]/70 flex items-center justify-between text-[11px] font-semibold text-[#da1e28]">
+                  <span>Launch Recovery</span>
+                  <ArrowRight size={14} />
+                </div>
               </div>
             </div>
           </Tile>

@@ -29,6 +29,7 @@ import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { SimulationBanner } from '../components/common/SimulationBanner';
+import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader';
 import { useToast } from '../context/ToastContext';
 import { useNotification } from '../context/NotificationContext';
 import { GuardianInbox } from '../components/family/GuardianInbox';
@@ -307,6 +308,17 @@ export const FamilyShieldPage: React.FC = () => {
   return (
     <div className="space-y-6 font-sans">
       <SimulationBanner message="Family Shield Carrier SMS and multi-device alerts operate in an authenticated demonstration sandbox. High-risk alerts are broadcast in real time across verified guardian sessions without sending unauthorized telecom spam." />
+
+      <ServiceJourneyHeader
+        title="Family Shield & Mutual Consent Network"
+        badge="GUARDIAN PROTECTION"
+        badgeKind="teal"
+        tagline="Authoritative two-way consent architecture linking vulnerable parents and trusted family guardians without privacy invasion."
+        inputs="Guardian name, phone number, relationship, and confidential duress phrase."
+        deliverables="Instant cross-device push alert dispatch, pre-flight UPI transaction checks, and salted hash verification."
+        nextAction="Guardian confirms pairing invite, receives real-time threat alerts, and steps in to verify safety."
+        icon={UserMultiple}
+      />
 
       {/* 2-Device Demo & Session Switcher Banner */}
       <Tile className="bg-[#161616] text-white p-5 border border-[#393939] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

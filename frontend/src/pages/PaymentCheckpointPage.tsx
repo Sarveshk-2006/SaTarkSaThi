@@ -27,6 +27,7 @@ import { useToast } from '../context/ToastContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { SimulationBanner } from '../components/common/SimulationBanner';
+import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader';
 import { SafetyCheckIn, toCheckinLanguage } from '../components/payment/SafetyCheckIn';
 import { GuardianApprovalPanel, RiskSignalList } from '../components/payment/PaymentSafetyWidgets';
 
@@ -285,32 +286,26 @@ export const PaymentCheckpointPage: React.FC = () => {
         badgeText="SANDBOX ENVIRONMENT"
       />
 
-      {/* Header Bar */}
-      <div className="border-b border-[#e0e0e0] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-[#0f62fe] text-white rounded">
-              <Wallet size={18} />
-            </span>
-            <h1 className="text-xl font-semibold text-[#161616] tracking-tight">
-              Payment Checkpoint &amp; Coercion Firewall
-            </h1>
-          </div>
-          <p className="text-xs text-[#525252] mt-1">
-            Intercept suspicious UPI transfers before authorization. Evaluates psychological pressure, authority claims, and unverified VPA handles.
-          </p>
-        </div>
+      <ServiceJourneyHeader
+        title="Payment Checkpoint & Coercion Firewall"
+        badge="PRE-FLIGHT DEFENSE"
+        badgeKind="blue"
+        tagline="Pre-transaction psychological cooling-off, recipient VPA verification, and coercive pressure evaluation before funds leave your account."
+        inputs="Recipient UPI VPA / phone, transfer amount, purpose, and pressure indicators (active call, secrecy, legal threats)."
+        deliverables="Psychometric coercion score, recipient integrity audit, and cooling-off risk decision (Proceed, Pause, or Seek Help)."
+        nextAction="Execute safe verified transfer, consult linked Family Shield guardian, or halt transaction immediately."
+        icon={Wallet}
+      />
 
-        <div className="flex items-center gap-2">
-          <Button
-            kind="ghost"
-            size="sm"
-            renderIcon={Renew}
-            onClick={resetForm}
-          >
-            Clear Inputs
-          </Button>
-        </div>
+      <div className="flex justify-end -mt-3 mb-2">
+        <Button
+          kind="ghost"
+          size="sm"
+          renderIcon={Renew}
+          onClick={resetForm}
+        >
+          Clear Inputs
+        </Button>
       </div>
 
       {/* Preset Scenario Selector */}

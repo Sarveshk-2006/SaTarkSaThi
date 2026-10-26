@@ -46,6 +46,7 @@ import { GoldenHourResponsePanel } from '../components/recovery/GoldenHourRespon
 import { CopyButton } from '../components/common/CopyButton';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { SimulationBanner } from '../components/common/SimulationBanner';
+import { ServiceJourneyHeader } from '../components/common/ServiceJourneyHeader';
 import { useToast } from '../context/ToastContext';
 
 export const GoldenHourRecoveryPage: React.FC = () => {
@@ -284,6 +285,17 @@ export const GoldenHourRecoveryPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <SimulationBanner message="Enter what happened, then press one button. Satark Saathi prepares the complaint, the bank lien request and the police intimation at once. In this demo the dispatches are simulated — nothing reaches a real bank, police station or government portal." />
+
+      <ServiceJourneyHeader
+        title="Golden Hour Recovery Desk & Incident Wizard"
+        badge="EMERGENCY RESPONSE"
+        badgeKind="red"
+        tagline="Time-critical multi-desk recovery protocol for citizens within the first 2-3 hours of an unauthorized or fraudulent transfer."
+        inputs="Incident narrative, disputed financial amount, bank name, suspect contact info, and timeline events."
+        deliverables="Simultaneous multi-desk drafts: 1930 portal complaint text, bank lien recall request, and police intimation."
+        nextAction="Dial 1930 immediately with the formatted complaint, contact your bank nodal officer, and file at cybercrime.gov.in."
+        icon={Help}
+      />
 
       {/* 1930 Cyber Fraud Helpline Urgent Banner (Mandatory Requirement) */}
       <div className="bg-[#da1e28] text-white p-6 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border-l-4 border-l-[#750e13]">

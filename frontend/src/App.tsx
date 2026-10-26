@@ -70,6 +70,7 @@ export const App: React.FC = () => {
                         <Route index element={<HomeRoute />} />
                         <Route path="scanner" element={<ScannerPage />} />
                         <Route path="payment-checkpoint" element={<PaymentCheckpointPage />} />
+                        <Route path="checkpoint" element={<Navigate to="/payment-checkpoint" replace />} />
                         <Route path="family-shield" element={<FamilyShieldPage />} />
                         <Route path="golden-hour" element={<GoldenHourRecoveryPage />} />
                         <Route path="incident-history" element={<IncidentHistoryPage />} />
