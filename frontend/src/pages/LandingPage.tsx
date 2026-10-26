@@ -305,54 +305,56 @@ export const LandingPage: React.FC = () => {
       const mm = gsap.matchMedia();
 
       mm.add('(prefers-reduced-motion: reduce)', () => {
-        gsap.set(
-          '.cw-reveal, .cw-hero-phone, .cw-hero-card, .cw-wavy-path, .cw-step-card, .cw-input-card, .cw-recovery-card',
-          {
+        const els = containerRef.current?.querySelectorAll(
+          '.cw-reveal, .cw-hero-phone, .cw-hero-card, .cw-step-card, .cw-input-card, .cw-recovery-card'
+        );
+        if (els && els.length > 0) {
+          gsap.set(els, {
             opacity: 1,
             y: 0,
             scale: 1,
             clearProps: 'all',
-          }
-        );
+          });
+        }
       });
 
       mm.add('(prefers-reduced-motion: no-preference)', () => {
-        // Continuous subtle floating motion on the 4 surrounding spatial cards (managed by GSAP)
-        gsap.to('.cw-float-1', { y: -8, duration: 2.8, repeat: -1, yoyo: true, ease: 'sine.inOut' });
-        gsap.to('.cw-float-2', { y: -10, duration: 3.2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.4 });
-        gsap.to('.cw-float-3', { y: -7, duration: 2.9, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.8 });
-        gsap.to('.cw-float-4', { y: -9, duration: 3.4, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1.2 });
-
-        // Scroll reveals for sections
+        // Scroll reveals for sections (safely guarded against empty NodeLists)
         const sections = gsap.utils.toArray<HTMLElement>('.cw-section');
         sections.forEach((sec) => {
-          gsap.from(sec.querySelectorAll('.cw-reveal'), {
-            scrollTrigger: {
-              trigger: sec,
-              start: 'top 82%',
-              toggleActions: 'play none none none',
-            },
-            y: 30,
-            opacity: 0,
-            stagger: 0.08,
-            duration: 0.65,
-            ease: 'power2.out',
-          });
+          const reveals = sec.querySelectorAll('.cw-reveal');
+          if (reveals && reveals.length > 0) {
+            gsap.from(reveals, {
+              scrollTrigger: {
+                trigger: sec,
+                start: 'top 82%',
+                toggleActions: 'play none none none',
+              },
+              y: 30,
+              opacity: 0,
+              stagger: 0.08,
+              duration: 0.65,
+              ease: 'power2.out',
+            });
+          }
         });
 
         // Staggered workflow reveals for Step 01-04
-        gsap.from('.cw-step-card', {
-          scrollTrigger: {
-            trigger: '#how-it-works',
-            start: 'top 78%',
-            toggleActions: 'play none none none',
-          },
-          y: 35,
-          opacity: 0,
-          stagger: 0.15,
-          duration: 0.65,
-          ease: 'power2.out',
-        });
+        const stepCards = containerRef.current?.querySelectorAll('.cw-step-card');
+        if (stepCards && stepCards.length > 0) {
+          gsap.from(stepCards, {
+            scrollTrigger: {
+              trigger: '#how-it-works',
+              start: 'top 78%',
+              toggleActions: 'play none none none',
+            },
+            y: 35,
+            opacity: 0,
+            stagger: 0.15,
+            duration: 0.65,
+            ease: 'power2.out',
+          });
+        }
 
         // S-curve stroke drawing on scroll
         const sCurve = containerRef.current?.querySelector('.cw-scurve-line') as SVGPathElement;
@@ -372,31 +374,37 @@ export const LandingPage: React.FC = () => {
         }
 
         // Staggered reveals for 3 input cards
-        gsap.from('.cw-input-card', {
-          scrollTrigger: {
-            trigger: '#inputs',
-            start: 'top 80%',
-            toggleActions: 'play none none none',
-          },
-          y: 30,
-          opacity: 0,
-          stagger: 0.12,
-          duration: 0.6,
-          ease: 'power2.out',
-        });
+        const inputCards = containerRef.current?.querySelectorAll('.cw-input-card');
+        if (inputCards && inputCards.length > 0) {
+          gsap.from(inputCards, {
+            scrollTrigger: {
+              trigger: '#inputs',
+              start: 'top 80%',
+              toggleActions: 'play none none none',
+            },
+            y: 30,
+            opacity: 0,
+            stagger: 0.12,
+            duration: 0.6,
+            ease: 'power2.out',
+          });
+        }
 
         // Emergency 1930 card reveal
-        gsap.from('.cw-recovery-card', {
-          scrollTrigger: {
-            trigger: '#recovery',
-            start: 'top 82%',
-            toggleActions: 'play none none none',
-          },
-          y: 25,
-          opacity: 0,
-          duration: 0.7,
-          ease: 'power2.out',
-        });
+        const recoveryCards = containerRef.current?.querySelectorAll('.cw-recovery-card');
+        if (recoveryCards && recoveryCards.length > 0) {
+          gsap.from(recoveryCards, {
+            scrollTrigger: {
+              trigger: '#recovery',
+              start: 'top 82%',
+              toggleActions: 'play none none none',
+            },
+            y: 25,
+            opacity: 0,
+            duration: 0.7,
+            ease: 'power2.out',
+          });
+        }
       });
     },
     { scope: containerRef }
@@ -406,25 +414,8 @@ export const LandingPage: React.FC = () => {
     if (idx === selectedScenarioIdx) return;
     setSelectedScenarioIdx(idx);
     setIsScanning(true);
-
-    gsap.fromTo(
-      '.cw-phone-chat',
-      { opacity: 0.5, y: 8 },
-      { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
-    );
-
     setTimeout(() => {
       setIsScanning(false);
-      gsap.fromTo(
-        '.cw-verdict-card',
-        { opacity: 0, scale: 0.97, y: 8 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-      );
-      gsap.fromTo(
-        '.cw-staged-check',
-        { opacity: 0, x: -6 },
-        { opacity: 1, x: 0, stagger: 0.08, duration: 0.25, ease: 'power2.out' }
-      );
     }, 600);
   };
 
@@ -432,16 +423,6 @@ export const LandingPage: React.FC = () => {
     setIsScanning(true);
     setTimeout(() => {
       setIsScanning(false);
-      gsap.fromTo(
-        '.cw-verdict-card',
-        { opacity: 0, scale: 0.97, y: 8 },
-        { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: 'power2.out' }
-      );
-      gsap.fromTo(
-        '.cw-staged-check',
-        { opacity: 0, x: -6 },
-        { opacity: 1, x: 0, stagger: 0.08, duration: 0.25, ease: 'power2.out' }
-      );
     }, 600);
   };
 
@@ -740,238 +721,256 @@ export const LandingPage: React.FC = () => {
               ref={heroMockupRef}
               onMouseMove={handleHeroMouseMove}
               onMouseLeave={handleHeroMouseLeave}
-              className="relative mx-auto mt-10 hidden min-h-[620px] max-w-6xl lg:block transition-transform duration-200"
+              className="relative mx-auto mt-12 hidden min-h-[720px] max-w-7xl lg:block transition-transform duration-200 px-4"
             >
-              {/* Exact CyberWall Hero Curved Ribbon SVG Line with Telemetry Nodes */}
+              {/* Refined Cyber Telemetry Curved Ribbon SVG in Background */}
               <svg
                 aria-hidden="true"
-                className="cw-wavy-path pointer-events-none absolute inset-x-0 top-12 z-0 h-[500px] w-full overflow-visible"
-                viewBox="0 0 1200 500"
+                className="pointer-events-none absolute inset-x-0 top-16 z-0 h-[480px] w-full overflow-visible opacity-75"
+                viewBox="0 0 1200 480"
                 fill="none"
                 preserveAspectRatio="none"
               >
+                <defs>
+                  <linearGradient id="cwHeroPathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor="#00C8F0" stopOpacity="0.4" />
+                    <stop offset="35%" stopColor="#00AEEF" stopOpacity="0.85" />
+                    <stop offset="70%" stopColor="#1767F2" stopOpacity="0.85" />
+                    <stop offset="100%" stopColor="#4169E1" stopOpacity="0.4" />
+                  </linearGradient>
+                  <filter id="cwGlow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="6" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+                {/* Soft ambient cyber aura */}
                 <path
-                  d="
-                    M-60 80
-                    C120 80 130 360 300 360
-                    S470 140 620 180
-                    S760 420 920 390
-                    S1080 250 1260 440
-                  "
+                  d="M -40 120 C 140 120, 160 380, 340 380 S 520 160, 680 190 S 840 430, 980 400 S 1120 280, 1240 380"
                   stroke="url(#cwHeroPathGradient)"
-                  strokeWidth="19"
+                  strokeWidth="10"
+                  strokeLinecap="round"
+                  filter="url(#cwGlow)"
+                  opacity="0.25"
+                />
+                {/* Clean primary cyber telemetry line */}
+                <path
+                  d="M -40 120 C 140 120, 160 380, 340 380 S 520 160, 680 190 S 840 430, 980 400 S 1120 280, 1240 380"
+                  stroke="url(#cwHeroPathGradient)"
+                  strokeWidth="4"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  vectorEffect="non-scaling-stroke"
                 />
                 {/* Flowing Telemetry Beacons */}
-                <circle cx="300" cy="360" r="6" fill="#00C8F0" className="animate-pulse shadow-lg" />
-                <circle cx="920" cy="390" r="6" fill="#1767F2" className="animate-pulse shadow-lg" />
-                <defs>
-                  <linearGradient id="cwHeroPathGradient" x1="-60" y1="310" x2="1260" y2="310" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#00C8F0" />
-                    <stop offset="45%" stopColor="#00AEEF" />
-                    <stop offset="70%" stopColor="#1767F2" />
-                    <stop offset="100%" stopColor="#4169E1" />
-                  </linearGradient>
-                </defs>
+                <circle cx="340" cy="380" r="5" fill="#00C8F0" className="animate-ping opacity-75" />
+                <circle cx="340" cy="380" r="4" fill="#00C8F0" />
+                <circle cx="980" cy="400" r="5" fill="#1767F2" className="animate-ping opacity-75" />
+                <circle cx="980" cy="400" r="4" fill="#1767F2" />
               </svg>
 
-              {/* Central Smartphone Mockup with Motion for React */}
-              <motion.div
-                initial={{ opacity: 0, y: 35, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.75, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                className="cw-hero-phone absolute top-4 left-1/2 z-10 -translate-x-1/2 w-68"
-              >
-                {/* Demo status & rescan controls */}
-                <div className="flex items-center justify-between gap-1 mb-2 px-1">
-                  <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200/60 text-[9px] font-semibold text-[#0f62fe]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0f62fe] animate-pulse" />
-                    <span>Demo Simulation</span>
-                  </div>
-                  <motion.button
-                    type="button"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={handleRescan}
-                    disabled={isScanning}
-                    className="text-[9px] font-medium text-neutral-500 hover:text-[#0f62fe] flex items-center gap-1 transition-colors cursor-pointer"
-                    title="Simulate analysis scan"
-                  >
-                    <Flash size={10} />
-                    <span>{isScanning ? 'Analyzing...' : 'Simulate Scan'}</span>
-                  </motion.button>
-                </div>
-
-                {/* Scenario switcher pills above phone with Spring Gestures */}
-                <div className="flex items-center justify-center gap-1.5 mb-2.5">
-                  {SCENARIOS.map((sc, i) => (
+              {/* Central Smartphone Mockup with Motion for React (Perfect flex centering avoiding transform clash) */}
+              <div className="absolute inset-x-0 top-0 z-20 flex justify-center pointer-events-none">
+                <motion.div
+                  initial={{ opacity: 0, y: 35, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ duration: 0.7, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className="cw-hero-phone pointer-events-auto w-[350px] xl:w-[370px]"
+                >
+                  {/* Top controls: Interactive Demo Badge & Rescan Action */}
+                  <div className="flex items-center justify-between gap-2 mb-2 px-1">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[10px] font-semibold text-[#0f62fe] shadow-xs">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#0f62fe] animate-pulse" />
+                      <span>Interactive Simulation</span>
+                    </div>
                     <motion.button
-                      key={sc.id}
                       type="button"
-                      whileHover={{ scale: 1.05, y: -1 }}
-                      whileTap={{ scale: 0.95 }}
-                      transition={{ type: 'spring', stiffness: 450, damping: 18 }}
-                      onClick={() => handleScenarioChange(i)}
-                      className={`text-[10px] font-medium px-2.5 py-1 transition-all cursor-pointer rounded-sm ${
-                        selectedScenarioIdx === i
-                          ? 'bg-[#0f62fe] text-white shadow-xs font-semibold'
-                          : 'bg-white text-neutral-600 hover:text-neutral-900 border border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      whileHover={{ scale: 1.04 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={handleRescan}
+                      disabled={isScanning}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-neutral-200 text-[10px] font-medium text-neutral-600 hover:text-[#0f62fe] hover:border-blue-200 shadow-xs transition-colors cursor-pointer"
+                      title="Simulate analysis scan"
                     >
-                      {sc.category.split('/')[0].trim()}
+                      <Flash size={11} className={isScanning ? 'animate-spin text-[#0f62fe]' : ''} />
+                      <span>{isScanning ? 'Scanning...' : 'Simulate Scan'}</span>
                     </motion.button>
-                  ))}
-                </div>
+                  </div>
 
-                <div className="aspect-[9/19] overflow-hidden rounded-[2.65rem] border-[7px] border-neutral-950 bg-neutral-950 shadow-2xl shadow-blue-500/20">
-                  <div className="flex h-full w-full flex-col overflow-hidden rounded-[2rem] bg-[#efeae2]">
-                    {/* Phone Header */}
-                    <div className="relative flex shrink-0 items-center gap-2 bg-white px-2.5 pt-5 pb-2 shadow-xs">
-                      <span className="absolute top-1.5 left-1/2 h-3 w-12 -translate-x-1/2 rounded-full bg-neutral-950" />
-                      <span className="text-sm font-bold text-neutral-700">‹</span>
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 text-[#1767F2] ring-1 ring-neutral-200">
-                        <Security size={16} />
-                      </span>
-                      <div className="min-w-0 flex-1 leading-tight">
-                        <p className="truncate text-[10px] font-bold text-neutral-950">Satark Saathi</p>
-                        <p className="text-[7px] text-[#24a148] font-medium">online &bull; Heuristic Shield</p>
-                      </div>
-                      <span className="text-xs text-neutral-500">⋮</span>
-                    </div>
+                  {/* Segmented Scenario Switcher Pills */}
+                  <div className="flex items-center justify-center p-1 rounded-xl bg-white/95 backdrop-blur-md border border-neutral-200 shadow-sm gap-1 mb-3">
+                    {SCENARIOS.map((sc, i) => {
+                      const label = sc.id === 'sbi-kyc' ? 'Bank / KYC' : sc.id === 'power-bill' ? 'Electricity' : 'Digital Arrest';
+                      return (
+                        <motion.button
+                          key={sc.id}
+                          type="button"
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => handleScenarioChange(i)}
+                          className={`flex-1 text-[10.5px] font-medium py-1 px-1.5 rounded-lg transition-all cursor-pointer text-center truncate ${
+                            selectedScenarioIdx === i
+                              ? 'bg-[#0f62fe] text-white font-semibold shadow-xs'
+                              : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100/70'
+                          }`}
+                        >
+                          {label}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
 
-                    {/* Chat Area with AnimatePresence */}
-                    <div className="cw-phone-chat flex-1 overflow-y-auto px-2 py-2 space-y-2 text-[9px] bg-[#efeae2] relative">
-                      <div className="flex justify-center">
-                        <span className="rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-neutral-500">Today</span>
-                      </div>
-
-                      {/* Outgoing User Message */}
-                      <motion.div
-                        key={`user-msg-${currentScenario.id}`}
-                        initial={{ opacity: 0, y: 6 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className="ml-auto max-w-[88%] rounded-lg rounded-tr-none bg-[#d9fdd3] p-2 shadow-xs text-neutral-800 leading-relaxed relative overflow-hidden"
-                      >
-                        <p>{currentScenario.userQuery}</p>
-                        <div className="mt-0.5 text-right text-[6px] text-neutral-400">10:24 ✓✓</div>
-
-                        {/* Interactive Laser Scanning Line */}
-                        {isScanning && (
-                          <div className="absolute inset-0 pointer-events-none overflow-hidden bg-cyan-900/10">
-                            <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#00C8F0] to-transparent shadow-[0_0_10px_#00C8F0] animate-scanline" />
+                  {/* Smartphone Device Frame */}
+                  <div className="overflow-hidden rounded-[3rem] border-[8px] border-[#161616] bg-[#161616] shadow-[0_25px_70px_-15px_rgba(15,98,254,0.22),0_12px_36px_rgba(0,0,0,0.1)] ring-1 ring-white/10">
+                    <div className="flex h-[590px] w-full flex-col overflow-hidden rounded-[2.35rem] bg-slate-50 relative">
+                      {/* Top Dynamic Island & Status Bar */}
+                      <div className="relative shrink-0 bg-white border-b border-neutral-200/80 px-4 pt-2.5 pb-2">
+                        <div className="mx-auto h-4 w-24 rounded-full bg-neutral-950 flex items-center justify-end px-2.5 gap-1 shadow-inner">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-neutral-800" />
+                        </div>
+                        <div className="flex items-center justify-between text-[10px] text-neutral-500 font-medium mt-1">
+                          <span className="font-semibold text-neutral-800">9:41</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[9px] font-bold text-neutral-700">5G</span>
+                            <div className="w-4 h-2 rounded-xs border border-neutral-600 p-0.5 flex items-center">
+                              <div className="h-full w-full bg-neutral-700 rounded-2xs" />
+                            </div>
                           </div>
-                        )}
-                      </motion.div>
+                        </div>
+                      </div>
 
-                      {/* Live Scanning or Incoming Analysis Transition via AnimatePresence */}
-                      <AnimatePresence mode="wait">
-                        {isScanning ? (
-                          <motion.div
-                            key="scanning-state"
-                            initial={{ opacity: 0, scale: 0.94 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.94 }}
-                            transition={{ duration: 0.2 }}
-                            className="mx-auto max-w-[90%] bg-blue-900/90 text-white rounded-lg p-2 text-center shadow-md animate-pulse"
-                          >
-                            <p className="text-[7.5px] font-mono tracking-wider">RUNNING 40+ HEURISTIC VALIDATIONS...</p>
-                          </motion.div>
-                        ) : (
-                          <motion.div
-                            key={`verdict-${currentScenario.id}`}
-                            initial={{ opacity: 0, scale: 0.96, y: 8 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.96, y: -6 }}
-                            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                            className="cw-verdict-card mr-auto max-w-[95%] rounded-lg rounded-tl-none bg-white p-2.5 shadow-xs text-neutral-800 space-y-2 leading-relaxed"
-                          >
-                            {/* Animated Risk Meter Header */}
-                            <div className="space-y-1 pb-1.5 border-b border-neutral-100">
-                              <div className="flex items-center justify-between text-[8px]">
-                                <span className="font-bold text-neutral-700">Heuristic Trust Score</span>
-                                <span className={`font-mono font-bold ${
-                                  currentScenario.trustScore < 30 ? 'text-[#da1e28]' : 'text-[#f1c21b]'
-                                }`}>
-                                  {currentScenario.trustScore}/100 &bull; {currentScenario.trustScore < 30 ? 'CRITICAL RISK' : 'SUSPICIOUS'}
-                                </span>
-                              </div>
-                              <div className="w-full bg-neutral-200 h-1.5 rounded-full overflow-hidden">
-                                <motion.div
-                                  initial={{ width: 0 }}
-                                  animate={{ width: `${currentScenario.trustScore}%` }}
-                                  transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
-                                  className={`h-full ${
-                                    currentScenario.trustScore < 30 ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'
-                                  }`}
-                                />
-                              </div>
+                      {/* App Header */}
+                      <div className="flex items-center justify-between bg-white px-3.5 py-2 border-b border-neutral-100 shadow-2xs">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-[#00C8F0] to-[#1767F2] text-white flex items-center justify-center shadow-2xs">
+                            <Security size={13} />
+                          </div>
+                          <div>
+                            <p className="text-[11px] font-bold text-neutral-950 leading-tight">Satark Saathi</p>
+                            <p className="text-[8px] text-emerald-600 font-medium flex items-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
+                              Protection Shield Active
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200/80">
+                          THREAT DETECTED
+                        </span>
+                      </div>
+
+                      {/* Main Screen Body: Message Analysis */}
+                      <div className="flex-1 overflow-y-auto p-3 space-y-2.5 text-[11px]">
+                        {/* Suspicious Message Card */}
+                        <div className="bg-white rounded-xl p-3 border border-neutral-200/90 shadow-2xs space-y-1.5 relative overflow-hidden">
+                          <div className="flex items-center justify-between text-[9px] text-neutral-500 pb-1 border-b border-neutral-100">
+                            <span className="font-semibold text-neutral-700 flex items-center gap-1">
+                              <Chat size={11} className="text-[#0f62fe]" />
+                              Suspicious Message
+                            </span>
+                            <span>10:24 AM</span>
+                          </div>
+                          <p className="text-[11px] text-neutral-800 leading-relaxed font-normal">
+                            {currentScenario.userQuery}
+                          </p>
+
+                          {/* Interactive Laser Scanning Line when scanning */}
+                          {isScanning && (
+                            <div className="absolute inset-0 pointer-events-none overflow-hidden bg-blue-500/10">
+                              <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#00C8F0] to-transparent shadow-[0_0_12px_#00C8F0] animate-scanline" />
                             </div>
+                          )}
+                        </div>
 
-                            {/* Staged Indicator Reveals */}
-                            <div className="space-y-1">
-                              {currentScenario.checks.map((chk, i) => (
-                                <motion.div
-                                  key={i}
-                                  initial={{ opacity: 0, x: -6 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: 0.15 + i * 0.08, duration: 0.25 }}
-                                  className="cw-staged-check flex items-start justify-between gap-1 text-[7.5px] leading-tight"
-                                >
-                                  <span className="font-semibold text-neutral-800 flex items-center gap-1 shrink-0">
-                                    <span className={`w-1.5 h-1.5 rounded-full ${
-                                      chk.status === 'critical' ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'
-                                    }`} />
-                                    {chk.label}:
+                        {/* Verdict Card with AnimatePresence */}
+                        <AnimatePresence mode="wait">
+                          {isScanning ? (
+                            <motion.div
+                              key="scan-indicator"
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              className="rounded-xl bg-blue-900/90 text-white p-3.5 text-center shadow-md space-y-1.5"
+                            >
+                              <div className="flex items-center justify-center gap-2">
+                                <Flash size={14} className="text-[#00C8F0] animate-spin" />
+                                <span className="text-[10px] font-mono tracking-wider font-semibold">RUNNING HEURISTICS...</span>
+                              </div>
+                              <p className="text-[9px] text-blue-200">Evaluating domain safety, urgency, and 1930 registry</p>
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              key={`verdict-${currentScenario.id}`}
+                              initial={{ opacity: 0, y: 10, scale: 0.97 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                              className="rounded-xl bg-white p-3 border border-neutral-200/90 shadow-2xs space-y-2.5"
+                            >
+                              {/* Trust Score & Progress Bar */}
+                              <div className="space-y-1">
+                                <div className="flex items-center justify-between text-[10px]">
+                                  <span className="font-semibold text-neutral-700">Heuristic Trust Score</span>
+                                  <span className={`font-mono font-bold ${currentScenario.trustScore < 30 ? 'text-[#da1e28]' : 'text-[#f1c21b]'}`}>
+                                    {currentScenario.trustScore}/100 &bull; {currentScenario.trustScore < 30 ? 'CRITICAL RISK' : 'SUSPICIOUS'}
                                   </span>
-                                  <span className="text-neutral-500 text-right truncate max-w-[130px]">{chk.detail}</span>
-                                </motion.div>
-                              ))}
-                            </div>
+                                </div>
+                                <div className="w-full bg-neutral-100 h-2 rounded-full overflow-hidden border border-neutral-200/60">
+                                  <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${currentScenario.trustScore}%` }}
+                                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                                    className={`h-full ${currentScenario.trustScore < 30 ? 'bg-gradient-to-r from-red-600 to-rose-500' : 'bg-gradient-to-r from-amber-500 to-yellow-400'}`}
+                                  />
+                                </div>
+                              </div>
 
-                            <p className="font-semibold text-neutral-950 text-[8.5px] pt-1 border-t border-neutral-100">{currentScenario.responseHeadline}</p>
-                            <p className="text-[8px] text-neutral-600 leading-snug">{currentScenario.body}</p>
+                              {/* Threat Indicators */}
+                              <div className="space-y-1.5 pt-1 border-t border-neutral-100">
+                                {currentScenario.checks.map((chk, i) => (
+                                  <div key={i} className="flex items-center justify-between text-[9px] leading-tight">
+                                    <span className="font-medium text-neutral-700 flex items-center gap-1.5">
+                                      <span className={`w-1.5 h-1.5 rounded-full ${chk.status === 'critical' ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'}`} />
+                                      {chk.label}
+                                    </span>
+                                    <span className="text-neutral-500 font-mono text-[8.5px] truncate max-w-[150px]">{chk.detail}</span>
+                                  </div>
+                                ))}
+                              </div>
 
-                            {/* Advisory Alert Box */}
-                            <div className="p-1.5 bg-red-50 border border-red-200 rounded text-[7.5px] text-red-700 font-medium leading-tight">
-                              &bull; {currentScenario.warningNote}
-                            </div>
+                              {/* Guidance Advisory */}
+                              <div className="p-2 rounded-lg bg-red-50 border border-red-200 text-[9px] text-red-700 leading-tight">
+                                <p className="font-semibold mb-0.5">{currentScenario.responseHeadline}</p>
+                                <p className="text-red-600 text-[8.5px]">{currentScenario.warningNote}</p>
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
 
-                            {/* Watermark for Demo transparency */}
-                            <div className="text-[7px] font-mono text-neutral-400 text-center pt-1 border-t border-neutral-100 flex items-center justify-center gap-1">
-                              <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
-                              <span>Demo Simulation &bull; Sample Heuristics</span>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    {/* Bottom Input Pill */}
-                    <div className="flex items-center gap-1 px-2 py-1.5 bg-neutral-100 border-t border-neutral-200">
-                      <div className="flex-1 bg-white rounded-full px-2 py-1 text-[8px] text-neutral-400">Message</div>
-                      <div className="w-5 h-5 rounded-full bg-[#00a884] text-white flex items-center justify-center text-[9px]">
-                        <Microphone size={10} />
+                      {/* iOS Home Indicator Bar */}
+                      <div className="shrink-0 bg-white py-2 flex justify-center border-t border-neutral-100">
+                        <div className="w-28 h-1 rounded-full bg-neutral-300" />
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                </motion.div>
+              </div>
 
-              {/* 4 Floating White Cards with Motion for React */}
+              {/* 4 Floating Cybersecurity Capability Cards (Flanking left & right with zero overlap) */}
               {/* Card 1: Top-Left */}
               <motion.div
-                initial={{ opacity: 0, y: 25 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.45 }}
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0, y: [0, -8, 0] }}
+                transition={{
+                  opacity: { duration: 0.6, delay: 0.4 },
+                  x: { duration: 0.6, delay: 0.4 },
+                  y: { duration: 4.0, repeat: Infinity, ease: 'easeInOut' },
+                }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="cw-hero-card cw-float-1 absolute top-[90px] left-[6%] z-30 w-[270px] -rotate-1 cursor-default"
+                className="cw-hero-card absolute top-12 left-0 xl:left-4 z-10 w-[270px] xl:w-[290px] cursor-default"
               >
-                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl">
+                <div className="rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-md p-4 shadow-lg shadow-neutral-950/5">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2] ring-1 ring-blue-100">
                       <Chat size={20} />
                     </span>
                     <div>
@@ -987,15 +986,19 @@ export const LandingPage: React.FC = () => {
 
               {/* Card 2: Top-Right */}
               <motion.div
-                initial={{ opacity: 0, y: 25 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.55 }}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0, y: [0, -9, 0] }}
+                transition={{
+                  opacity: { duration: 0.6, delay: 0.5 },
+                  x: { duration: 0.6, delay: 0.5 },
+                  y: { duration: 4.4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 },
+                }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="cw-hero-card cw-float-2 absolute top-[105px] right-[5%] z-30 w-[280px] rotate-1 cursor-default"
+                className="cw-hero-card absolute top-12 right-0 xl:right-4 z-10 w-[270px] xl:w-[290px] cursor-default"
               >
-                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl">
+                <div className="rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-md p-4 shadow-lg shadow-neutral-950/5">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2] ring-1 ring-blue-100">
                       <Globe size={20} />
                     </span>
                     <div>
@@ -1011,15 +1014,19 @@ export const LandingPage: React.FC = () => {
 
               {/* Card 3: Bottom-Left */}
               <motion.div
-                initial={{ opacity: 0, y: 25 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.65 }}
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: 1, x: 0, y: [0, -7, 0] }}
+                transition={{
+                  opacity: { duration: 0.6, delay: 0.6 },
+                  x: { duration: 0.6, delay: 0.6 },
+                  y: { duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 1 },
+                }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="cw-hero-card cw-float-3 absolute bottom-[65px] left-[7%] z-30 w-[270px] rotate-1 cursor-default"
+                className="cw-hero-card absolute bottom-12 left-0 xl:left-4 z-10 w-[270px] xl:w-[290px] cursor-default"
               >
-                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl">
+                <div className="rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-md p-4 shadow-lg shadow-neutral-950/5">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2] ring-1 ring-blue-100">
                       <Enterprise size={20} />
                     </span>
                     <div>
@@ -1035,15 +1042,19 @@ export const LandingPage: React.FC = () => {
 
               {/* Card 4: Bottom-Right */}
               <motion.div
-                initial={{ opacity: 0, y: 25 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.75 }}
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: 1, x: 0, y: [0, -8, 0] }}
+                transition={{
+                  opacity: { duration: 0.6, delay: 0.7 },
+                  x: { duration: 0.6, delay: 0.7 },
+                  y: { duration: 4.2, repeat: Infinity, ease: 'easeInOut', delay: 1.5 },
+                }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="cw-hero-card cw-float-4 absolute bottom-[45px] right-[7%] z-30 w-[280px] -rotate-1 cursor-default"
+                className="cw-hero-card absolute bottom-12 right-0 xl:right-4 z-10 w-[270px] xl:w-[290px] cursor-default"
               >
-                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl">
+                <div className="rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-md p-4 shadow-lg shadow-neutral-950/5">
                   <div className="flex items-start gap-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2] ring-1 ring-blue-100">
                       <Security size={20} />
                     </span>
                     <div>

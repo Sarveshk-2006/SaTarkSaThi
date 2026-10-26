@@ -161,7 +161,18 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     return () => {
       clearTimeout(reconnectTimeout);
       if (ws) {
-        ws.close();
+        const socket = ws;
+        socket.onopen = null;
+        socket.onclose = null;
+        socket.onerror = null;
+        socket.onmessage = null;
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.close();
+        } else if (socket.readyState === WebSocket.CONNECTING) {
+          socket.onopen = () => {
+            try { socket.close(); } catch (_) {}
+          };
+        }
       }
     };
   }, [activeUserId]);
