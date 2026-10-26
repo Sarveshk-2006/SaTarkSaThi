@@ -16,6 +16,7 @@ import { IncidentHistoryPage } from './pages/IncidentHistoryPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
+import { ApkTestbedPage } from './pages/ApkTestbedPage';
 import { SeniorHome } from './components/senior/SeniorHome';
 
 import { NotificationProvider } from './context/NotificationContext';
@@ -59,6 +60,8 @@ export const App: React.FC = () => {
                     <Routes>
                       <Route path="/welcome" element={<LandingPage />} />
                       <Route path="/login" element={<LoginRoute />} />
+                      <Route path="/apk-testbed" element={<ApkTestbedPage />} />
+                      <Route path="/apk-preview" element={<ApkTestbedPage />} />
                       <Route
                         path="/"
                         element={
