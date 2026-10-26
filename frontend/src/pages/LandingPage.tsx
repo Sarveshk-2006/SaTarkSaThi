@@ -1362,7 +1362,11 @@ export const LandingPage: React.FC = () => {
               <div className="space-y-16 relative z-10">
                 {/* Step 01 (Left) - DETECT */}
                 <div className="cw-step-card flex flex-col md:flex-row items-center gap-6 md:justify-start">
-                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <motion.div
+                    whileHover={{ y: -4, scale: 1.015 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow cursor-default"
+                  >
                     <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">01</span>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
@@ -1374,12 +1378,16 @@ export const LandingPage: React.FC = () => {
                         Send the suspicious call details, message, link, QR code, screenshot, or application file to Satark Saathi.
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Step 02 (Right) - PREVENT */}
                 <div className="cw-step-card flex flex-col md:flex-row items-center gap-6 md:justify-end">
-                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <motion.div
+                    whileHover={{ y: -4, scale: 1.015 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow cursor-default"
+                  >
                     <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">02</span>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
@@ -1391,12 +1399,16 @@ export const LandingPage: React.FC = () => {
                         The verification engine analyses available signals, banking domain registries, and coercive phrasing.
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Step 03 (Left) - PROTECT */}
                 <div className="cw-step-card flex flex-col md:flex-row items-center gap-6 md:justify-start">
-                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <motion.div
+                    whileHover={{ y: -4, scale: 1.015 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow cursor-default"
+                  >
                     <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">03</span>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
@@ -1408,12 +1420,16 @@ export const LandingPage: React.FC = () => {
                         Explains the risk and tells you whether to proceed, verify further, block, report, or avoid.
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
 
                 {/* Step 04 (Right) - RECOVER */}
                 <div className="cw-step-card flex flex-col md:flex-row items-center gap-6 md:justify-end">
-                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <motion.div
+                    whileHover={{ y: -4, scale: 1.015 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow cursor-default"
+                  >
                     <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">04</span>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
@@ -1425,7 +1441,7 @@ export const LandingPage: React.FC = () => {
                         The suspicious interaction is stopped before it turns into financial loss, identity theft, or malware exposure.
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 </div>
               </div>
             </div>
@@ -1455,14 +1471,16 @@ export const LandingPage: React.FC = () => {
               </span>
             </div>
 
-            {/* 3 Large Input Method Showcase Cards */}
+            {/* 3 Large Input Method Showcase Cards with Motion for React */}
             <div className="grid md:grid-cols-3 gap-6">
               {INPUT_METHODS.map((m, idx) => {
                 const IconComp = m.icon;
                 return (
-                  <div
+                  <motion.div
                     key={idx}
-                    className="cw-input-card bg-[#F8FAFC] border border-neutral-200 rounded-3xl p-6 flex flex-col justify-between hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                    whileHover={{ y: -6, scale: 1.015 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                    className="cw-input-card bg-[#F8FAFC] border border-neutral-200 rounded-3xl p-6 flex flex-col justify-between hover:shadow-lg transition-shadow cursor-default"
                   >
                     {/* Visual Mockup inside card */}
                     <div className={`h-40 rounded-2xl ${m.bgTone} border ${m.borderTone} p-4 flex items-center justify-center mb-6`}>
@@ -1518,7 +1536,7 @@ export const LandingPage: React.FC = () => {
                         </Button>
                       </Link>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -1530,7 +1548,11 @@ export const LandingPage: React.FC = () => {
             ------------------------------------------------------------------------- */}
         <section id="recovery" className="cw-section py-20 bg-[#F8FAFC] border-b border-neutral-200">
           <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
-            <div className="cw-recovery-card bg-white border-2 border-red-200 rounded-3xl p-8 sm:p-12 shadow-md hover:shadow-lg transition-shadow">
+            <motion.div
+              whileHover={{ scale: 1.006 }}
+              transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+              className="cw-recovery-card bg-white border-2 border-red-200 rounded-3xl p-8 sm:p-12 shadow-md hover:shadow-lg transition-shadow"
+            >
               <div className="max-w-3xl space-y-3 mb-8">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600">
                   <Phone size={14} />
@@ -1564,16 +1586,20 @@ export const LandingPage: React.FC = () => {
               </div>
 
               <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-neutral-100">
-                <a href="tel:1930">
-                  <Button kind="danger" size="lg" renderIcon={Phone}>
-                    Dial Helpline 1930
-                  </Button>
-                </a>
-                <Link to="/golden-hour">
-                  <Button kind="tertiary" size="lg" renderIcon={Flash}>
-                    Open Recovery Dossier Tool
-                  </Button>
-                </Link>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <a href="tel:1930">
+                    <Button kind="danger" size="lg" renderIcon={Phone}>
+                      Dial Helpline 1930
+                    </Button>
+                  </a>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                  <Link to="/golden-hour">
+                    <Button kind="tertiary" size="lg" renderIcon={Flash}>
+                      Open Recovery Dossier Tool
+                    </Button>
+                  </Link>
+                </motion.div>
                 <a
                   href="https://cybercrime.gov.in"
                   target="_blank"
@@ -1584,7 +1610,7 @@ export const LandingPage: React.FC = () => {
                   <Launch size={14} />
                 </a>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 
@@ -1607,8 +1633,10 @@ export const LandingPage: React.FC = () => {
               {FAQ_LIST.map((faq, idx) => {
                 const isOpen = openFaq === idx;
                 return (
-                  <div
+                  <motion.div
                     key={idx}
+                    whileHover={{ scale: 1.004 }}
+                    transition={{ duration: 0.2 }}
                     className="cw-reveal border border-neutral-200 rounded-2xl overflow-hidden bg-[#F8FAFC] transition-colors"
                   >
                     <button
@@ -1618,14 +1646,24 @@ export const LandingPage: React.FC = () => {
                       aria-expanded={isOpen}
                     >
                       <span>{faq.q}</span>
-                      <ChevronDown size={18} className={`transform transition-transform text-neutral-500 ${isOpen ? 'rotate-180' : ''}`} />
+                      <ChevronDown size={18} className={`transform transition-transform text-neutral-500 duration-200 ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
-                    {isOpen && (
-                      <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-neutral-600 leading-relaxed border-t border-neutral-200 bg-white">
-                        {faq.a}
-                      </div>
-                    )}
-                  </div>
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-neutral-600 leading-relaxed border-t border-neutral-200 bg-white">
+                            {faq.a}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 );
               })}
             </div>

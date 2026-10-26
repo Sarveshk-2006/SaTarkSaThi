@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { motion } from 'motion/react';
 import {
   Dashboard,
   Scan,
@@ -110,37 +111,43 @@ export const Sidebar: React.FC = () => {
         {items.map((item) => {
           const IconComponent = item.icon;
           return (
-            <NavLink
+            <motion.div
               key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) =>
-                `flex items-center justify-between px-3 ${
-                  seniorMode ? 'py-3 text-base' : 'py-2.5 text-xs'
-                } rounded transition-colors ${
-                  isActive
-                    ? 'bg-[#0f62fe] text-white font-medium'
-                    : 'text-[#c6c6c6] hover:bg-[#262626] hover:text-white'
-                }`
-              }
+              whileHover={{ x: 3 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 25 }}
             >
-              <div className="flex items-center gap-2.5 min-w-0">
-                <IconComponent size={18} className="shrink-0" />
-                <span className="truncate">{item.name}</span>
-              </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                {item.badge && (
-                  <Tag type="warm-gray" size="sm" className="font-bold">
-                    {item.badge}
-                  </Tag>
-                )}
-                {item.shortcut && (
-                  <span className="hidden xl:inline-flex items-center justify-center w-4 h-4 text-[10px] font-mono text-[#8d8d8d] bg-[#262626] border border-[#525252] rounded">
-                    {item.shortcut}
-                  </span>
-                )}
-              </div>
-            </NavLink>
+              <NavLink
+                to={item.to}
+                end={item.to === '/'}
+                className={({ isActive }) =>
+                  `flex items-center justify-between px-3 ${
+                    seniorMode ? 'py-3 text-base' : 'py-2.5 text-xs'
+                  } rounded transition-colors ${
+                    isActive
+                      ? 'bg-[#0f62fe] text-white font-medium'
+                      : 'text-[#c6c6c6] hover:bg-[#262626] hover:text-white'
+                  }`
+                }
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <IconComponent size={18} className="shrink-0" />
+                  <span className="truncate">{item.name}</span>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  {item.badge && (
+                    <Tag type="warm-gray" size="sm" className="font-bold">
+                      {item.badge}
+                    </Tag>
+                  )}
+                  {item.shortcut && (
+                    <span className="hidden xl:inline-flex items-center justify-center w-4 h-4 text-[10px] font-mono text-[#8d8d8d] bg-[#262626] border border-[#525252] rounded">
+                      {item.shortcut}
+                    </span>
+                  )}
+                </div>
+              </NavLink>
+            </motion.div>
           );
         })}
       </nav>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import {
   Notification,
   Globe,
@@ -191,7 +192,9 @@ export const Header: React.FC = () => {
 
           {/* Notification Indicator Bell */}
           <div className="relative" ref={notificationsRef}>
-            <button
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.94 }}
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
               className="relative p-2 text-[#525252] hover:text-[#161616] hover:bg-[#f4f4f4] border border-[#e0e0e0] bg-white rounded transition-colors cursor-pointer"
               aria-label="View alerts and notifications"
@@ -203,63 +206,71 @@ export const Header: React.FC = () => {
                   {unacknowledgedAlerts.length}
                 </span>
               )}
-            </button>
+            </motion.button>
 
-            {isNotificationsOpen && (
-              <div className="absolute right-0 mt-1.5 w-80 bg-white border border-[#e0e0e0] shadow-lg z-40 overflow-hidden text-xs">
-                <div className="p-3 border-b border-[#e0e0e0] bg-[#f4f4f4] flex items-center justify-between">
-                  <span className="font-semibold text-[#161616] text-xs">Family Security Alerts</span>
-                  <Tag type="red" size="sm">
-                    {unacknowledgedAlerts.length} pending
-                  </Tag>
-                </div>
+            <AnimatePresence>
+              {isNotificationsOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                  transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+                  className="absolute right-0 mt-1.5 w-80 bg-white border border-[#e0e0e0] shadow-lg z-40 overflow-hidden text-xs"
+                >
+                  <div className="p-3 border-b border-[#e0e0e0] bg-[#f4f4f4] flex items-center justify-between">
+                    <span className="font-semibold text-[#161616] text-xs">Family Security Alerts</span>
+                    <Tag type="red" size="sm">
+                      {unacknowledgedAlerts.length} pending
+                    </Tag>
+                  </div>
 
-                <div className="max-h-72 overflow-y-auto divide-y divide-[#e0e0e0]">
-                  {alerts.length === 0 ? (
-                    <div className="p-4 text-center text-[#8d8d8d]">
-                      No security alerts delivered yet.
-                    </div>
-                  ) : (
-                    alerts.slice(0, 5).map((alert) => (
-                      <div key={alert.id} className="p-3 hover:bg-[#f4f4f4] transition-colors">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="font-semibold text-[#161616] leading-tight">
-                            {alert.threat_title}
-                          </p>
-                          <Tag
-                            type={alert.status === 'ACKNOWLEDGED' ? 'green' : 'warm-gray'}
-                            size="sm"
-                          >
-                            {alert.status}
-                          </Tag>
-                        </div>
-                        <p className="text-[11px] text-[#525252] mt-1 line-clamp-2">
-                          {alert.message_content}
-                        </p>
-                        <span className="text-[10px] text-[#8d8d8d] mt-1 block">
-                          {new Date(alert.delivered_at).toLocaleTimeString('en-IN', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
-                        </span>
+                  <div className="max-h-72 overflow-y-auto divide-y divide-[#e0e0e0]">
+                    {alerts.length === 0 ? (
+                      <div className="p-4 text-center text-[#8d8d8d]">
+                        No security alerts delivered yet.
                       </div>
-                    ))
-                  )}
-                </div>
+                    ) : (
+                      alerts.slice(0, 5).map((alert) => (
+                        <div key={alert.id} className="p-3 hover:bg-[#f4f4f4] transition-colors">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="font-semibold text-[#161616] leading-tight">
+                              {alert.threat_title}
+                            </p>
+                            <Tag
+                              type={alert.status === 'ACKNOWLEDGED' ? 'green' : 'warm-gray'}
+                              size="sm"
+                            >
+                              {alert.status}
+                            </Tag>
+                          </div>
+                          <p className="text-[11px] text-[#525252] mt-1 line-clamp-2">
+                            {alert.message_content}
+                          </p>
+                          <span className="text-[10px] text-[#8d8d8d] mt-1 block">
+                            {new Date(alert.delivered_at).toLocaleTimeString('en-IN', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
 
-                <div className="p-2 border-t border-[#e0e0e0] bg-[#f4f4f4] text-center">
-                  <button
-                    onClick={() => {
-                      setIsNotificationsOpen(false);
-                      navigate('/family-shield');
-                    }}
-                    className="text-xs font-semibold text-[#0f62fe] hover:underline cursor-pointer"
-                  >
-                    Open Family Shield Alerts Log →
-                  </button>
-                </div>
-              </div>
-            )}
+                  <div className="p-2 border-t border-[#e0e0e0] bg-[#f4f4f4] text-center">
+                    <button
+                      onClick={() => {
+                        setIsNotificationsOpen(false);
+                        navigate('/family-shield');
+                      }}
+                      className="text-xs font-semibold text-[#0f62fe] hover:underline cursor-pointer"
+                    >
+                      Open Family Shield Alerts Log →
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* User Profile & Demo Session Switcher */}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 import { Tag } from '@carbon/react';
 import {
   WarningFilled,
@@ -44,23 +45,30 @@ export const RiskSeverityBadge: React.FC<RiskSeverityBadgeProps> = ({
   const tagSize = size === 'sm' ? 'sm' : 'md';
 
   return (
-    <Tag
-      type={getTagType()}
-      size={tagSize}
-      className="cds--risk-badge inline-flex items-center gap-1 font-semibold"
+    <motion.span
+      initial={{ scale: 0.94, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      className="inline-flex"
     >
-      {showIcon && (
-        <span className="inline-flex shrink-0 mr-1" aria-hidden="true">
-          {isCritical && <MisuseOutline size={16} />}
-          {isHigh && !isCritical && <WarningFilled size={16} />}
-          {isCaution && <WarningAltFilled size={16} />}
-          {isSafe && <CheckmarkFilled size={16} />}
-        </span>
-      )}
-      <span>{getLabel()}</span>
-      {score !== undefined && (
-        <span className="cds--risk-score ml-1 font-mono font-normal opacity-90">({score}/100)</span>
-      )}
-    </Tag>
+      <Tag
+        type={getTagType()}
+        size={tagSize}
+        className="cds--risk-badge inline-flex items-center gap-1 font-semibold"
+      >
+        {showIcon && (
+          <span className="inline-flex shrink-0 mr-1" aria-hidden="true">
+            {isCritical && <MisuseOutline size={16} />}
+            {isHigh && !isCritical && <WarningFilled size={16} />}
+            {isCaution && <WarningAltFilled size={16} />}
+            {isSafe && <CheckmarkFilled size={16} />}
+          </span>
+        )}
+        <span>{getLabel()}</span>
+        {score !== undefined && (
+          <span className="cds--risk-score ml-1 font-mono font-normal opacity-90">({score}/100)</span>
+        )}
+      </Tag>
+    </motion.span>
   );
 };

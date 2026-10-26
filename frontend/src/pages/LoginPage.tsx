@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { ArrowLeft, Login, Security, User } from '@carbon/icons-react';
 import { Tile, Button, TextInput, InlineNotification, Tag } from '@carbon/react';
 import { useAuthSession } from '../context/AuthSessionContext';
@@ -35,7 +36,12 @@ export const LoginPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#161616] text-[#f4f4f4] flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-md"
+      >
         <Link
           to="/welcome"
           className="inline-flex items-center gap-2 text-xs font-semibold text-[#c6c6c6] hover:text-white mb-4 transition-colors"
@@ -60,15 +66,18 @@ export const LoginPage: React.FC = () => {
             </p>
             <div className="grid grid-cols-2 gap-2">
               {DEMO_ACCOUNTS.map((a) => (
-                <button
+                <motion.button
                   key={a.identifier}
                   type="button"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                   onClick={() => {
                     setIdentifier(a.identifier);
                     setPasscode('1234');
                   }}
                   aria-pressed={identifier === a.identifier}
-                  className={`text-left p-3 border transition-colors cursor-pointer ${
+                  className={`text-left p-3 border transition-colors cursor-pointer rounded-xs ${
                     identifier === a.identifier
                       ? 'border-[#0f62fe] bg-[#edf5ff]'
                       : 'border-[#e0e0e0] hover:bg-[#f4f4f4]'
@@ -79,7 +88,7 @@ export const LoginPage: React.FC = () => {
                     {a.label}
                   </span>
                   <span className="block text-[11px] text-[#525252] mt-0.5">{a.hint}</span>
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -116,23 +125,25 @@ export const LoginPage: React.FC = () => {
               />
             )}
 
-            <Button
-              type="submit"
-              kind="primary"
-              size="lg"
-              renderIcon={Login}
-              className="w-full"
-              disabled={busy || !identifier.trim() || !passcode}
-            >
-              {busy ? 'Signing in…' : 'Sign in to Workspace'}
-            </Button>
+            <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
+              <Button
+                type="submit"
+                kind="primary"
+                size="lg"
+                renderIcon={Login}
+                className="w-full"
+                disabled={busy || !identifier.trim() || !passcode}
+              >
+                {busy ? 'Signing in…' : 'Sign in to Workspace'}
+              </Button>
+            </motion.div>
           </form>
 
           <p className="text-[11px] text-[#525252] leading-relaxed border-t border-[#e0e0e0] pt-4">
             Evaluation demonstration environment. Live session state and SMS alerts are simulated with zero persistence of sensitive personal financial credentials.
           </p>
         </Tile>
-      </div>
+      </motion.div>
     </div>
   );
 };
