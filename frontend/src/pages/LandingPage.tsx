@@ -24,6 +24,7 @@ import {
   Globe,
   Enterprise,
   Image as ImageIcon,
+  Email,
 } from '@carbon/icons-react';
 import { Button, Tag } from '@carbon/react';
 import { useAuthSession } from '../context/AuthSessionContext';
@@ -501,6 +502,12 @@ export const LandingPage: React.FC = () => {
               Engine
             </a>
             <a
+              href="#channels"
+              className="px-3.5 py-1 rounded-full text-xs font-semibold text-neutral-600 hover:text-neutral-950 hover:bg-white hover:shadow-xs transition-all duration-150"
+            >
+              Channels
+            </a>
+            <a
               href="#recovery"
               className="px-3.5 py-1 rounded-full text-xs font-semibold text-neutral-600 hover:text-neutral-950 hover:bg-white hover:shadow-xs transition-all duration-150"
             >
@@ -574,6 +581,7 @@ export const LandingPage: React.FC = () => {
                 <a href="#why-satark" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">Why Satark</a>
                 <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">How it Works</a>
                 <a href="#inputs" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">Engine &amp; Inputs</a>
+                <a href="#channels" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">Channels &amp; Verification</a>
                 <a href="#recovery" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">Recovery 1930</a>
                 <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-1.5 px-3 rounded-lg hover:bg-neutral-50 transition-colors">FAQ</a>
               </nav>
@@ -1661,6 +1669,154 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* -------------------------------------------------------------------------
+            SECTION: Where to Verify / Ask Naturally (CyberWall Channels)
+            ------------------------------------------------------------------------- */}
+        <section id="channels" className="cw-section scroll-mt-24 md:scroll-mt-28 py-20 bg-[#F8FAFC] border-b border-neutral-200">
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
+            <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+              {/* Left Card: Ask Naturally */}
+              <div className="cw-reveal lg:col-span-5 bg-white border border-neutral-200/90 rounded-3xl p-8 sm:p-10 flex flex-col justify-between shadow-xs">
+                <div>
+                  <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-[#1767F2] border border-blue-200/60">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#1767F2]" />
+                    Where to verify
+                  </span>
+                  <h3 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-950 mt-5 leading-[1.08]">
+                    Ask naturally.
+                  </h3>
+                  <p className="text-sm sm:text-base text-neutral-600 leading-relaxed mt-4">
+                    Just explain what's happening. Satark Saathi understands your situation, runs the right security checks, and tells you what to do next.
+                  </p>
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-neutral-100 grid grid-cols-2 gap-y-3.5 gap-x-4 text-xs sm:text-sm text-neutral-700 font-medium">
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1767F2] shrink-0" />
+                    <span>Fast responses</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1767F2] shrink-0" />
+                    <span>English &amp; Malayalam</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1767F2] shrink-0" />
+                    <span>Text, image &amp; voice</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#1767F2] shrink-0" />
+                    <span>Familiar platforms</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Stack: WhatsApp, Telegram & PolApp Cards */}
+              <div className="lg:col-span-7 flex flex-col gap-4 justify-between">
+                {/* 1. WhatsApp Card */}
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="cw-reveal bg-[#EAF8F0] border border-emerald-200/70 rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs hover:shadow-xs transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-[#25D366] text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-base sm:text-lg font-bold text-neutral-950">WhatsApp</h4>
+                      <p className="text-xs sm:text-sm text-neutral-600 font-mono mt-0.5">+91 99758 19201</p>
+                    </div>
+                  </div>
+                  <a
+                    href="https://wa.me/919975819201?text=Hi%20Satark%20Saathi%2C%20I%20want%20to%20verify%20a%20suspicious%20message"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 rounded-full bg-[#128C7E] hover:bg-[#075E54] active:scale-[0.98] text-white font-semibold text-xs sm:text-sm shadow-xs hover:shadow transition-all inline-flex items-center gap-2 shrink-0 cursor-pointer"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                    </svg>
+                    <span>Chat on WhatsApp</span>
+                  </a>
+                </motion.div>
+
+                {/* 2. Telegram Card */}
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="cw-reveal bg-[#EBF5FB] border border-sky-200/70 rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs hover:shadow-xs transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-[#0088cc] text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.94z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="text-base sm:text-lg font-bold text-neutral-950">Telegram</h4>
+                      <p className="text-xs sm:text-sm text-neutral-600 font-mono mt-0.5">@sarvibezzz</p>
+                    </div>
+                  </div>
+                  <a
+                    href="https://t.me/sarvibezzz"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-5 py-2.5 rounded-full bg-[#0088cc] hover:bg-[#0077b5] active:scale-[0.98] text-white font-semibold text-xs sm:text-sm shadow-xs hover:shadow transition-all inline-flex items-center gap-2 shrink-0 cursor-pointer"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                      <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.94z"/>
+                    </svg>
+                    <span>Open in Telegram</span>
+                  </a>
+                </motion.div>
+
+                {/* 3. PolApp Card */}
+                <motion.div
+                  whileHover={{ scale: 1.01 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  className="cw-reveal bg-[#F4EFFE] border border-purple-200/70 rounded-3xl p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs hover:shadow-xs transition-shadow"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6929c4] via-[#8a3ffc] to-[#a56eff] text-white flex items-center justify-center shrink-0 shadow-xs ring-2 ring-white/80">
+                      <Security size={24} />
+                    </div>
+                    <div>
+                      <h4 className="text-base sm:text-lg font-bold text-neutral-950">PolApp</h4>
+                      <p className="text-xs sm:text-sm text-neutral-600 mt-0.5">Official Kerala Police app</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <a
+                      href="https://apps.apple.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 rounded-full bg-[#161616] hover:bg-neutral-800 active:scale-[0.98] text-white font-medium text-xs inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                    >
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                        <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.85-.9.04-1.97.6-2.6 1.34-.56.64-.99 1.7-.86 2.73.99.08 2.01-.52 2.54-1.22z"/>
+                      </svg>
+                      <span>App Store</span>
+                    </a>
+                    <a
+                      href="https://play.google.com"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 rounded-full bg-[#161616] hover:bg-neutral-800 active:scale-[0.98] text-white font-medium text-xs inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                    >
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor">
+                        <path d="M3.609 1.814L13.792 12 3.61 22.186a1.9 1.9 0 01-.61-1.386V3.2c0-.528.22-1.01.609-1.386zm11.238 11.241l2.42 2.42-12.04 6.94 9.62-9.36zm0-2.11L5.227 3.4l12.04 6.94-2.42 2.605zm1.56 1.055l3.96 2.288c.84.485.84 1.28 0 1.765l-3.96 2.288-2.19-2.19 2.19-2.15z"/>
+                      </svg>
+                      <span>Google Play</span>
+                    </a>
+                  </div>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* -------------------------------------------------------------------------
             SECTION 6: Emergency Recovery 1930 & Golden Hour
             ------------------------------------------------------------------------- */}
         <section id="recovery" className="cw-section scroll-mt-24 md:scroll-mt-28 py-20 bg-[#F8FAFC] border-b border-neutral-200">
@@ -1849,8 +2005,42 @@ export const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-400">
-            <p>&copy; {new Date().getFullYear()} Satark Saathi. Developed for Indian digital public safety.</p>
+          {/* Contact Us — Team TerminalX */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 p-5 sm:p-6 rounded-2xl bg-neutral-800/80 border border-neutral-700/80 shadow-md">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[#00C8F0] animate-pulse" />
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#00C8F0]">Contact Us</span>
+              </div>
+              <h4 className="text-base sm:text-lg font-bold text-white tracking-tight">Team TerminalX</h4>
+              <p className="text-xs text-neutral-400 max-w-xl leading-relaxed">
+                Developed for Indian digital public safety. For technical queries, integration feeds, or hackathon collaboration, connect with Team TerminalX.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <a
+                href="mailto:teamterminalx@gmail.com"
+                className="px-4 py-2.5 rounded-full bg-neutral-700 hover:bg-neutral-600 active:scale-[0.98] text-white font-semibold text-xs transition-all inline-flex items-center gap-2 shadow-xs cursor-pointer"
+              >
+                <Email size={15} />
+                <span>Contact Team TerminalX</span>
+              </a>
+              <a
+                href="https://t.me/sarvibezzz"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2.5 rounded-full bg-[#0088cc] hover:bg-[#0077b5] active:scale-[0.98] text-white font-semibold text-xs transition-all inline-flex items-center gap-2 shadow-xs cursor-pointer"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.94z"/>
+                </svg>
+                <span>Telegram: @sarvibezzz</span>
+              </a>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-400 pt-2">
+            <p>&copy; {new Date().getFullYear()} Satark Saathi. Developed by <strong>Team TerminalX</strong> for Indian digital public safety.</p>
             <p>Advisory Platform &bull; Non-Invasive Heuristic Engine &bull; National Helpline 1930</p>
           </div>
         </div>
