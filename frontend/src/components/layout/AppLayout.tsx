@@ -1,5 +1,6 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import { Theme } from '@carbon/react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { MobileHeader } from './MobileHeader';
@@ -14,15 +15,17 @@ export const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row min-h-screen bg-[#F7F8F4] text-[#142A36]">
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <MobileHeader />
-        <Header />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
-          <Outlet />
-        </main>
+    <Theme theme="white">
+      <div className="cds--app-layout flex flex-col lg:flex-row min-h-screen bg-[#f4f4f4] text-[#161616] font-sans antialiased">
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <MobileHeader />
+          <Header />
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto" id="main-content">
+            <Outlet />
+          </main>
+        </div>
       </div>
-    </div>
+    </Theme>
   );
 };

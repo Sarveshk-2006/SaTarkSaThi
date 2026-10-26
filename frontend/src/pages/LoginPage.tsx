@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowLeft, LogIn, Shield, UserRound } from 'lucide-react';
+import { ArrowLeft, Login, Security, User } from '@carbon/icons-react';
+import { Tile, Button, TextInput, InlineNotification, Tag } from '@carbon/react';
 import { useAuthSession } from '../context/AuthSessionContext';
 
 const DEMO_ACCOUNTS = [
@@ -33,25 +34,30 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0E1E27] via-[#142A36] to-[#176B58] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#161616] text-[#f4f4f4] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Link to="/welcome" className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-200 hover:text-white mb-4">
-          <ArrowLeft className="w-4 h-4" /> Back to home
+        <Link
+          to="/welcome"
+          className="inline-flex items-center gap-2 text-xs font-semibold text-[#c6c6c6] hover:text-white mb-4 transition-colors"
+        >
+          <ArrowLeft size={16} /> Back to overview
         </Link>
 
-        <div className="bg-white rounded-3xl shadow-2xl p-7 space-y-5">
+        <Tile className="bg-white text-[#161616] p-8 shadow-xl space-y-6">
           <div className="flex items-center gap-3">
-            <span className="w-11 h-11 rounded-xl bg-[#176B58] flex items-center justify-center">
-              <Shield className="w-6 h-6 text-[#DCEDE5]" />
+            <span className="w-10 h-10 bg-[#0f62fe] text-white flex items-center justify-center shrink-0">
+              <Security size={22} />
             </span>
             <div>
-              <h1 className="text-xl font-bold text-[#142A36]">Sign in to Satark Saathi</h1>
-              <p className="text-xs text-[#64748B]">Demo login &mdash; uses the two seeded demo accounts</p>
+              <h1 className="text-xl font-semibold text-[#161616] tracking-tight">Sign in to Satark Saathi</h1>
+              <p className="text-xs text-[#525252]">Evaluator Access &mdash; choose a verified test persona</p>
             </div>
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">Choose a demo account</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#525252] mb-2">
+              Select Demo Persona
+            </p>
             <div className="grid grid-cols-2 gap-2">
               {DEMO_ACCOUNTS.map((a) => (
                 <button
@@ -62,61 +68,70 @@ export const LoginPage: React.FC = () => {
                     setPasscode('1234');
                   }}
                   aria-pressed={identifier === a.identifier}
-                  className={`text-left p-3 rounded-xl border-2 cursor-pointer ${
-                    identifier === a.identifier ? 'border-[#176B58] bg-[#DCEDE5]/50' : 'border-[#E2E8F0] hover:bg-[#F7F8F4]'
+                  className={`text-left p-3 border transition-colors cursor-pointer ${
+                    identifier === a.identifier
+                      ? 'border-[#0f62fe] bg-[#edf5ff]'
+                      : 'border-[#e0e0e0] hover:bg-[#f4f4f4]'
                   }`}
                 >
-                  <span className="flex items-center gap-1.5 text-sm font-bold text-[#142A36]">
-                    <UserRound className="w-4 h-4" /> {a.label}
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-[#161616]">
+                    <User size={14} className={identifier === a.identifier ? 'text-[#0f62fe]' : 'text-[#525252]'} />
+                    {a.label}
                   </span>
-                  <span className="block text-[11px] text-[#64748B] mt-0.5">{a.hint}</span>
+                  <span className="block text-[11px] text-[#525252] mt-0.5">{a.hint}</span>
                 </button>
               ))}
             </div>
           </div>
 
-          <form onSubmit={submit} className="space-y-3">
-            <label className="block text-sm font-semibold text-[#142A36]">
-              Phone number or e-mail
-              <input
+          <form onSubmit={submit} className="space-y-4">
+            <div>
+              <TextInput
+                id="login-identifier"
+                labelText="Phone number or e-mail"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 autoComplete="username"
-                className="mt-1 w-full p-3 rounded-xl border border-[#CBD5E1] bg-[#F7F8F4] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               />
-            </label>
-            <label className="block text-sm font-semibold text-[#142A36]">
-              Passcode
-              <input
+            </div>
+            <div>
+              <TextInput
+                id="login-passcode"
+                labelText="Passcode"
                 type="password"
                 value={passcode}
                 onChange={(e) => setPasscode(e.target.value)}
                 autoComplete="current-password"
                 placeholder="Demo passcode: 1234"
-                className="mt-1 w-full p-3 rounded-xl border border-[#CBD5E1] bg-[#F7F8F4] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#176B58]"
               />
-            </label>
+            </div>
 
             {error && (
-              <p role="alert" className="text-sm text-red-800 bg-red-50 border border-red-200 rounded-xl p-3">
-                {error}
-              </p>
+              <InlineNotification
+                kind="error"
+                title="Authentication Error"
+                subtitle={error}
+                hideCloseButton
+                lowContrast
+              />
             )}
 
-            <button
+            <Button
               type="submit"
+              kind="primary"
+              size="lg"
+              renderIcon={Login}
+              className="w-full"
               disabled={busy || !identifier.trim() || !passcode}
-              className="w-full min-h-[48px] rounded-xl bg-[#176B58] hover:bg-[#135948] text-white font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              <LogIn className="w-5 h-5" />
-              {busy ? 'Signing in…' : 'Sign in'}
-            </button>
+              {busy ? 'Signing in…' : 'Sign in to Workspace'}
+            </Button>
           </form>
 
-          <p className="text-[11px] text-[#64748B] leading-relaxed">
-            This is a demonstration sign-in for the hackathon prototype. Don’t use real passwords or personal data.
+          <p className="text-[11px] text-[#525252] leading-relaxed border-t border-[#e0e0e0] pt-4">
+            Evaluation demonstration environment. Live session state and SMS alerts are simulated with zero persistence of sensitive personal financial credentials.
           </p>
-        </div>
+        </Tile>
       </div>
     </div>
   );

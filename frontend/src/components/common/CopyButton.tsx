@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { Button } from '@carbon/react';
+import { Copy, Checkmark } from '@carbon/icons-react';
 
 interface CopyButtonProps {
   textToCopy: string;
@@ -20,7 +21,7 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Fallback
+      // Fallback for non-secure contexts
       const textArea = document.createElement('textarea');
       textArea.value = textToCopy;
       document.body.appendChild(textArea);
@@ -33,19 +34,16 @@ export const CopyButton: React.FC<CopyButtonProps> = ({
   };
 
   return (
-    <button
+    <Button
+      kind={copied ? 'secondary' : 'ghost'}
+      size="sm"
+      renderIcon={copied ? Checkmark : Copy}
       onClick={handleCopy}
-      type="button"
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded border transition-colors ${
-        copied
-          ? 'bg-emerald-50 border-emerald-300 text-emerald-800'
-          : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400'
-      } ${className}`}
+      className={`cds--copy-btn ${className}`}
       aria-label={copied ? 'Copied to clipboard' : `Copy ${label}`}
       title={copied ? 'Copied!' : 'Copy to clipboard'}
     >
-      {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-500" />}
       <span>{copied ? 'Copied!' : label}</span>
-    </button>
+    </Button>
   );
 };

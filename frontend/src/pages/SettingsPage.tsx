@@ -1,16 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Settings,
   User,
-  Shield,
-  Sparkles,
-  RotateCcw,
-  Trash2,
+  Chip,
+  Renew,
+  TrashCan,
   Save,
-  CheckCircle2,
-  AlertCircle,
-  Database,
-} from 'lucide-react';
+  DataBase,
+  Security,
+  Settings,
+} from '@carbon/icons-react';
+import {
+  Tile,
+  Button,
+  TextInput,
+  Select,
+  SelectItem,
+} from '@carbon/react';
 import { api } from '../api/endpoints';
 import { UserProfile, SystemSettings } from '../api/types';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
@@ -147,8 +152,8 @@ export const SettingsPage: React.FC = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="border-b border-slate-200 pb-4">
-          <h1 className="text-xl font-bold text-slate-900">Settings</h1>
+        <div className="border-b border-[#e0e0e0] pb-4">
+          <h1 className="text-xl font-semibold text-[#161616]">Settings</h1>
         </div>
         <LoadingSkeleton rows={4} />
       </div>
@@ -158,9 +163,9 @@ export const SettingsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-200 pb-4">
-        <h1 className="text-xl font-bold text-slate-900 tracking-tight">Platform Settings & Profile</h1>
-        <p className="text-xs text-slate-500 mt-1">
+      <div className="border-b border-[#e0e0e0] pb-4">
+        <h1 className="text-xl font-semibold text-[#161616] tracking-tight">Platform Settings &amp; Profile</h1>
+        <p className="text-xs text-[#525252] mt-1">
           Configure complainant profile, IBM watsonx.ai analysis bridge, and database seed states.
         </p>
       </div>
@@ -168,189 +173,190 @@ export const SettingsPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: User Profile Form (6 cols) */}
         <div className="lg:col-span-6 space-y-4">
-          <form onSubmit={handleSaveProfile} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-              <User className="w-4 h-4 text-[#176B58]" />
+          <Tile className="p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-[#161616] font-semibold text-sm border-b border-[#e0e0e0] pb-3">
+              <User size={18} className="text-[#0f62fe]" />
               <span>Primary User Profile (Complainant)</span>
             </div>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-[#525252]">
               These details are automatically populated in the 1930 Cyber Crime and Bank Nodal dispute drafts.
             </p>
 
-            <div className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Full Legal Name *</label>
-                <input
-                  type="text"
+                <TextInput
+                  id="profile-fullname"
+                  labelText="Full Legal Name *"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Mobile Phone *</label>
-                  <input
-                    type="text"
+                  <TextInput
+                    id="profile-phone"
+                    labelText="Mobile Phone *"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">City / State</label>
-                  <input
-                    type="text"
+                  <TextInput
+                    id="profile-city"
+                    labelText="City / State"
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Email Address</label>
-                <input
+                <TextInput
+                  id="profile-email"
+                  labelText="Email Address"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Primary Banking Institution</label>
-                <input
-                  type="text"
+                <TextInput
+                  id="profile-bank"
+                  labelText="Primary Banking Institution"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
               <div className="pt-2 flex justify-end">
-                <button
+                <Button
                   type="submit"
+                  kind="primary"
+                  size="sm"
+                  renderIcon={Save}
                   disabled={savingProfile}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-[#176B58] hover:bg-[#125243] disabled:opacity-50 rounded-xl shadow-sm transition-colors cursor-pointer"
                 >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>{savingProfile ? 'Saving...' : 'Save Profile'}</span>
-                </button>
+                  {savingProfile ? 'Saving...' : 'Save Profile'}
+                </Button>
               </div>
-            </div>
-          </form>
+            </form>
+          </Tile>
 
           <SeniorModeCard />
           <DuressPhraseSettings />
 
           {/* Database Reset / Evaluation Tools */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-              <Database className="w-4 h-4 text-[#176B58]" />
+          <Tile className="p-6 shadow-sm space-y-3">
+            <div className="flex items-center gap-2 text-[#161616] font-semibold text-sm border-b border-[#e0e0e0] pb-3">
+              <DataBase size={18} className="text-[#0f62fe]" />
               <span>Demonstration &amp; Seed Data Controls</span>
             </div>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-[#525252] leading-relaxed">
               Switch between a brand new, empty account state and realistic pre-loaded Indian scam cases (Digital Arrest, Electricity Phishing).
             </p>
 
-            <div className="pt-1 flex flex-col sm:flex-row gap-2.5">
-              <button
-                type="button"
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <Button
+                kind="tertiary"
+                size="md"
+                renderIcon={Renew}
+                className="flex-1"
                 onClick={() => setIsSeedModalOpen(true)}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-semibold text-[#176B58] bg-[#DCEDE5] hover:bg-teal-100/70 border border-teal-200 rounded-xl transition-colors cursor-pointer"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Restore Realistic Demo Data</span>
-              </button>
+                Restore Realistic Demo Data
+              </Button>
 
-              <button
-                type="button"
+              <Button
+                kind="secondary"
+                size="md"
+                renderIcon={TrashCan}
+                className="flex-1"
                 onClick={() => setIsResetEmptyModalOpen(true)}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 rounded-xl transition-colors cursor-pointer"
               >
-                <Trash2 className="w-3.5 h-3.5 text-slate-500" />
-                <span>Test Clean Empty State</span>
-              </button>
+                Test Clean Empty State
+              </Button>
             </div>
-          </div>
+          </Tile>
         </div>
 
         {/* Right Column: AI Engine & WatsonX Adapter Settings (6 cols) */}
         <div className="lg:col-span-6 space-y-4">
-          <form onSubmit={handleSaveAiSettings} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-sm border-b border-slate-100 pb-3">
-              <Sparkles className="w-4 h-4 text-[#176B58]" />
+          <Tile className="p-6 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-[#161616] font-semibold text-sm border-b border-[#e0e0e0] pb-3">
+              <Chip size={18} className="text-[#0f62fe]" />
               <span>AI Analysis Engine &amp; IBM watsonx.ai Bridge</span>
             </div>
 
-            <div className="p-3.5 bg-[#DCEDE5] rounded-xl border border-teal-200 text-xs text-[#176B58] leading-relaxed">
-              <span className="font-bold block mb-0.5 text-slate-900">Optional IBM watsonx.ai adapter (not active by default)</span>
-              By default all analysis runs on the local, deterministic Satark rule engine — no IBM service is called. The watsonx.ai client is used only when both an API key and a project ID are configured and the provider is set to watsonx; credentials set here last only until the server restarts. See "Integration status" below for what is real vs simulated.
+            <div className="p-3.5 bg-[#edf5ff] border-l-4 border-l-[#0f62fe] text-xs text-[#0043ce] leading-relaxed">
+              <span className="font-semibold block mb-0.5 text-[#161616]">
+                Optional IBM watsonx.ai adapter (offline heuristic default)
+              </span>
+              By default all analysis runs on the local, deterministic Satark rule engine — no IBM service is called. The watsonx.ai client is used only when both an API key and a project ID are configured and the provider is set to watsonx; credentials set here last only until the server restarts.
             </div>
 
-            <div className="space-y-3.5 text-xs">
+            <form onSubmit={handleSaveAiSettings} className="space-y-4 text-xs">
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">Active Analysis Provider</label>
-                <select
+                <Select
+                  id="settings-analysis-provider"
+                  labelText="Active Analysis Provider"
                   value={provider}
                   onChange={(e) => setProvider(e.target.value)}
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 >
-                  <option value="rule_based">Satark Heuristic Engine (Offline / Rapid Heuristics)</option>
-                  <option value="watsonx">IBM watsonx.ai Granite Model Adapter (Injectable)</option>
-                </select>
+                  <SelectItem value="rule_based" text="Satark Heuristic Engine (Offline / Rapid Heuristics)" />
+                  <SelectItem value="watsonx" text="IBM watsonx.ai Granite Model Adapter (Injectable)" />
+                </Select>
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">IBM Cloud API Key</label>
-                <input
+                <TextInput
+                  id="settings-watsonx-key"
+                  labelText="IBM Cloud API Key"
                   type="password"
                   value={watsonxApiKey}
                   onChange={(e) => setWatsonxApiKey(e.target.value)}
                   placeholder="Optional: Enter IBM Cloud watsonx API key"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1">watsonx Project ID</label>
-                <input
-                  type="text"
+                <TextInput
+                  id="settings-watsonx-project-id"
+                  labelText="watsonx Project ID"
                   value={watsonxProjectId}
                   onChange={(e) => setWatsonxProjectId(e.target.value)}
                   placeholder="Optional: Enter watsonx Project GUID"
-                  className="w-full p-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#176B58]"
                 />
               </div>
 
               <div className="pt-2 flex justify-end">
-                <button
+                <Button
                   type="submit"
+                  kind="primary"
+                  size="sm"
+                  renderIcon={Save}
                   disabled={savingAi}
-                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-white bg-[#176B58] hover:bg-[#125243] disabled:opacity-50 rounded-xl shadow-sm transition-colors cursor-pointer"
                 >
-                  <Save className="w-3.5 h-3.5" />
-                  <span>{savingAi ? 'Saving...' : 'Update AI Engine Config'}</span>
-                </button>
+                  {savingAi ? 'Saving...' : 'Update AI Engine Config'}
+                </Button>
               </div>
-            </div>
-          </form>
+            </form>
+          </Tile>
 
           <IntegrationStatusPanel />
 
           {/* Platform Standards / Ethical Compliance Note */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2 text-xs text-slate-600">
-            <h4 className="font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+          <Tile className="p-6 shadow-sm space-y-2 text-xs text-[#525252]">
+            <h4 className="font-semibold text-[#161616] uppercase tracking-wider text-[11px]">
               Credible Fintech &amp; Responsible AI Guardrails
             </h4>
-            <ul className="space-y-1.5 list-disc list-inside text-slate-600 leading-relaxed text-[11px]">
+            <ul className="space-y-1.5 list-disc list-inside text-[#525252] leading-relaxed text-[11px]">
               <li>Never invents live threat counts or claims fictitious direct links to police databases.</li>
               <li>Seed records are always visibly demarcated with demo data tags.</li>
               <li>Preserves strict zero-liability timing records under RBI customer protection frameworks.</li>
             </ul>
-          </div>
+          </Tile>
         </div>
       </div>
 

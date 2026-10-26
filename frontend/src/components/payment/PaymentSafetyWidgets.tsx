@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Clock, RefreshCw, ShieldCheck, ShieldX, Users } from 'lucide-react';
+import { Time, Renew, CheckmarkFilled, MisuseOutline, UserMultiple } from '@carbon/icons-react';
+import { Tag } from '@carbon/react';
 import { api } from '../../api/endpoints';
 import { GuardianApproval, RiskSignal } from '../../api/types';
 
@@ -16,30 +17,27 @@ export const RiskSignalList: React.FC<{ signals: RiskSignal[] }> = ({ signals })
   if (!signals.length) return null;
   const sorted = [...signals].sort((a, b) => b.points - a.points);
   return (
-    <ul className="space-y-1.5" aria-label="Contributing risk signals">
+    <ul className="space-y-2" aria-label="Contributing risk signals">
       {sorted.map((s, i) => (
         <li
           key={`${s.code}-${i}`}
-          className={`text-xs p-2.5 rounded-xl border ${
-            s.points > 0 ? 'bg-red-50/80 border-red-200 text-red-950' : 'bg-slate-50 border-slate-200 text-slate-700'
+          className={`text-xs p-3 border ${
+            s.points > 0 ? 'bg-[#fff1f1] border-[#ffb3b8] text-[#da1e28]' : 'bg-[#f4f4f4] border-[#e0e0e0] text-[#161616]'
           }`}
         >
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <span className="font-bold">{s.label}</span>
-            <span className="flex items-center gap-1.5">
-              <span
-                className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide border ${
-                  s.source === 'DEMO_SIMULATED_DEVICE_SIGNAL'
-                    ? 'bg-purple-100 text-purple-900 border-purple-300'
-                    : 'bg-white text-slate-700 border-slate-300'
-                }`}
+            <span className="font-semibold text-[#161616]">{s.label}</span>
+            <div className="flex items-center gap-1.5">
+              <Tag
+                type={s.source === 'DEMO_SIMULATED_DEVICE_SIGNAL' ? 'purple' : 'gray'}
+                size="sm"
               >
                 {SOURCE_LABELS[s.source] || s.source}
-              </span>
-              <span className="font-mono font-bold">+{s.points}</span>
-            </span>
+              </Tag>
+              <span className="font-mono font-bold text-[#da1e28]">+{s.points}</span>
+            </div>
           </div>
-          <p className="mt-1 leading-relaxed">{s.explanation}</p>
+          <p className="mt-1 leading-relaxed text-[#525252]">{s.explanation}</p>
         </li>
       ))}
     </ul>
@@ -47,11 +45,11 @@ export const RiskSignalList: React.FC<{ signals: RiskSignal[] }> = ({ signals })
 };
 
 const STATUS_STYLE: Record<string, string> = {
-  PENDING: 'bg-amber-50 border-amber-300 text-amber-950',
-  APPROVED: 'bg-emerald-50 border-emerald-300 text-emerald-950',
-  DECLINED: 'bg-red-50 border-red-300 text-red-950',
-  EXPIRED: 'bg-slate-50 border-slate-300 text-slate-800',
-  CANCELLED: 'bg-slate-50 border-slate-300 text-slate-800',
+  PENDING: 'border-l-4 border-l-[#f1c21b] bg-[#fdf3e1] text-[#b28600]',
+  APPROVED: 'border-l-4 border-l-[#198038] bg-[#defbe6] text-[#198038]',
+  DECLINED: 'border-l-4 border-l-[#da1e28] bg-[#fff1f1] text-[#da1e28]',
+  EXPIRED: 'border-l-4 border-l-[#8d8d8d] bg-[#f4f4f4] text-[#525252]',
+  CANCELLED: 'border-l-4 border-l-[#8d8d8d] bg-[#f4f4f4] text-[#525252]',
 };
 
 /** Requester-side view of a guardian approval for one payment check. */
@@ -98,48 +96,53 @@ export const GuardianApprovalPanel: React.FC<{ simulationId: string; eligibleGua
     return (
       <div className="space-y-2">
         {approval?.status === 'EXPIRED' && (
-          <p className="text-xs text-slate-700">The previous guardian request expired without a decision.</p>
+          <p className="text-xs text-[#525252]">The previous guardian request expired without a decision.</p>
         )}
         <button
           type="button"
           onClick={request}
           disabled={busy || eligibleGuardianCount === 0}
-          className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#142A36] hover:bg-[#1E334E] text-white font-semibold text-xs flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          className="cds--btn cds--btn--secondary w-full inline-flex items-center justify-center gap-2"
         >
-          <Users className="w-4 h-4" />
+          <UserMultiple size={16} />
           {busy ? 'Sending request…' : 'Ask a guardian to approve this payment'}
         </button>
         {eligibleGuardianCount === 0 && (
-          <p className="text-[11px] text-[#64748B]">
+          <p className="text-[11px] text-[#8d8d8d]">
             No eligible guardian yet: a guardian must be active, consented by you, and must have accepted your invitation.
           </p>
         )}
-        {error && <p className="text-[11px] text-red-700">{error}</p>}
+        {error && <p className="text-[11px] text-[#da1e28]">{error}</p>}
       </div>
     );
   }
 
   return (
-    <div className={`p-3 rounded-xl border text-xs space-y-1.5 ${STATUS_STYLE[approval.status]}`} role="status">
+    <div className={`p-3 text-xs space-y-1.5 ${STATUS_STYLE[approval.status]}`} role="status">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-bold flex items-center gap-1.5">
+        <span className="font-semibold flex items-center gap-1.5">
           {approval.status === 'APPROVED' ? (
-            <ShieldCheck className="w-4 h-4" />
+            <CheckmarkFilled size={16} />
           ) : approval.status === 'DECLINED' ? (
-            <ShieldX className="w-4 h-4" />
+            <MisuseOutline size={16} />
           ) : (
-            <Clock className="w-4 h-4" />
+            <Time size={16} />
           )}
           Guardian approval {approval.request_ref}: {approval.status}
         </span>
-        <button type="button" onClick={refresh} className="p-1 rounded hover:bg-black/5 cursor-pointer" aria-label="Refresh approval status">
-          <RefreshCw className="w-3.5 h-3.5" />
+        <button
+          type="button"
+          onClick={refresh}
+          className="p-1 hover:bg-black/5 cursor-pointer"
+          aria-label="Refresh approval status"
+        >
+          <Renew size={14} />
         </button>
       </div>
       {approval.status === 'PENDING' && (
         <p>Waiting for an accepted guardian. Expires {new Date(approval.expires_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}.</p>
       )}
-      {approval.decision_note && <p>Guardian note: “{approval.decision_note}”</p>}
+      {approval.decision_note && <p>Guardian note: &ldquo;{approval.decision_note}&rdquo;</p>}
     </div>
   );
 };

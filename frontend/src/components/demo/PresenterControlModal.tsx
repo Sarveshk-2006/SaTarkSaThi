@@ -1,25 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Sparkles,
-  RotateCcw,
-  ShieldCheck,
-  ShieldAlert,
-  Server,
-  Database,
-  Radio,
-  UserCheck,
-  Cpu,
-  BarChart3,
-  X,
+  Flash,
+  Renew,
+  BareMetalServer,
+  DataBase,
+  UserFollow,
+  Chip,
+  Analytics,
+  Close,
   Play,
   ArrowRight,
-  CheckCircle2,
-  AlertTriangle,
-  Info,
-  Clock,
-  Layers,
-} from 'lucide-react';
+  CheckmarkFilled,
+  Information,
+} from '@carbon/icons-react';
+import { Tile, Button, Tag, InlineNotification } from '@carbon/react';
 import { api } from '../../api/endpoints';
 import { useNotification } from '../../context/NotificationContext';
 import { useDemoMode } from '../../context/DemoModeContext';
@@ -195,67 +190,71 @@ export const PresenterControlModal: React.FC<PresenterControlModalProps> = ({ is
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 bg-[#161616]/70 flex items-center justify-center p-4">
+      <div className="bg-white border border-[#393939] shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="px-6 py-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+        <div className="px-6 py-4 bg-[#161616] text-white flex items-center justify-between border-b border-[#393939]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-teal-500/20 border border-teal-400/30 flex items-center justify-center text-teal-400">
-              <Sparkles className="w-5 h-5" />
+            <div className="w-8 h-8 bg-[#0f62fe] flex items-center justify-center text-white">
+              <Flash size={18} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold tracking-tight">Hackathon Presenter Control Deck</h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-400/20 text-teal-300 border border-teal-400/30">
-                  DEMO MODE
-                </span>
+                <h2 className="text-base font-semibold tracking-tight">Presenter &amp; Evaluator Control Deck</h2>
+                <Tag type="teal" size="sm">
+                  DEMO ACTIVE
+                </Tag>
               </div>
-              <p className="text-xs text-slate-400">
-                Deterministic test scenarios, live backend health, evaluation benchmarks & reset controls.
+              <p className="text-xs text-[#c6c6c6]">
+                Deterministic test vectors, live health telemetry, benchmark evaluation &amp; reset controls.
               </p>
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
+            className="text-[#c6c6c6] hover:text-white p-1 cursor-pointer"
+            title="Close control deck"
           >
-            <X className="w-5 h-5" />
+            <Close size={20} />
           </button>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-1 border-b border-slate-200 px-6 pt-3 bg-slate-50">
+        <div className="flex items-center gap-1 border-b border-[#e0e0e0] px-6 pt-2 bg-[#f4f4f4]">
           <button
+            type="button"
             onClick={() => setActiveTab('SCENARIOS')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+            className={`pb-3 px-4 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
               activeTab === 'SCENARIOS'
-                ? 'border-teal-800 text-teal-900 font-bold'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-[#0f62fe] text-[#0f62fe]'
+                : 'border-transparent text-[#525252] hover:text-[#161616]'
             }`}
           >
-            <Layers className="w-4 h-4" />
             1-Click Scenarios ({scenarios.length})
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('HEALTH')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+            className={`pb-3 px-4 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
               activeTab === 'HEALTH'
-                ? 'border-teal-800 text-teal-900 font-bold'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-[#0f62fe] text-[#0f62fe]'
+                : 'border-transparent text-[#525252] hover:text-[#161616]'
             }`}
           >
-            <Server className="w-4 h-4" />
-            System & Live Health
+            <BareMetalServer size={14} />
+            System &amp; Live Health
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab('EVALUATION')}
-            className={`pb-3 px-3 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
+            className={`pb-3 px-4 text-xs font-semibold flex items-center gap-2 border-b-2 transition-all cursor-pointer ${
               activeTab === 'EVALUATION'
-                ? 'border-teal-800 text-teal-900 font-bold'
-                : 'border-transparent text-slate-500 hover:text-slate-800'
+                ? 'border-[#0f62fe] text-[#0f62fe]'
+                : 'border-transparent text-[#525252] hover:text-[#161616]'
             }`}
           >
-            <BarChart3 className="w-4 h-4" />
+            <Analytics size={14} />
             Benchmark Evaluation (N=30)
           </button>
         </div>
@@ -267,58 +266,59 @@ export const PresenterControlModal: React.FC<PresenterControlModalProps> = ({ is
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Deterministic Demonstration Scenarios</h3>
-                  <p className="text-xs text-slate-500">
+                  <h3 className="text-sm font-semibold text-[#161616]">Deterministic Demonstration Scenarios</h3>
+                  <p className="text-xs text-[#525252]">
                     Pre-configured real-world fraud vectors that execute seamlessly without manual data entry.
                   </p>
                 </div>
-                <button
-                  type="button"
+                <Button
+                  kind="secondary"
+                  size="sm"
+                  renderIcon={Renew}
                   disabled={isResetting}
                   onClick={() => handleResetData(true)}
-                  className="px-3 py-1.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  <RotateCcw className={`w-3.5 h-3.5 ${isResetting ? 'animate-spin' : ''}`} />
                   {isResetting ? 'Resetting DB...' : 'Reset Clean Seed Data'}
-                </button>
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {scenarios.map((sc) => (
-                  <div
+                  <Tile
                     key={sc.id}
-                    className="p-4 rounded-xl border border-slate-200 bg-white hover:border-teal-700 hover:shadow-xs transition-all flex flex-col justify-between"
+                    className="p-4 border border-[#e0e0e0] bg-white hover:border-[#0f62fe] transition-all flex flex-col justify-between"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-xs font-bold text-slate-900">{sc.title}</span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+                        <span className="text-xs font-semibold text-[#161616]">{sc.title}</span>
+                        <Tag type="warm-gray" size="sm">
                           {sc.badge}
-                        </span>
+                        </Tag>
                       </div>
-                      <p className="text-xs text-slate-500 leading-relaxed mb-3">
+                      <p className="text-xs text-[#525252] leading-relaxed mb-3">
                         {sc.description}
                       </p>
                     </div>
-                    <button
-                      type="button"
+                    <Button
+                      kind="primary"
+                      size="sm"
+                      renderIcon={Play}
                       onClick={() => handleLaunchScenario(sc)}
-                      className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-teal-900 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                      className="w-full"
                     >
-                      <Play className="w-3.5 h-3.5 text-teal-400 fill-teal-400" />
                       {sc.actionText}
-                      <ArrowRight className="w-3.5 h-3.5 ml-auto" />
-                    </button>
-                  </div>
+                    </Button>
+                  </Tile>
                 ))}
               </div>
 
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2.5">
-                <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p>
-                  <strong>Disclaimer for Presenters:</strong> All demo scenarios utilize synthetic test messages and sandbox payment simulations. No actual banking transfers are initiated, and no live reports are sent to law enforcement.
-                </p>
-              </div>
+              <InlineNotification
+                kind="warning"
+                title="Presenter Notice"
+                subtitle="All demo scenarios utilize synthetic test messages and sandbox payment simulations. No actual banking transfers are initiated, and no live reports are sent to real law enforcement portals."
+                hideCloseButton
+                lowContrast
+              />
             </div>
           )}
 
@@ -326,146 +326,146 @@ export const PresenterControlModal: React.FC<PresenterControlModalProps> = ({ is
           {activeTab === 'HEALTH' && (
             <div className="space-y-6">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">System Architecture Health</h3>
-                <p className="text-xs text-slate-500">Live inspection of local services, models, and WebSocket connection.</p>
+                <h3 className="text-sm font-semibold text-[#161616]">System Architecture Health</h3>
+                <p className="text-xs text-[#525252]">Live inspection of local services, models, and WebSocket connection.</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 {/* Backend Health */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-slate-500">FastAPI Backend</span>
-                    <Server className="w-4 h-4 text-teal-800" />
+                    <span className="text-xs font-semibold text-[#525252]">FastAPI Backend</span>
+                    <BareMetalServer size={16} className="text-[#0f62fe]" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${isBackendConnected ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                    <span className="text-sm font-bold text-slate-900">
-                      {isBackendConnected ? 'Online (8000)' : 'Offline'}
+                    <span className={`w-2.5 h-2.5 rounded-full ${isBackendConnected ? 'bg-[#198038]' : 'bg-[#da1e28]'}`} />
+                    <span className="text-sm font-semibold text-[#161616]">
+                      {isBackendConnected ? 'Online (Port 8000)' : 'Offline'}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-[#525252] mt-1 block">
                     {backendPing !== null ? `Response time: ${backendPing}ms` : 'Checking endpoint...'}
                   </span>
                 </div>
 
                 {/* Database Health */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-slate-500">Database Engine</span>
-                    <Database className="w-4 h-4 text-teal-800" />
+                    <span className="text-xs font-semibold text-[#525252]">Database Engine</span>
+                    <DataBase size={16} className="text-[#0f62fe]" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-sm font-bold text-slate-900">SQLite (Local)</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#198038]" />
+                    <span className="text-sm font-semibold text-[#161616]">SQLite (Local File)</span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
-                    SQLAlchemy / Postgres-Ready
+                  <span className="text-[11px] text-[#525252] mt-1 block">
+                    SQLAlchemy ORM &bull; Transaction Safe
                   </span>
                 </div>
 
                 {/* AI Engine Status */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-slate-500">AI Risk Engine</span>
-                    <Cpu className="w-4 h-4 text-teal-800" />
+                    <span className="text-xs font-semibold text-[#525252]">AI Risk Engine</span>
+                    <Chip size={16} className="text-[#0f62fe]" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-sm font-bold text-slate-900">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#198038]" />
+                    <span className="text-sm font-semibold text-[#161616]">
                       {activeProvider === 'watsonx' ? 'IBM watsonx.ai' : 'Rule Engine'}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
-                    {activeProvider === 'watsonx' ? 'Selected; used only if credentials are configured' : 'Local deterministic rules (no IBM call)'}
+                  <span className="text-[11px] text-[#525252] mt-1 block">
+                    {activeProvider === 'watsonx' ? 'Selected adapter (credentials required)' : 'Local deterministic rules (offline)'}
                   </span>
                 </div>
 
                 {/* Live WebSocket Transport */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-slate-500">Live Shield WS</span>
-                    <Radio className="w-4 h-4 text-teal-800" />
+                    <span className="text-xs font-semibold text-[#525252]">Live Shield WS</span>
+                    <Flash size={16} className="text-[#0f62fe]" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className={`w-2 h-2 rounded-full ${isWsConnected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-                    <span className="text-sm font-bold text-slate-900">
-                      {isWsConnected ? 'Connected' : 'Reconnecting'}
+                    <span className={`w-2.5 h-2.5 rounded-full ${isWsConnected ? 'bg-[#198038]' : 'bg-[#f1c21b] animate-pulse'}`} />
+                    <span className="text-sm font-semibold text-[#161616]">
+                      {isWsConnected ? 'Active Connected' : 'Reconnecting'}
                     </span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-[#525252] mt-1 block">
                     /api/alerts/ws transport
                   </span>
                 </div>
 
                 {/* Telecom SMS Gateway */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
+                <div className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-slate-500">Telecom SMS Gateway</span>
-                    <Radio className="w-4 h-4 text-teal-800" />
+                    <span className="text-xs font-semibold text-[#525252]">Telecom SMS Gateway</span>
+                    <BareMetalServer size={16} className="text-[#0f62fe]" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-sm font-bold text-slate-900">DLT Carrier Active</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#198038]" />
+                    <span className="text-sm font-semibold text-[#161616]">DLT Carrier Simulator</span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
+                  <span className="text-[11px] text-[#525252] mt-1 block">
                     Sender: SATARK &bull; DLT: 140716...
                   </span>
                 </div>
 
-                {/* Statutory Banking Switch */}
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-slate-50">
+                {/* Banking Lien Switch */}
+                <div className="p-3.5 border border-[#e0e0e0] bg-[#f4f4f4]">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-slate-500">Banking Lien Switch</span>
-                    <Database className="w-4 h-4 text-teal-800" />
+                    <span className="text-xs font-semibold text-[#525252]">Banking Lien Switch</span>
+                    <DataBase size={16} className="text-[#0f62fe]" />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    <span className="text-sm font-bold text-slate-900">NPCI / CFCFRMS</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#198038]" />
+                    <span className="text-sm font-semibold text-[#161616]">CFCFRMS / NPCI Nodal</span>
                   </div>
-                  <span className="text-[11px] text-slate-500 mt-1 block">
-                    Automated Freeze Gateway
+                  <span className="text-[11px] text-[#525252] mt-1 block">
+                    Automated Lien Gateway
                   </span>
                 </div>
               </div>
 
               {/* Active Persona Switcher */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-white">
-                <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-2">
-                  <UserCheck className="w-4 h-4 text-teal-800" />
+              <Tile className="p-5 border border-[#e0e0e0] bg-white">
+                <h4 className="text-xs font-semibold text-[#161616] uppercase tracking-wider mb-2 flex items-center gap-2">
+                  <UserFollow size={16} className="text-[#0f62fe]" />
                   Demonstration Persona Switcher
                 </h4>
-                <p className="text-xs text-slate-500 mb-3">
+                <p className="text-xs text-[#525252] mb-3">
                   Switch perspectives between primary citizen (victim) and family guardian (recipient) to demonstrate live cross-device notification.
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => switchUser('1')}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    className={`p-4 border text-left transition-all cursor-pointer ${
                       activeUserId === '1'
-                        ? 'bg-teal-50 border-teal-700 shadow-xs ring-1 ring-teal-700'
-                        : 'border-slate-200 hover:bg-slate-50'
+                        ? 'bg-[#edf5ff] border-[#0f62fe]'
+                        : 'border-[#e0e0e0] hover:bg-[#f4f4f4]'
                     }`}
                   >
-                    <div className="font-bold text-xs text-slate-900">Rajesh Sharma</div>
-                    <div className="text-[11px] text-slate-500">Father / Primary Citizen (User ID #1)</div>
-                    <div className="text-[10px] text-teal-800 font-semibold mt-1">Actions: Scans threats, files recovery</div>
+                    <div className="font-semibold text-xs text-[#161616]">Rajesh Sharma</div>
+                    <div className="text-[11px] text-[#525252]">Father / Primary Citizen (User ID #1)</div>
+                    <div className="text-[10px] text-[#0f62fe] font-semibold mt-1">Role: Scans threats, files recovery</div>
                   </button>
                   <button
                     type="button"
                     onClick={() => switchUser('2')}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
+                    className={`p-4 border text-left transition-all cursor-pointer ${
                       activeUserId === '2'
-                        ? 'bg-teal-50 border-teal-700 shadow-xs ring-1 ring-teal-700'
-                        : 'border-slate-200 hover:bg-slate-50'
+                        ? 'bg-[#edf5ff] border-[#0f62fe]'
+                        : 'border-[#e0e0e0] hover:bg-[#f4f4f4]'
                     }`}
                   >
-                    <div className="font-bold text-xs text-slate-900">Aarav Sharma</div>
-                    <div className="text-[11px] text-slate-500">Son / Trusted Guardian (User ID #2)</div>
-                    <div className="text-[10px] text-teal-800 font-semibold mt-1">Actions: Receives live alerts & acknowledges</div>
+                    <div className="font-semibold text-xs text-[#161616]">Aarav Sharma</div>
+                    <div className="text-[11px] text-[#525252]">Son / Trusted Guardian (User ID #2)</div>
+                    <div className="text-[10px] text-[#0f62fe] font-semibold mt-1">Role: Receives live alerts &amp; confirms</div>
                   </button>
                 </div>
-              </div>
+              </Tile>
             </div>
           )}
 
@@ -474,115 +474,123 @@ export const PresenterControlModal: React.FC<PresenterControlModalProps> = ({ is
             <div className="space-y-5">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Forensic Evaluation & Repeatable Benchmark</h3>
-                  <p className="text-xs text-slate-500">
+                  <h3 className="text-sm font-semibold text-[#161616]">Forensic Evaluation &amp; Repeatable Benchmark</h3>
+                  <p className="text-xs text-[#525252]">
                     Automated testing on 30 balanced ground-truth samples (15 SCAM vs 15 SAFE).
                   </p>
                 </div>
-                <button
-                  type="button"
+                <Button
+                  kind="primary"
+                  size="sm"
+                  renderIcon={Analytics}
                   disabled={isRunningEval}
                   onClick={handleRunEvaluation}
-                  className="px-4 py-2 rounded-xl bg-teal-800 hover:bg-teal-900 text-white text-xs font-semibold flex items-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-50"
                 >
-                  <BarChart3 className={`w-4 h-4 ${isRunningEval ? 'animate-spin' : ''}`} />
                   {isRunningEval ? 'Running Test Suite...' : 'Run Benchmark (N=30)'}
-                </button>
+                </Button>
               </div>
 
               {evalReport ? (
                 <div className="space-y-4">
                   {/* Summary Metric Cards */}
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-                      <span className="text-[11px] text-slate-500 block">Precision</span>
-                      <span className="text-xl font-bold font-mono text-teal-900">
+                    <div className="p-3.5 bg-[#f4f4f4] border border-[#e0e0e0]">
+                      <span className="text-[11px] text-[#525252] block">Precision</span>
+                      <span className="text-xl font-bold font-mono text-[#0f62fe]">
                         {Math.round(evalReport.summary.metrics.precision * 100)}%
                       </span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">TP / (TP + FP)</span>
+                      <span className="text-[10px] text-[#525252] block mt-0.5">TP / (TP + FP)</span>
                     </div>
 
-                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-                      <span className="text-[11px] text-slate-500 block">Recall</span>
-                      <span className="text-xl font-bold font-mono text-teal-900">
+                    <div className="p-3.5 bg-[#f4f4f4] border border-[#e0e0e0]">
+                      <span className="text-[11px] text-[#525252] block">Recall</span>
+                      <span className="text-xl font-bold font-mono text-[#0f62fe]">
                         {Math.round(evalReport.summary.metrics.recall * 100)}%
                       </span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">TP / (TP + FN)</span>
+                      <span className="text-[10px] text-[#525252] block mt-0.5">TP / (TP + FN)</span>
                     </div>
 
-                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-                      <span className="text-[11px] text-slate-500 block">False Positive Rate</span>
-                      <span className="text-xl font-bold font-mono text-slate-700">
+                    <div className="p-3.5 bg-[#f4f4f4] border border-[#e0e0e0]">
+                      <span className="text-[11px] text-[#525252] block">False Positive Rate</span>
+                      <span className="text-xl font-bold font-mono text-[#161616]">
                         {Math.round(evalReport.summary.metrics.false_positive_rate * 100)}%
                       </span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">FP / (FP + TN)</span>
+                      <span className="text-[10px] text-[#525252] block mt-0.5">FP / (FP + TN)</span>
                     </div>
 
-                    <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200">
-                      <span className="text-[11px] text-slate-500 block">Avg Latency</span>
-                      <span className="text-xl font-bold font-mono text-slate-900">
+                    <div className="p-3.5 bg-[#f4f4f4] border border-[#e0e0e0]">
+                      <span className="text-[11px] text-[#525252] block">Avg Latency</span>
+                      <span className="text-xl font-bold font-mono text-[#161616]">
                         {evalReport.summary.latency_benchmark.average_latency_ms} ms
                       </span>
-                      <span className="text-[10px] text-slate-400 block mt-0.5">
+                      <span className="text-[10px] text-[#525252] block mt-0.5">
                         Range: {evalReport.summary.latency_benchmark.min_latency_ms} - {evalReport.summary.latency_benchmark.max_latency_ms} ms
                       </span>
                     </div>
                   </div>
 
                   {/* Confusion Matrix */}
-                  <div className="p-4 bg-white rounded-xl border border-slate-200">
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
+                  <Tile className="p-4 bg-white border border-[#e0e0e0]">
+                    <h4 className="text-xs font-semibold text-[#161616] uppercase tracking-wider mb-2">
                       Confusion Matrix Breakdown
                     </h4>
                     <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                        <span className="font-bold text-emerald-900 block">True Positives: {evalReport.summary.confusion_matrix.true_positives} / 15</span>
-                        <span className="text-[11px] text-emerald-700">Correctly identified digital scam attempts.</span>
+                      <div className="p-3 bg-[#defbe6] border border-[#a7f0ba]">
+                        <span className="font-semibold text-[#198038] block">
+                          True Positives: {evalReport.summary.confusion_matrix.true_positives} / 15
+                        </span>
+                        <span className="text-[11px] text-[#198038]">Correctly identified digital scam attempts.</span>
                       </div>
-                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                        <span className="font-bold text-slate-900 block">True Negatives: {evalReport.summary.confusion_matrix.true_negatives} / 15</span>
-                        <span className="text-[11px] text-slate-600">Correctly passed legitimate transactional SMS/chats.</span>
+                      <div className="p-3 bg-[#f4f4f4] border border-[#e0e0e0]">
+                        <span className="font-semibold text-[#161616] block">
+                          True Negatives: {evalReport.summary.confusion_matrix.true_negatives} / 15
+                        </span>
+                        <span className="text-[11px] text-[#525252]">Correctly passed legitimate transactional SMS/chats.</span>
                       </div>
-                      <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                        <span className="font-bold text-amber-900 block">False Positives: {evalReport.summary.confusion_matrix.false_positives}</span>
-                        <span className="text-[11px] text-amber-700">Legitimate messages flagged as suspicious.</span>
+                      <div className="p-3 bg-[#fdf3e1] border border-[#f1c21b]">
+                        <span className="font-semibold text-[#b28600] block">
+                          False Positives: {evalReport.summary.confusion_matrix.false_positives}
+                        </span>
+                        <span className="text-[11px] text-[#b28600]">Legitimate messages flagged as suspicious.</span>
                       </div>
-                      <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl">
-                        <span className="font-bold text-rose-900 block">False Negatives: {evalReport.summary.confusion_matrix.false_negatives}</span>
-                        <span className="text-[11px] text-rose-700">Scam messages missed by the heuristic threshold.</span>
+                      <div className="p-3 bg-[#fff1f1] border border-[#ffb3b8]">
+                        <span className="font-semibold text-[#da1e28] block">
+                          False Negatives: {evalReport.summary.confusion_matrix.false_negatives}
+                        </span>
+                        <span className="text-[11px] text-[#da1e28]">Scam messages missed by heuristic threshold.</span>
                       </div>
                     </div>
-                  </div>
+                  </Tile>
 
                   {/* Workflow Verifications */}
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2">
+                  <div className="p-4 bg-[#f4f4f4] border border-[#e0e0e0]">
+                    <h4 className="text-xs font-semibold text-[#161616] uppercase tracking-wider mb-2">
                       End-to-End Workflow Verifications
                     </h4>
                     <div className="space-y-2 text-xs">
-                      <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-200">
-                        <span className="font-semibold text-slate-800">Family Alert Live Notification Transport</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      <div className="flex items-center justify-between p-2.5 bg-white border border-[#e0e0e0]">
+                        <span className="font-medium text-[#161616]">Family Alert Live Notification Transport</span>
+                        <Tag type="green" size="sm">
                           {evalReport.workflow_verifications.family_alert_delivery.status}
-                        </span>
+                        </Tag>
                       </div>
-                      <div className="flex items-center justify-between p-2 bg-white rounded-lg border border-slate-200">
-                        <span className="font-semibold text-slate-800">Golden Hour Recovery Dossier Generator (1930 / RBI / Police)</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                      <div className="flex items-center justify-between p-2.5 bg-white border border-[#e0e0e0]">
+                        <span className="font-medium text-[#161616]">Golden Hour Recovery Dossier Generator (1930 / RBI / Police)</span>
+                        <Tag type="green" size="sm">
                           {evalReport.workflow_verifications.recovery_dossier_generation.status}
-                        </span>
+                        </Tag>
                       </div>
                     </div>
                   </div>
 
                   {/* Methodology Disclaimer */}
-                  <div className="text-[11px] text-slate-500 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200 italic">
+                  <div className="text-[11px] text-[#525252] leading-relaxed bg-[#f4f4f4] p-3 border border-[#e0e0e0] italic">
                     {evalReport.methodology_disclaimer}
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-8 text-slate-400">
-                  <BarChart3 className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <div className="text-center py-8 text-[#8d8d8d]">
+                  <Analytics size={32} className="mx-auto mb-2 opacity-50" />
                   <p className="text-xs">Click &quot;Run Benchmark&quot; to execute the 30-sample evaluation suite.</p>
                 </div>
               )}
@@ -591,14 +599,11 @@ export const PresenterControlModal: React.FC<PresenterControlModalProps> = ({ is
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
-          <span>Satark Saathi v1.0 • End-to-End Hackathon Integration</span>
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-semibold cursor-pointer transition-colors"
-          >
+        <div className="px-6 py-3 bg-[#f4f4f4] border-t border-[#e0e0e0] flex items-center justify-between text-xs text-[#525252]">
+          <span>Satark Saathi &bull; IBM Carbon Rebuild &bull; Evaluator Control Deck</span>
+          <Button kind="ghost" size="sm" onClick={onClose}>
             Close Deck
-          </button>
+          </Button>
         </div>
       </div>
     </div>

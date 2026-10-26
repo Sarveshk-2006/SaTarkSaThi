@@ -1,30 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
-  CreditCard,
-  ShieldCheck,
-  ShieldAlert,
-  AlertTriangle,
-  Sparkles,
+  Wallet,
+  CheckmarkFilled,
+  WarningFilled,
+  WarningAltFilled,
+  Flash,
   ArrowRight,
-  UserCheck,
-  UserX,
-  PhoneCall,
-  History,
-  Info,
-  AlertOctagon,
-  LifeBuoy,
+  Phone,
+  Time,
+  Information,
+  Locked,
   Save,
-  X,
-  Lock,
-  Clock,
-  TrendingUp,
-  Zap,
-  Check,
-  RotateCcw,
-  Smartphone,
-  Shield,
-  HelpCircle,
-} from 'lucide-react';
+  Renew,
+  Checkmark,
+} from '@carbon/icons-react';
+import {
+  Tile,
+  Button,
+  Tag,
+  Modal,
+  ProgressBar,
+} from '@carbon/react';
 import { api } from '../api/endpoints';
 import { CallState, PaymentSimulation } from '../api/types';
 import { useToast } from '../context/ToastContext';
@@ -37,7 +33,7 @@ import { GuardianApprovalPanel, RiskSignalList } from '../components/payment/Pay
 interface PresetSimulation {
   title: string;
   category: string;
-  categoryColor: string;
+  categoryColor: 'red' | 'warm-gray' | 'purple' | 'green';
   vpa: string;
   name: string;
   amount: number;
@@ -54,7 +50,7 @@ const PRESETS: PresetSimulation[] = [
   {
     title: 'Digital Arrest Bail Deposit',
     category: 'ACUTE EXTORTION',
-    categoryColor: 'bg-red-100 text-red-800 border-red-300',
+    categoryColor: 'red',
     vpa: 'cbi.court.clearance@oksbi',
     name: 'CBI Escrow Cell',
     amount: 50000,
@@ -69,7 +65,7 @@ const PRESETS: PresetSimulation[] = [
   {
     title: 'Electricity Bill Disconnection',
     category: 'UTILITY FRAUD',
-    categoryColor: 'bg-amber-100 text-amber-800 border-amber-300',
+    categoryColor: 'warm-gray',
     vpa: 'officer.bses.bill@ybl',
     name: 'BSES Electricity Officer',
     amount: 12500,
@@ -84,7 +80,7 @@ const PRESETS: PresetSimulation[] = [
   {
     title: 'Telegram Guaranteed Return',
     category: 'TASK SCAM',
-    categoryColor: 'bg-purple-100 text-purple-800 border-purple-300',
+    categoryColor: 'purple',
     vpa: '9810123456@paytm',
     name: 'VIP Investment Desk',
     amount: 25000,
@@ -99,7 +95,7 @@ const PRESETS: PresetSimulation[] = [
   {
     title: 'Legitimate Grocery Store QR',
     category: 'BENIGN MERCHANT',
-    categoryColor: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+    categoryColor: 'green',
     vpa: 'kirana.store@icici',
     name: 'Sharma General Store',
     amount: 650,
@@ -127,24 +123,19 @@ export const PaymentCheckpointPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Primary payment parameters
   const [vpa, setVpa] = useState('');
   const [recipientName, setRecipientName] = useState('');
   const [amount, setAmount] = useState('');
   const [purpose, setPurpose] = useState('');
   const [isNewRecipient, setIsNewRecipient] = useState(true);
 
-  // Behavioral coercion inputs
   const [pressurePresent, setPressurePresent] = useState(false);
   const [authorityClaimed, setAuthorityClaimed] = useState(false);
   const [secrecyDemanded, setSecrecyDemanded] = useState(false);
   const [guaranteedReturns, setGuaranteedReturns] = useState(false);
-  // Call context is an explicit signal: either reported by the user or simulated for the demo.
   const [callState, setCallState] = useState<CallState>('NONE');
 
-  // Safety Check-in modal (server-driven, adaptive)
   const [isCheckInOpen, setIsCheckInOpen] = useState(false);
-
   const [simulating, setSimulating] = useState(false);
   const [result, setResult] = useState<PaymentSimulation | null>(null);
   const [savedIncidentId, setSavedIncidentId] = useState<string | null>(null);
@@ -285,7 +276,7 @@ export const PaymentCheckpointPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto font-sans">
       {/* Simulation Sandbox Notice Banner */}
       <SimulationBanner
         title="Pre-Transaction Risk Sandbox"
@@ -295,41 +286,41 @@ export const PaymentCheckpointPage: React.FC = () => {
       />
 
       {/* Header Bar */}
-      <div className="border-b border-[#E2E8F0] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="border-b border-[#e0e0e0] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-[#176B58] text-white">
-              <CreditCard className="w-4 h-4" />
+            <span className="p-1.5 bg-[#0f62fe] text-white rounded">
+              <Wallet size={18} />
             </span>
-            <h1 className="text-xl font-bold text-[#142A36] tracking-tight">
+            <h1 className="text-xl font-semibold text-[#161616] tracking-tight">
               Payment Checkpoint &amp; Coercion Firewall
             </h1>
           </div>
-          <p className="text-xs text-[#64748B] mt-1">
+          <p className="text-xs text-[#525252] mt-1">
             Intercept suspicious UPI transfers before authorization. Evaluates psychological pressure, authority claims, and unverified VPA handles.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
+          <Button
+            kind="ghost"
+            size="sm"
+            renderIcon={Renew}
             onClick={resetForm}
-            className="px-3 py-1.5 rounded-lg border border-[#E2E8F0] bg-white hover:bg-[#F7F8F4] text-[#64748B] hover:text-[#142A36] text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Clear Inputs</span>
-          </button>
+            Clear Inputs
+          </Button>
         </div>
       </div>
 
-      {/* Linear-Style Preset Scenario Selector */}
+      {/* Preset Scenario Selector */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <label className="text-[11px] font-bold uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#176B58]" />
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-[#525252] flex items-center gap-1.5">
+            <Flash size={14} className="text-[#0f62fe]" />
             <span>Select Test Scenario (Pre-Configured Threat Simulations):</span>
           </label>
-          <span className="text-[11px] text-[#94A3B8]">Click to load parameters</span>
+          <span className="text-[11px] text-[#8d8d8d]">Click to load parameters</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -340,24 +331,24 @@ export const PaymentCheckpointPage: React.FC = () => {
                 key={idx}
                 type="button"
                 onClick={() => handleApplyPreset(p, idx)}
-                className={`text-left p-3.5 rounded-xl border transition-all cursor-pointer relative overflow-hidden group ${
+                className={`text-left p-3.5 border transition-colors cursor-pointer relative overflow-hidden group ${
                   isSelected
-                    ? 'border-[#176B58] bg-[#DCEDE5]/30 shadow-subtle ring-1 ring-[#176B58]'
-                    : 'border-[#E2E8F0] bg-white hover:border-[#CBD5E1] hover:bg-[#F7F8F4] shadow-xs'
+                    ? 'border-[#0f62fe] bg-[#edf5ff]'
+                    : 'border-[#e0e0e0] bg-white hover:border-[#8d8d8d] hover:bg-[#f4f4f4]'
                 }`}
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${p.categoryColor}`}>
+                  <Tag type={p.categoryColor} size="sm" className="font-bold uppercase tracking-wider">
                     {p.category}
-                  </span>
-                  <span className="font-mono text-xs font-bold text-[#142A36]">
+                  </Tag>
+                  <span className="font-mono text-xs font-semibold text-[#161616]">
                     ₹{p.amount.toLocaleString()}
                   </span>
                 </div>
-                <h4 className="text-xs font-bold text-[#142A36] truncate group-hover:text-[#176B58] transition-colors">
+                <h4 className="text-xs font-semibold text-[#161616] truncate group-hover:text-[#0f62fe] transition-colors">
                   {p.title}
                 </h4>
-                <p className="text-[11px] font-mono text-[#64748B] truncate mt-1">
+                <p className="text-[11px] font-mono text-[#525252] truncate mt-1">
                   {p.vpa}
                 </p>
               </button>
@@ -366,31 +357,29 @@ export const PaymentCheckpointPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Grid: Form Left, Radar Right */}
+      {/* Main Grid: Form Left, Decision Right */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Payment Parameters & Coercion Toggles */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E2E8F0] p-5 sm:p-6 shadow-card space-y-5">
+        <Tile className="lg:col-span-7 bg-white border border-[#e0e0e0] p-5 sm:p-6 space-y-5">
           <form onSubmit={handleSimulate} className="space-y-5">
-            <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
+            <div className="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
               <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-[#176B58]"></span>
-                <h3 className="text-sm font-bold text-[#142A36]">
+                <span className="w-2 h-2 rounded-full bg-[#0f62fe]"></span>
+                <h3 className="text-sm font-semibold text-[#161616]">
                   Pre-Flight Transaction Parameters
                 </h3>
               </div>
-              <span className="text-[10px] font-semibold text-[#176B58] bg-[#DCEDE5] px-2 py-0.5 rounded-full">
-                Interactive Checkpoint
-              </span>
+              <Tag type="blue" size="sm">Interactive Checkpoint</Tag>
             </div>
 
             {/* Recipient VPA & Amount */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-[#142A36] mb-1.5">
+                <label className="block text-xs font-semibold text-[#161616] mb-1.5">
                   Recipient Identifier (UPI ID or Account) *
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#64748B] font-mono font-bold text-xs">
+                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#525252] font-mono font-bold text-xs">
                     @
                   </span>
                   <input
@@ -399,17 +388,17 @@ export const PaymentCheckpointPage: React.FC = () => {
                     value={vpa}
                     onChange={(e) => setVpa(e.target.value)}
                     placeholder="e.g. officer.court@oksbi"
-                    className="w-full py-2.5 pl-8 pr-3 text-xs sm:text-sm rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] font-mono text-[#142A36] transition-colors"
+                    className="w-full py-2.5 pl-8 pr-3 text-xs sm:text-sm border border-[#e0e0e0] bg-[#f4f4f4] focus:bg-white focus:outline-none focus:border-[#0f62fe] font-mono text-[#161616] transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#142A36] mb-1.5">
+                <label className="block text-xs font-semibold text-[#161616] mb-1.5">
                   Requested Amount (INR) *
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#142A36] font-bold text-sm">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#161616] font-bold text-sm">
                     ₹
                   </span>
                   <input
@@ -420,16 +409,16 @@ export const PaymentCheckpointPage: React.FC = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                     placeholder="e.g. 50000"
-                    className="w-full py-2.5 pl-8 pr-3 text-sm rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] font-mono font-bold text-[#142A36] transition-colors"
+                    className="w-full py-2.5 pl-8 pr-3 text-sm border border-[#e0e0e0] bg-[#f4f4f4] focus:bg-white focus:outline-none focus:border-[#0f62fe] font-mono font-bold text-[#161616] transition-colors"
                   />
                 </div>
               </div>
             </div>
 
-            {/* Claimed Beneficiary & Relationship */}
+            {/* Claimed Beneficiary & Familiarity */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-[#142A36] mb-1.5">
+                <label className="block text-xs font-semibold text-[#161616] mb-1.5">
                   Claimed Beneficiary Name
                 </label>
                 <input
@@ -437,37 +426,35 @@ export const PaymentCheckpointPage: React.FC = () => {
                   value={recipientName}
                   onChange={(e) => setRecipientName(e.target.value)}
                   placeholder="e.g. CBI Escrow Cell"
-                  className="w-full py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#142A36] transition-colors"
+                  className="w-full py-2.5 px-3.5 text-xs sm:text-sm border border-[#e0e0e0] bg-[#f4f4f4] focus:bg-white focus:outline-none focus:border-[#0f62fe] text-[#161616] transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#142A36] mb-1.5">
+                <label className="block text-xs font-semibold text-[#161616] mb-1.5">
                   Recipient Familiarity Status
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setIsNewRecipient(true)}
-                    className={`py-2 px-3 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`py-2 px-3 text-xs font-semibold border flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                       isNewRecipient
-                        ? 'bg-amber-50 text-amber-900 border-amber-300 shadow-xs'
-                        : 'border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F8F4]'
+                        ? 'bg-[#fef7e0] text-[#483700] border-[#f1c21b]'
+                        : 'border-[#e0e0e0] text-[#525252] hover:bg-[#f4f4f4]'
                     }`}
                   >
-                    <UserX className="w-3.5 h-3.5 text-amber-600" />
                     <span>New / Unverified</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsNewRecipient(false)}
-                    className={`py-2 px-3 rounded-xl text-xs font-semibold border flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    className={`py-2 px-3 text-xs font-semibold border flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                       !isNewRecipient
-                        ? 'bg-emerald-50 text-emerald-900 border-emerald-300 shadow-xs'
-                        : 'border-[#E2E8F0] text-[#64748B] hover:bg-[#F7F8F4]'
+                        ? 'bg-[#edfcf2] text-[#0e6027] border-[#24a148]'
+                        : 'border-[#e0e0e0] text-[#525252] hover:bg-[#f4f4f4]'
                     }`}
                   >
-                    <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Known Contact</span>
                   </button>
                 </div>
@@ -476,7 +463,7 @@ export const PaymentCheckpointPage: React.FC = () => {
 
             {/* Purpose Input & Suggestions */}
             <div>
-              <label className="block text-xs font-bold text-[#142A36] mb-1.5">
+              <label className="block text-xs font-semibold text-[#161616] mb-1.5">
                 Stated Payment Purpose
               </label>
               <input
@@ -484,16 +471,16 @@ export const PaymentCheckpointPage: React.FC = () => {
                 value={purpose}
                 onChange={(e) => setPurpose(e.target.value)}
                 placeholder="e.g. Clearance fee to drop PMLA arrest warrant"
-                className="w-full py-2.5 px-3.5 text-xs sm:text-sm rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] text-[#142A36] transition-colors"
+                className="w-full py-2.5 px-3.5 text-xs sm:text-sm border border-[#e0e0e0] bg-[#f4f4f4] focus:bg-white focus:outline-none focus:border-[#0f62fe] text-[#161616] transition-colors"
               />
               <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                <span className="text-[10px] text-[#94A3B8]">Quick picks:</span>
+                <span className="text-[10px] text-[#8d8d8d]">Quick picks:</span>
                 {PURPOSE_SUGGESTIONS.map((s, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setPurpose(s)}
-                    className="text-[10px] px-2 py-0.5 rounded-md bg-[#F7F8F4] hover:bg-[#EAECE6] text-[#64748B] border border-[#E2E8F0] cursor-pointer transition-colors"
+                    className="text-[10px] px-2 py-0.5 bg-[#f4f4f4] hover:bg-[#e0e0e0] text-[#525252] border border-[#e0e0e0] cursor-pointer transition-colors"
                   >
                     {s}
                   </button>
@@ -501,135 +488,135 @@ export const PaymentCheckpointPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Linear-Style Coercion & Behavioral Indicators */}
-            <div className="pt-2 border-t border-[#F1F5F9] space-y-3">
+            {/* Coercion & Behavioral Indicators */}
+            <div className="pt-2 border-t border-[#e0e0e0] space-y-3">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold uppercase tracking-wider text-[#142A36] flex items-center gap-1.5">
-                  <AlertOctagon className="w-4 h-4 text-red-600" />
+                <label className="text-xs font-semibold uppercase tracking-wider text-[#161616] flex items-center gap-1.5">
+                  <WarningFilled size={16} className="text-[#da1e28]" />
                   <span>Coercion &amp; Psychological Pressure Indicators:</span>
                 </label>
-                <span className="text-[10px] text-[#94A3B8]">Toggle active factors</span>
+                <span className="text-[10px] text-[#8d8d8d]">Toggle active factors</span>
               </div>
 
               <div className="space-y-2">
                 {/* 1. Authority Claimed */}
                 <div
                   onClick={() => setAuthorityClaimed(!authorityClaimed)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`p-3 border transition-colors cursor-pointer flex items-center justify-between gap-3 ${
                     authorityClaimed
-                      ? 'bg-red-50/70 border-red-300 ring-1 ring-red-400/20'
-                      : 'bg-[#F7F8F4] border-[#E2E8F0] hover:bg-slate-100/70'
+                      ? 'bg-[#fff1f1] border-[#da1e28]'
+                      : 'bg-[#f4f4f4] border-[#e0e0e0] hover:bg-[#e0e0e0]'
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${authorityClaimed ? 'bg-red-200 text-red-800' : 'bg-slate-200 text-slate-700'}`}>
-                      <Lock className="w-3.5 h-3.5" />
+                    <span className={`p-1.5 rounded shrink-0 mt-0.5 ${authorityClaimed ? 'bg-[#ffb3b8] text-[#750e13]' : 'bg-[#e0e0e0] text-[#161616]'}`}>
+                      <Locked size={16} />
                     </span>
                     <div>
-                      <span className="text-xs font-bold text-[#142A36] block">
+                      <span className="text-xs font-semibold text-[#161616] block">
                         Authority Claimed (Police, CBI, Customs, Court, Electricity Board)
                       </span>
-                      <span className="text-[11px] text-[#64748B]">
+                      <span className="text-[11px] text-[#525252]">
                         Caller or message author claims official power or legal consequences.
                       </span>
                     </div>
                   </div>
-                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${authorityClaimed ? 'bg-red-600 border-red-700 text-white' : 'bg-white border-slate-300'}`}>
-                    {authorityClaimed && <Check className="w-3.5 h-3.5" />}
+                  <div className={`w-5 h-5 border flex items-center justify-center shrink-0 ${authorityClaimed ? 'bg-[#da1e28] border-[#da1e28] text-white' : 'bg-white border-[#8d8d8d]'}`}>
+                    {authorityClaimed && <Checkmark size={14} />}
                   </div>
                 </div>
 
                 {/* 2. Secrecy Demanded */}
                 <div
                   onClick={() => setSecrecyDemanded(!secrecyDemanded)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`p-3 border transition-colors cursor-pointer flex items-center justify-between gap-3 ${
                     secrecyDemanded
-                      ? 'bg-red-50/70 border-red-300 ring-1 ring-red-400/20'
-                      : 'bg-[#F7F8F4] border-[#E2E8F0] hover:bg-slate-100/70'
+                      ? 'bg-[#fff1f1] border-[#da1e28]'
+                      : 'bg-[#f4f4f4] border-[#e0e0e0] hover:bg-[#e0e0e0]'
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${secrecyDemanded ? 'bg-red-200 text-red-800' : 'bg-slate-200 text-slate-700'}`}>
-                      <ShieldAlert className="w-3.5 h-3.5" />
+                    <span className={`p-1.5 rounded shrink-0 mt-0.5 ${secrecyDemanded ? 'bg-[#ffb3b8] text-[#750e13]' : 'bg-[#e0e0e0] text-[#161616]'}`}>
+                      <WarningFilled size={16} />
                     </span>
                     <div>
-                      <span className="text-xs font-bold text-[#142A36] block">
+                      <span className="text-xs font-semibold text-[#161616] block">
                         Secrecy Demanded (&quot;Do not tell family, friends, or bank&quot;)
                       </span>
-                      <span className="text-[11px] text-[#64748B]">
+                      <span className="text-[11px] text-[#525252]">
                         Common isolation tactic designed to prevent family intervention.
                       </span>
                     </div>
                   </div>
-                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${secrecyDemanded ? 'bg-red-600 border-red-700 text-white' : 'bg-white border-slate-300'}`}>
-                    {secrecyDemanded && <Check className="w-3.5 h-3.5" />}
+                  <div className={`w-5 h-5 border flex items-center justify-center shrink-0 ${secrecyDemanded ? 'bg-[#da1e28] border-[#da1e28] text-white' : 'bg-white border-[#8d8d8d]'}`}>
+                    {secrecyDemanded && <Checkmark size={14} />}
                   </div>
                 </div>
 
                 {/* 3. Urgent Pressure */}
                 <div
                   onClick={() => setPressurePresent(!pressurePresent)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`p-3 border transition-colors cursor-pointer flex items-center justify-between gap-3 ${
                     pressurePresent
-                      ? 'bg-red-50/70 border-red-300 ring-1 ring-red-400/20'
-                      : 'bg-[#F7F8F4] border-[#E2E8F0] hover:bg-slate-100/70'
+                      ? 'bg-[#fff1f1] border-[#da1e28]'
+                      : 'bg-[#f4f4f4] border-[#e0e0e0] hover:bg-[#e0e0e0]'
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${pressurePresent ? 'bg-red-200 text-red-800' : 'bg-slate-200 text-slate-700'}`}>
-                      <Clock className="w-3.5 h-3.5" />
+                    <span className={`p-1.5 rounded shrink-0 mt-0.5 ${pressurePresent ? 'bg-[#ffb3b8] text-[#750e13]' : 'bg-[#e0e0e0] text-[#161616]'}`}>
+                      <Time size={16} />
                     </span>
                     <div>
-                      <span className="text-xs font-bold text-[#142A36] block">
+                      <span className="text-xs font-semibold text-[#161616] block">
                         Urgent Coercive Pressure (&quot;Pay in 15 mins or face raid/disconnection&quot;)
                       </span>
-                      <span className="text-[11px] text-[#64748B]">
+                      <span className="text-[11px] text-[#525252]">
                         Artificial urgency disables rational financial verification.
                       </span>
                     </div>
                   </div>
-                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${pressurePresent ? 'bg-red-600 border-red-700 text-white' : 'bg-white border-slate-300'}`}>
-                    {pressurePresent && <Check className="w-3.5 h-3.5" />}
+                  <div className={`w-5 h-5 border flex items-center justify-center shrink-0 ${pressurePresent ? 'bg-[#da1e28] border-[#da1e28] text-white' : 'bg-white border-[#8d8d8d]'}`}>
+                    {pressurePresent && <Checkmark size={14} />}
                   </div>
                 </div>
 
                 {/* 4. Guaranteed Returns */}
                 <div
                   onClick={() => setGuaranteedReturns(!guaranteedReturns)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                  className={`p-3 border transition-colors cursor-pointer flex items-center justify-between gap-3 ${
                     guaranteedReturns
-                      ? 'bg-purple-50/70 border-purple-300 ring-1 ring-purple-400/20'
-                      : 'bg-[#F7F8F4] border-[#E2E8F0] hover:bg-slate-100/70'
+                      ? 'bg-[#f6f2ff] border-[#8a3ffc]'
+                      : 'bg-[#f4f4f4] border-[#e0e0e0] hover:bg-[#e0e0e0]'
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <span className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${guaranteedReturns ? 'bg-purple-200 text-purple-800' : 'bg-slate-200 text-slate-700'}`}>
-                      <TrendingUp className="w-3.5 h-3.5" />
+                    <span className={`p-1.5 rounded shrink-0 mt-0.5 ${guaranteedReturns ? 'bg-[#e8daff] text-[#6929c4]' : 'bg-[#e0e0e0] text-[#161616]'}`}>
+                      <Flash size={16} />
                     </span>
                     <div>
-                      <span className="text-xs font-bold text-[#142A36] block">
+                      <span className="text-xs font-semibold text-[#161616] block">
                         Guaranteed Returns Promised (Prepaid Tasks, Crypto, High Yield)
                       </span>
-                      <span className="text-[11px] text-[#64748B]">
+                      <span className="text-[11px] text-[#525252]">
                         Promise of impossible returns or instant deposit multiplication.
                       </span>
                     </div>
                   </div>
-                  <div className={`w-5 h-5 rounded-md border flex items-center justify-center shrink-0 ${guaranteedReturns ? 'bg-purple-600 border-purple-700 text-white' : 'bg-white border-slate-300'}`}>
-                    {guaranteedReturns && <Check className="w-3.5 h-3.5" />}
+                  <div className={`w-5 h-5 border flex items-center justify-center shrink-0 ${guaranteedReturns ? 'bg-[#8a3ffc] border-[#8a3ffc] text-white' : 'bg-white border-[#8d8d8d]'}`}>
+                    {guaranteedReturns && <Checkmark size={14} />}
                   </div>
                 </div>
 
-                {/* 5. Call context: explicit, never auto-detected */}
-                <fieldset className="p-3 rounded-xl border border-[#E2E8F0] bg-[#F7F8F4] space-y-2">
+                {/* 5. Call Context */}
+                <fieldset className="p-3 border border-[#e0e0e0] bg-[#f4f4f4] space-y-2">
                   <legend className="sr-only">Call context</legend>
                   <div className="flex items-start gap-3">
-                    <span className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${callState !== 'NONE' ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-700'}`}>
-                      <PhoneCall className="w-3.5 h-3.5" />
+                    <span className={`p-1.5 rounded shrink-0 mt-0.5 ${callState !== 'NONE' ? 'bg-[#da1e28] text-white' : 'bg-[#e0e0e0] text-[#161616]'}`}>
+                      <Phone size={16} />
                     </span>
                     <div>
-                      <span className="text-xs font-bold text-[#142A36] block">Call context while paying</span>
-                      <span className="text-[11px] text-[#64748B]">
+                      <span className="text-xs font-semibold text-[#161616] block">Call context while paying</span>
+                      <span className="text-[11px] text-[#525252]">
                         This prototype never detects calls automatically. Choose what you know, or simulate a device signal for the demo.
                       </span>
                     </div>
@@ -646,71 +633,65 @@ export const PaymentCheckpointPage: React.FC = () => {
                         role="radio"
                         aria-checked={callState === opt.value}
                         onClick={() => setCallState(opt.value)}
-                        className={`min-h-[44px] px-3 py-2 rounded-xl border text-left text-xs font-semibold cursor-pointer transition-colors ${
+                        className={`min-h-[44px] px-3 py-2 border text-left text-xs font-semibold cursor-pointer transition-colors ${
                           callState === opt.value
                             ? opt.value === 'NONE'
-                              ? 'bg-white border-[#176B58] ring-1 ring-[#176B58] text-[#142A36]'
-                              : 'bg-red-50 border-red-400 ring-1 ring-red-400 text-red-950'
-                            : 'bg-white border-[#E2E8F0] text-[#142A36] hover:bg-slate-50'
+                              ? 'bg-white border-[#0f62fe] text-[#161616]'
+                              : 'bg-[#fff1f1] border-[#da1e28] text-[#750e13]'
+                            : 'bg-white border-[#e0e0e0] text-[#161616] hover:bg-[#f4f4f4]'
                         }`}
                       >
                         <span className="block">{opt.label}</span>
-                        <span className={`block text-[10px] ${opt.value === 'DEMO_SIMULATED_ACTIVE_CALL' ? 'font-bold text-purple-800' : 'text-[#64748B]'}`}>
+                        <span className={`block text-[10px] ${opt.value === 'DEMO_SIMULATED_ACTIVE_CALL' ? 'font-bold text-[#6929c4]' : 'text-[#525252]'}`}>
                           {opt.hint}
                         </span>
                       </button>
                     ))}
                   </div>
-                  {callState === 'DEMO_SIMULATED_ACTIVE_CALL' && (
-                    <p className="text-[11px] text-purple-900 bg-purple-50 border border-purple-200 rounded-lg p-2">
-                      Simulated signal for demonstration. Real Android/iOS apps get only limited call-state access (see docs/PLATFORM_LIMITATIONS.md).
-                    </p>
-                  )}
                 </fieldset>
               </div>
             </div>
 
             {/* Submit Action */}
             <div className="flex items-center justify-between pt-2">
-              <span className="text-[11px] text-[#94A3B8]">
+              <span className="text-[11px] text-[#8d8d8d]">
                 All simulations are recorded in local audit log
               </span>
 
-              <button
+              <Button
+                kind="primary"
+                size="md"
                 type="submit"
                 disabled={simulating}
-                className="px-6 py-3 rounded-xl bg-[#176B58] hover:bg-[#135948] text-white font-bold text-xs transition-all shadow-subtle flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                renderIcon={ArrowRight}
               >
-                <ShieldCheck className="w-4 h-4" />
-                <span>{simulating ? 'Analyzing Behavioral Signals...' : 'Run Pre-Flight Risk Assessment'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
+                {simulating ? 'Analyzing Behavioral Signals...' : 'Run Pre-Flight Risk Assessment'}
+              </Button>
             </div>
           </form>
-        </div>
+        </Tile>
 
-        {/* Right Column: Interactive UPI Terminal & Assessment Dossier */}
+        {/* Right Column: Assessment Dossier / Terminal */}
         <div className="lg:col-span-5 space-y-6">
           {result ? (
-            /* Authoritative Decision Dossier */
-            <div className="bg-white rounded-2xl border border-[#E2E8F0] overflow-hidden shadow-card animate-in fade-in duration-200">
+            <Tile className="bg-white p-0 border border-[#e0e0e0] overflow-hidden">
               {/* Outcome Header Banner */}
               <div
                 className={`p-5 text-white ${
                   result.outcome === 'SEEK_TRUSTED_HELP'
-                    ? 'bg-[#B91C1C]'
+                    ? 'bg-[#da1e28]'
                     : result.outcome === 'PAUSE_AND_VERIFY'
-                    ? 'bg-[#B45309]'
-                    : 'bg-[#176B58]'
+                    ? 'bg-[#b28600]'
+                    : 'bg-[#0f62fe]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-3 mb-2 flex-wrap">
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-black/20 border border-white/20">
+                    <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-black/20 border border-white/20">
                       SIMULATION #{result.simulation_id}
                     </span>
                     {result.policy_tier && (
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-white/20 border border-white/30">
+                      <span className="px-2 py-0.5 text-[10px] font-black uppercase tracking-wider bg-white/20 border border-white/30">
                         TIER: {result.policy_tier}
                       </span>
                     )}
@@ -727,60 +708,35 @@ export const PaymentCheckpointPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-5 sm:p-6 space-y-5">
-                {/* Explained contributing signals */}
-                {result.risk_signals && result.risk_signals.length > 0 ? (
+              <div className="p-5 sm:p-6 space-y-5 text-xs">
+                {result.risk_signals && result.risk_signals.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
-                      Why this result (each contributing signal):
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-[#525252] mb-2">
+                      Why this result (contributing signals):
                     </h4>
                     <RiskSignalList signals={result.risk_signals} />
-                    {result.history_summary && typeof result.history_summary.transactions_considered === 'number' && (
-                      <p className="text-[11px] text-[#64748B] mt-2">
-                        Compared with {result.history_summary.transactions_considered} mock-ledger payments from the last{' '}
-                        {result.history_summary.window_days} days
-                        {result.history_summary.p90_amount
-                          ? ` (typical larger payment ₹${Number(result.history_summary.p90_amount).toLocaleString('en-IN')}).`
-                          : '.'}{' '}
-                        {result.history_summary.baseline_note}
-                      </p>
-                    )}
-                  </div>
-                ) : result.evidence_factors && result.evidence_factors.length > 0 && (
-                  <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
-                      Detected Coercion Factors:
-                    </h4>
-                    <ul className="space-y-1.5">
-                      {result.evidence_factors.map((factor, idx) => (
-                        <li key={idx} className="text-xs text-red-950 flex items-start gap-2 bg-red-50/80 p-2.5 rounded-xl border border-red-200">
-                          <AlertTriangle className="w-3.5 h-3.5 text-red-600 shrink-0 mt-0.5" />
-                          <span>{factor}</span>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                 )}
 
                 {/* Verification Checklist */}
                 {result.verification_steps && result.verification_steps.length > 0 && (
                   <div>
-                    <h4 className="text-xs font-bold uppercase tracking-wider text-[#64748B] mb-2">
+                    <h4 className="text-xs font-semibold uppercase tracking-wider text-[#525252] mb-2">
                       Recommended Verification Protocol:
                     </h4>
                     <div className="space-y-2">
                       {result.verification_steps.map((step, idx) => (
                         <label
                           key={idx}
-                          className="flex items-start gap-2.5 text-xs text-[#142A36] p-2.5 rounded-xl bg-[#F7F8F4] border border-[#E2E8F0] cursor-pointer hover:bg-slate-100/70 transition-colors"
+                          className="flex items-start gap-2.5 text-xs text-[#161616] p-2.5 bg-[#f4f4f4] border border-[#e0e0e0] cursor-pointer hover:bg-[#e0e0e0] transition-colors"
                         >
                           <input
                             type="checkbox"
                             checked={Boolean(checkedChecklist[idx])}
                             onChange={(e) => setCheckedChecklist({ ...checkedChecklist, [idx]: e.target.checked })}
-                            className="mt-0.5 rounded text-[#176B58] focus:ring-[#176B58]"
+                            className="mt-0.5"
                           />
-                          <span className={checkedChecklist[idx] ? 'line-through text-[#94A3B8]' : 'text-[#142A36] font-medium'}>
+                          <span className={checkedChecklist[idx] ? 'line-through text-[#8d8d8d]' : 'text-[#161616] font-medium'}>
                             {step}
                           </span>
                         </label>
@@ -790,31 +746,26 @@ export const PaymentCheckpointPage: React.FC = () => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="pt-2 border-t border-[#F1F5F9] flex flex-col gap-2.5">
+                <div className="pt-2 border-t border-[#e0e0e0] flex flex-col gap-2.5">
                   {result.outcome === 'SEEK_TRUSTED_HELP' && (
-                    <button
+                    <Button
+                      kind="danger"
+                      size="md"
+                      renderIcon={Phone}
                       onClick={() => navigate('/family-shield')}
-                      className="w-full py-2.5 px-4 rounded-xl bg-red-700 hover:bg-red-800 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                     >
-                      <PhoneCall className="w-4 h-4" />
-                      <span>Contact Family Shield Guardian Now</span>
-                    </button>
+                      Contact Family Shield Guardian Now
+                    </Button>
                   )}
 
-                  <button
-                    type="button"
+                  <Button
+                    kind="secondary"
+                    size="md"
+                    renderIcon={Flash}
                     onClick={() => setIsCheckInOpen(true)}
-                    className={`w-full min-h-[44px] py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      result.outcome === 'PROCEED_WITH_CAUTION'
-                        ? 'bg-white border border-[#CBD5E1] text-[#142A36] hover:bg-[#F7F8F4]'
-                        : 'bg-amber-600 hover:bg-amber-700 text-white shadow-subtle'
-                    }`}
                   >
-                    <Sparkles className="w-4 h-4" />
-                    <span>
-                      {result.checkin_status === 'COMPLETED' ? 'Redo Safety Check-in' : 'Start Safety Check-in'} (सुरक्षा जाँच)
-                    </span>
-                  </button>
+                    {result.checkin_status === 'COMPLETED' ? 'Redo Safety Check-in' : 'Start Safety Check-in'} (सुरक्षा जाँच)
+                  </Button>
 
                   {(result.outcome !== 'PROCEED_WITH_CAUTION' || result.guardian_approval_recommended) && (
                     <GuardianApprovalPanel
@@ -824,27 +775,25 @@ export const PaymentCheckpointPage: React.FC = () => {
                   )}
 
                   {/* Save as Authoritative Incident Dossier */}
-                  <button
-                    type="button"
-                    onClick={handleSaveIncident}
+                  <Button
+                    kind="tertiary"
+                    size="md"
+                    renderIcon={Save}
                     disabled={isSavingIncident || !!savedIncidentId}
-                    className={`w-full py-2.5 px-4 rounded-xl font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                      savedIncidentId
-                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-300 cursor-default'
-                        : 'bg-[#176B58] hover:bg-[#135948] text-white shadow-xs'
-                    }`}
+                    onClick={handleSaveIncident}
                   >
-                    <Save className="w-4 h-4" />
                     {isSavingIncident
                       ? 'Saving Authoritative Case...'
                       : savedIncidentId
                       ? `Saved as Incident Case #${savedIncidentId}`
                       : 'Save as Incident Record (Dossier)'}
-                  </button>
+                  </Button>
 
                   {result.outcome !== 'PROCEED_WITH_CAUTION' && (
-                    <button
-                      type="button"
+                    <Button
+                      kind="primary"
+                      size="md"
+                      renderIcon={ArrowRight}
                       onClick={() => {
                         const incidentQuery = savedIncidentId ? `?incident_id=${encodeURIComponent(savedIncidentId)}` : '';
                         navigate(`/golden-hour${incidentQuery}`, {
@@ -858,46 +807,37 @@ export const PaymentCheckpointPage: React.FC = () => {
                           },
                         });
                       }}
-                      className="w-full py-2.5 px-4 rounded-xl bg-[#142A36] hover:bg-[#1E334E] text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
                     >
-                      <LifeBuoy className="w-4 h-4 text-amber-400" />
-                      <span>Open Golden Hour Recovery Dossier &rarr;</span>
-                    </button>
+                      Open Golden Hour Recovery Dossier
+                    </Button>
                   )}
 
-                  <p className="text-[11px] text-[#94A3B8] text-center italic">
+                  <p className="text-[11px] text-[#8d8d8d] text-center italic">
                     {result.disclaimer}
                   </p>
                 </div>
               </div>
-            </div>
+            </Tile>
           ) : (
-            /* Pre-Flight Smartphone UPI Interception Preview Terminal */
-            <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-card space-y-4">
-              <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
-                <div className="flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-[#176B58]" />
-                  <span className="text-xs font-bold text-[#142A36]">UPI Transaction Interception Terminal</span>
-                </div>
-                <span className="text-[10px] font-mono text-[#94A3B8]">LIVE PREVIEW</span>
+            /* Terminal Preview */
+            <Tile className="bg-white p-6 border border-[#e0e0e0] space-y-4">
+              <div className="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
+                <span className="text-xs font-semibold text-[#161616]">UPI Transaction Interception Terminal</span>
+                <Tag type="cool-gray" size="sm">LIVE PREVIEW</Tag>
               </div>
 
-              {/* Simulated Phone UI Screen */}
-              <div className="p-4 rounded-xl bg-gradient-to-b from-[#142A36] to-[#0E1E27] text-white space-y-4 shadow-sm">
-                <div className="flex items-center justify-between text-[11px] text-[#DCEDE5] border-b border-white/10 pb-2">
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                    <span className="font-semibold">Satark Saathi Guard</span>
-                  </div>
+              <div className="p-4 bg-[#161616] text-white space-y-4">
+                <div className="flex items-center justify-between text-[11px] text-[#c6c6c6] border-b border-[#393939] pb-2">
+                  <span className="font-semibold text-white">Satark Saathi Guard</span>
                   <span className="font-mono text-[10px]">PRE-FLIGHT</span>
                 </div>
 
                 <div className="text-center py-2">
-                  <p className="text-[11px] text-slate-300">Paying to</p>
-                  <h4 className="text-sm font-bold text-white truncate px-2 mt-0.5">
+                  <p className="text-[11px] text-[#8d8d8d]">Paying to</p>
+                  <h4 className="text-sm font-semibold text-white truncate px-2 mt-0.5">
                     {recipientName || 'Unverified Beneficiary'}
                   </h4>
-                  <p className="font-mono text-xs text-[#DCEDE5] mt-0.5">
+                  <p className="font-mono text-xs text-[#c6c6c6] mt-0.5">
                     {vpa || 'handle@upi'}
                   </p>
 
@@ -908,32 +848,32 @@ export const PaymentCheckpointPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 text-[11px] text-slate-300 flex items-center justify-between">
+                <div className="p-2.5 bg-[#262626] border border-[#393939] text-[11px] text-[#c6c6c6] flex items-center justify-between">
                   <span>Transfer Status:</span>
-                  <span className="text-amber-300 font-semibold flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
+                  <span className="text-[#f1c21b] font-semibold flex items-center gap-1">
+                    <Time size={14} />
                     <span>Awaiting Checkpoint</span>
                   </span>
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-[#F7F8F4] border border-[#E2E8F0] text-xs text-[#64748B] space-y-1.5">
-                <p className="font-semibold text-[#142A36] flex items-center gap-1.5">
-                  <Info className="w-3.5 h-3.5 text-[#176B58]" />
+              <div className="p-3 bg-[#f4f4f4] border border-[#e0e0e0] text-xs text-[#525252] space-y-1">
+                <p className="font-semibold text-[#161616] flex items-center gap-1.5">
+                  <Information size={16} className="text-[#0f62fe]" />
                   <span>How This Protects You:</span>
                 </p>
                 <p className="text-[11px] leading-relaxed">
                   UPI transfers are instantaneous and irreversible. Satark Saathi detects psychological coercion, fraudulent VPA handles, and active call pressure before money leaves your account.
                 </p>
               </div>
-            </div>
+            </Tile>
           )}
 
-          {/* Past Simulations Ledger */}
+          {/* Past Simulations */}
           {pastSimulations.length > 0 && (
-            <div className="bg-white rounded-2xl border border-[#E2E8F0] p-5 shadow-card">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-[#142A36] mb-3 flex items-center gap-2">
-                <History className="w-4 h-4 text-[#176B58]" />
+            <Tile className="bg-white p-5 border border-[#e0e0e0]">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-[#161616] mb-3 flex items-center gap-2">
+                <Time size={16} className="text-[#0f62fe]" />
                 <span>Recent Simulation Runs ({pastSimulations.length})</span>
               </h4>
               <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
@@ -944,66 +884,55 @@ export const PaymentCheckpointPage: React.FC = () => {
                       setResult(sim);
                       setCheckedChecklist({});
                     }}
-                    className="p-2.5 rounded-xl border border-[#E2E8F0] hover:bg-[#F7F8F4] transition-colors flex items-center justify-between cursor-pointer"
+                    className="p-2.5 border border-[#e0e0e0] hover:bg-[#f4f4f4] transition-colors flex items-center justify-between cursor-pointer"
                   >
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-mono text-xs font-bold text-[#142A36]">{sim.simulation_id}</span>
-                        <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${
-                          sim.outcome === 'SEEK_TRUSTED_HELP' ? 'bg-red-100 text-red-800' : sim.outcome === 'PAUSE_AND_VERIFY' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
-                        }`}>
+                        <span className="font-mono text-xs font-semibold text-[#161616]">{sim.simulation_id}</span>
+                        <Tag
+                          type={sim.outcome === 'SEEK_TRUSTED_HELP' ? 'red' : sim.outcome === 'PAUSE_AND_VERIFY' ? 'warm-gray' : 'green'}
+                          size="sm"
+                        >
                           {sim.outcome.replace(/_/g, ' ')}
-                        </span>
+                        </Tag>
                       </div>
-                      <span className="text-[11px] text-[#64748B] font-mono block">
+                      <span className="text-[11px] text-[#525252] font-mono block">
                         ₹{sim.requested_amount.toLocaleString()} &bull; {sim.vpa_or_account}
                       </span>
                     </div>
-                    <span className="text-[10px] text-[#94A3B8]">
+                    <span className="text-[10px] text-[#8d8d8d]">
                       {new Date(sim.checked_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 ))}
               </div>
-            </div>
+            </Tile>
           )}
         </div>
       </div>
 
-      {/* Safety Check-in Modal (server-driven, adaptive, multilingual) */}
+      {/* Safety Check-in Modal */}
       {isCheckInOpen && result && (
-        <div
-          className="fixed inset-0 z-50 bg-[#142A36]/60 backdrop-blur-xs flex items-center justify-center p-4"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Safety Check-in"
+        <Modal
+          open={isCheckInOpen}
+          modalHeading={`Safety Check-in • ${result.simulation_id}`}
+          passiveModal
+          onRequestClose={() => {
+            setIsCheckInOpen(false);
+            fetchPastSimulations();
+          }}
+          size="md"
         >
-          <div className="bg-white rounded-2xl max-w-lg w-full border border-[#E2E8F0] shadow-2xl overflow-hidden">
-            <div className="p-4 bg-[#142A36] text-white flex items-center justify-between">
-              <span className="text-sm font-bold">Safety Check-in &bull; {result.simulation_id}</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsCheckInOpen(false);
-                  fetchPastSimulations();
-                }}
-                className="p-1.5 text-white/80 hover:text-white rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
-                aria-label="Close check-in"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-5 max-h-[78vh] overflow-y-auto">
-              <SafetyCheckIn
-                simulationId={result.simulation_id}
-                initialLanguage={toCheckinLanguage(appLanguage)}
-                onCompleted={(r) =>
-                  setResult((prev) => (prev ? { ...prev, checkin_status: 'COMPLETED', checkin_tier: r.final_tier } : prev))
-                }
-              />
-            </div>
+          <div className="p-2 max-h-[78vh] overflow-y-auto">
+            <SafetyCheckIn
+              simulationId={result.simulation_id}
+              initialLanguage={toCheckinLanguage(appLanguage)}
+              onCompleted={(r) =>
+                setResult((prev) => (prev ? { ...prev, checkin_status: 'COMPLETED', checkin_tier: r.final_tier } : prev))
+              }
+            />
           </div>
-        </div>
+        </Modal>
       )}
     </div>
   );

@@ -1,14 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Search,
-  Bell,
+  Notification,
   Globe,
   ChevronDown,
-  Sparkles,
-  Eye,
-  LogOut,
-} from 'lucide-react';
+  View,
+  Logout,
+  Search as SearchIcon,
+  UserProfile as UserProfileIcon,
+  Flash,
+} from '@carbon/icons-react';
+import { Tag, Button } from '@carbon/react';
 import { PresenterControlModal } from '../demo/PresenterControlModal';
 import { useLanguage, LANGUAGES } from '../../context/LanguageContext';
 import { useNotification } from '../../context/NotificationContext';
@@ -67,7 +69,7 @@ export const Header: React.FC = () => {
   const { signOut } = useAuthSession();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [, setProfile] = useState<UserProfile | null>(null);
   const [alerts, setAlerts] = useState<FamilyAlert[]>([]);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
@@ -76,7 +78,6 @@ export const Header: React.FC = () => {
   const notificationsRef = useRef<HTMLDivElement>(null);
   const languageRef = useRef<HTMLDivElement>(null);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
@@ -110,65 +111,63 @@ export const Header: React.FC = () => {
   const unacknowledgedAlerts = alerts.filter((a) => a.status !== 'ACKNOWLEDGED');
 
   return (
-    <header className="hidden lg:flex flex-col bg-white border-b border-[#E2E8F0] px-6 py-3.5 sticky top-0 z-30 shadow-subtle">
+    <header className="hidden lg:flex flex-col bg-white border-b border-[#e0e0e0] px-6 py-3 sticky top-0 z-30 font-sans">
       <div className="flex items-center justify-between gap-4">
         {/* Page Title & Contextual Description */}
         <div className="min-w-[11rem] flex-1">
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-lg font-bold text-[#142A36] tracking-tight leading-tight truncate">
-              {currentPage.title}
-            </h1>
-          </div>
-          <p className="text-xs text-[#64748B] mt-0.5 truncate">{currentPage.description}</p>
+          <h1 className="text-lg font-semibold text-[#161616] tracking-tight leading-tight truncate">
+            {currentPage.title}
+          </h1>
+          <p className="text-xs text-[#525252] mt-0.5 truncate">{currentPage.description}</p>
         </div>
 
-        {/* Global Incident Search (hidden in Senior Mode to simplify the screen) */}
+        {/* Global Incident Search (hidden in Senior Mode to simplify screen) */}
         {!seniorMode && (
-        <form onSubmit={handleSearchSubmit} className="relative hidden xl:block flex-1 min-w-[9rem] max-w-[16rem]">
-          <Search className="w-3.5 h-3.5 text-[#94A3B8] absolute left-3 top-2.5" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search scans, UTR, or suspect..."
-            className="w-full pl-8 pr-3 py-1.5 text-xs bg-[#F7F8F4] border border-[#E2E8F0] rounded-xl text-[#142A36] placeholder:text-[#94A3B8] focus:bg-white focus:outline-none focus:ring-1 focus:ring-[#176B58] focus:border-[#176B58] transition-colors"
-          />
-        </form>
+          <form onSubmit={handleSearchSubmit} className="relative hidden xl:block flex-1 min-w-[10rem] max-w-[18rem]">
+            <SearchIcon size={16} className="text-[#525252] absolute left-3 top-2.5" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search scans, UTR, or suspect..."
+              className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#f4f4f4] border border-[#e0e0e0] rounded text-[#161616] placeholder:text-[#8d8d8d] focus:bg-white focus:outline-none focus:border-[#0f62fe] transition-colors"
+            />
+          </form>
         )}
 
         {/* Action Controls & Profile Area */}
         <div className="flex items-center gap-2 xl:gap-3 shrink-0">
           <ViewModeToggle />
-          <button
-            type="button"
+
+          {/* Senior Mode Toggle */}
+          <Button
+            kind={seniorMode ? 'secondary' : 'ghost'}
+            size="sm"
+            renderIcon={View}
             onClick={() => setSeniorMode(!seniorMode)}
             aria-pressed={seniorMode}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold rounded-xl border transition-colors cursor-pointer ${
-              seniorMode
-                ? 'bg-amber-400 text-slate-950 border-amber-500'
-                : 'bg-white text-[#142A36] border-[#CBD5E1] hover:bg-[#F7F8F4]'
-            }`}
-            title="Larger text, higher contrast and a simpler home screen"
+            className={seniorMode ? 'bg-[#f1c21b] text-[#161616] font-semibold' : ''}
+            title="Larger text, higher contrast and simpler layout"
           >
-            <Eye className="w-3.5 h-3.5" />
-            <span className="hidden xl:inline whitespace-nowrap">{seniorMode ? 'Senior Mode: ON' : 'Senior Mode'}</span>
-          </button>
+            <span className="hidden xl:inline">{seniorMode ? 'Senior Mode: ON' : 'Senior Mode'}</span>
+          </Button>
+
           {/* Language Selector Dropdown */}
           <div className="relative" ref={languageRef}>
             <button
               onClick={() => setIsLanguageOpen(!isLanguageOpen)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[#142A36] bg-[#F7F8F4] hover:bg-[#EEF1EB] border border-[#E2E8F0] rounded-xl transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-[#161616] bg-[#f4f4f4] hover:bg-[#e0e0e0] border border-[#e0e0e0] rounded transition-colors cursor-pointer"
               aria-label="Select language"
               aria-expanded={isLanguageOpen}
             >
-              <Globe className="w-3.5 h-3.5 text-[#64748B]" />
+              <Globe size={16} className="text-[#525252]" />
               <span className="hidden xl:inline">{currentMeta.nativeName}</span>
-              <ChevronDown className="w-3 h-3 text-[#94A3B8]" />
+              <ChevronDown size={14} className="text-[#525252]" />
             </button>
 
             {isLanguageOpen && (
-              <div className="absolute right-0 mt-1.5 w-44 bg-white border border-[#E2E8F0] rounded-2xl shadow-dropdown py-1 z-40 text-xs">
-                <div className="px-3 py-1.5 border-b border-[#F1F5F9] font-semibold text-[#64748B] text-[10px] uppercase">
+              <div className="absolute right-0 mt-1.5 w-44 bg-white border border-[#e0e0e0] shadow-md py-1 z-40 text-xs">
+                <div className="px-3 py-1.5 border-b border-[#e0e0e0] font-semibold text-[#525252] text-[10px] uppercase">
                   Language / भाषा
                 </div>
                 {Object.values(LANGUAGES).map((lang) => (
@@ -178,12 +177,12 @@ export const Header: React.FC = () => {
                       setLanguage(lang.code);
                       setIsLanguageOpen(false);
                     }}
-                    className={`w-full text-left px-3 py-1.5 hover:bg-[#F7F8F4] flex items-center justify-between transition-colors ${
-                      language === lang.code ? 'font-bold text-[#176B58] bg-[#DCEDE5]/60' : 'text-[#142A36]'
+                    className={`w-full text-left px-3 py-1.5 hover:bg-[#f4f4f4] flex items-center justify-between transition-colors ${
+                      language === lang.code ? 'font-semibold text-[#0f62fe] bg-[#edf5ff]' : 'text-[#161616]'
                     }`}
                   >
                     <span>{lang.nativeName}</span>
-                    <span className="text-[10px] text-[#94A3B8] font-mono">({lang.name})</span>
+                    <span className="text-[10px] text-[#8d8d8d] font-mono">({lang.name})</span>
                   </button>
                 ))}
               </div>
@@ -194,53 +193,50 @@ export const Header: React.FC = () => {
           <div className="relative" ref={notificationsRef}>
             <button
               onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-              className="relative p-2 text-[#64748B] hover:text-[#142A36] hover:bg-[#F7F8F4] rounded-xl border border-[#E2E8F0] bg-white transition-colors cursor-pointer"
+              className="relative p-2 text-[#525252] hover:text-[#161616] hover:bg-[#f4f4f4] border border-[#e0e0e0] bg-white rounded transition-colors cursor-pointer"
               aria-label="View alerts and notifications"
               aria-expanded={isNotificationsOpen}
             >
-              <Bell className="w-4 h-4" />
+              <Notification size={18} />
               {unacknowledgedAlerts.length > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#da1e28] text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                   {unacknowledgedAlerts.length}
                 </span>
               )}
             </button>
 
             {isNotificationsOpen && (
-              <div className="absolute right-0 mt-1.5 w-80 bg-white border border-[#E2E8F0] rounded-2xl shadow-dropdown z-40 overflow-hidden text-xs">
-                <div className="p-3 border-b border-[#F1F5F9] bg-[#F7F8F4] flex items-center justify-between">
-                  <span className="font-bold text-[#142A36] text-xs">Family Security Alerts</span>
-                  <span className="text-[10px] text-[#64748B]">
+              <div className="absolute right-0 mt-1.5 w-80 bg-white border border-[#e0e0e0] shadow-lg z-40 overflow-hidden text-xs">
+                <div className="p-3 border-b border-[#e0e0e0] bg-[#f4f4f4] flex items-center justify-between">
+                  <span className="font-semibold text-[#161616] text-xs">Family Security Alerts</span>
+                  <Tag type="red" size="sm">
                     {unacknowledgedAlerts.length} pending
-                  </span>
+                  </Tag>
                 </div>
 
-                <div className="max-h-72 overflow-y-auto divide-y divide-[#F1F5F9]">
+                <div className="max-h-72 overflow-y-auto divide-y divide-[#e0e0e0]">
                   {alerts.length === 0 ? (
-                    <div className="p-4 text-center text-[#94A3B8]">
+                    <div className="p-4 text-center text-[#8d8d8d]">
                       No security alerts delivered yet.
                     </div>
                   ) : (
                     alerts.slice(0, 5).map((alert) => (
-                      <div key={alert.id} className="p-3 hover:bg-[#F7F8F4] transition-colors">
+                      <div key={alert.id} className="p-3 hover:bg-[#f4f4f4] transition-colors">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="font-semibold text-[#142A36] leading-tight">
+                          <p className="font-semibold text-[#161616] leading-tight">
                             {alert.threat_title}
                           </p>
-                          <span
-                            className={`px-1.5 py-0.2 rounded text-[10px] font-medium shrink-0 ${
-                              alert.status === 'ACKNOWLEDGED'
-                                ? 'bg-emerald-50 text-emerald-800'
-                                : 'bg-amber-50 text-amber-900 font-bold'
-                            }`}
+                          <Tag
+                            type={alert.status === 'ACKNOWLEDGED' ? 'green' : 'warm-gray'}
+                            size="sm"
                           >
                             {alert.status}
-                          </span>
+                          </Tag>
                         </div>
-                        <p className="text-[11px] text-[#64748B] mt-1 line-clamp-2">
+                        <p className="text-[11px] text-[#525252] mt-1 line-clamp-2">
                           {alert.message_content}
                         </p>
-                        <span className="text-[10px] text-[#94A3B8] mt-1 block">
+                        <span className="text-[10px] text-[#8d8d8d] mt-1 block">
                           {new Date(alert.delivered_at).toLocaleTimeString('en-IN', {
                             hour: '2-digit',
                             minute: '2-digit',
@@ -251,13 +247,13 @@ export const Header: React.FC = () => {
                   )}
                 </div>
 
-                <div className="p-2 border-t border-[#F1F5F9] bg-[#F7F8F4] text-center">
+                <div className="p-2 border-t border-[#e0e0e0] bg-[#f4f4f4] text-center">
                   <button
                     onClick={() => {
                       setIsNotificationsOpen(false);
                       navigate('/family-shield');
                     }}
-                    className="text-xs font-semibold text-[#176B58] hover:text-[#135948] cursor-pointer"
+                    className="text-xs font-semibold text-[#0f62fe] hover:underline cursor-pointer"
                   >
                     Open Family Shield Alerts Log →
                   </button>
@@ -267,67 +263,71 @@ export const Header: React.FC = () => {
           </div>
 
           {/* User Profile & Demo Session Switcher */}
-          <div className="flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
+          <div className="flex items-center gap-2 pl-2 border-l border-[#e0e0e0]">
             <button
               onClick={() => switchUser(activeUserId === '1' ? '2' : '1')}
-              className="flex items-center gap-2 p-1 rounded-xl hover:bg-[#F7F8F4] transition-colors cursor-pointer group text-left"
+              className="flex items-center gap-2 p-1.5 rounded hover:bg-[#f4f4f4] transition-colors cursor-pointer group text-left border border-transparent hover:border-[#e0e0e0]"
               title="Click to toggle between Rajesh Sharma (Protected) and Aarav Sharma (Guardian)"
             >
-              <div className={`w-7 h-7 rounded-full text-white font-bold flex items-center justify-center text-xs shadow-subtle ${
-                activeUserId === '2' ? 'bg-[#176B58]' : 'bg-[#142A36]'
-              }`}>
+              <div
+                className={`w-7 h-7 rounded-full text-white font-bold flex items-center justify-center text-xs ${
+                  activeUserId === '2' ? 'bg-[#0f62fe]' : 'bg-[#161616]'
+                }`}
+              >
                 {activeProfileName.charAt(0)}
               </div>
               <div className="hidden 2xl:block leading-none">
-                <span className="text-xs font-bold text-[#142A36] block truncate max-w-[120px] group-hover:text-[#176B58]">
+                <span className="text-xs font-semibold text-[#161616] block truncate max-w-[120px] group-hover:text-[#0f62fe]">
                   {activeProfileName}
                 </span>
-                <span className="text-[10px] text-[#64748B] block mt-0.5">
+                <span className="text-[10px] text-[#525252] block mt-0.5">
                   {activeProfileRole} &bull; Switch
                 </span>
               </div>
             </button>
 
             {/* WebSocket / Backend Connection Status Pill */}
-            <div
-              className={`ml-1 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-semibold border ${
-                isWsConnected
-                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                  : 'bg-amber-50 text-amber-900 border-amber-200'
-              }`}
+            <Tag
+              type={isWsConnected ? 'green' : 'warm-gray'}
+              size="sm"
               title={isWsConnected ? 'FastAPI WebSockets live' : 'Connecting to live notification transport...'}
+              className="m-0"
             >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  isWsConnected ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
-                }`}
-              />
-              <span className="hidden 2xl:inline">{isWsConnected ? 'Live WS' : 'Connecting'}</span>
-            </div>
+              <span className="flex items-center gap-1">
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    isWsConnected ? 'bg-[#24a148]' : 'bg-[#f1c21b] animate-pulse'
+                  }`}
+                />
+                <span className="hidden 2xl:inline">{isWsConnected ? 'Live WS' : 'Connecting'}</span>
+              </span>
+            </Tag>
 
-            {/* Presenter Deck Live Controls Button */}
+            {/* Sign Out Button */}
             <button
               type="button"
               onClick={() => {
                 signOut();
                 window.location.assign('/welcome');
               }}
-              className="p-2 rounded-xl border border-[#E2E8F0] bg-white text-[#64748B] hover:text-[#142A36] hover:bg-[#F7F8F4] cursor-pointer"
+              className="p-1.5 border border-[#e0e0e0] bg-white text-[#525252] hover:text-[#161616] hover:bg-[#f4f4f4] rounded cursor-pointer"
               title="Sign out"
               aria-label="Sign out"
             >
-              <LogOut className="w-4 h-4" />
+              <Logout size={16} />
             </button>
+
+            {/* Presenter Deck Live Controls Button */}
             {!seniorMode && (
-            <button
-              type="button"
-              onClick={() => setIsPresenterModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#142A36] hover:bg-[#1A3342] text-[#DCEDE5] hover:text-white border border-[#244356] text-xs font-semibold shadow-subtle transition-all cursor-pointer"
-              title="Open Hackathon Presenter Deck (Scenarios, Health & Evaluations)"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#DCEDE5]" />
-              <span className="hidden 2xl:inline">Presenter Deck</span>
-            </button>
+              <Button
+                kind="tertiary"
+                size="sm"
+                renderIcon={Flash}
+                onClick={() => setIsPresenterModalOpen(true)}
+                title="Open Hackathon Presenter Deck (Scenarios, Health & Evaluations)"
+              >
+                <span className="hidden 2xl:inline">Presenter Deck</span>
+              </Button>
             )}
           </div>
         </div>

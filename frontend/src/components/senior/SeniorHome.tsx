@@ -1,6 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, LifeBuoy, MessageSquareWarning, PhoneCall, Smartphone, Users } from 'lucide-react';
+import {
+  WarningAlt,
+  Wallet,
+  UserMultiple,
+  Help,
+  Phone,
+  ArrowRight,
+  Security,
+} from '@carbon/icons-react';
+import { Tile, Button } from '@carbon/react';
 import { api } from '../../api/endpoints';
 import { TrustedContact } from '../../api/types';
 import { useLanguage } from '../../context/LanguageContext';
@@ -88,10 +97,10 @@ export function seniorText(language: string): Record<string, string> {
 }
 
 const tiles = [
-  { to: '/scanner', icon: MessageSquareWarning, title: 'checkMessage', hint: 'checkMessageHint', tone: 'bg-white border-[#176B58]' },
-  { to: '/payment-checkpoint', icon: CreditCard, title: 'checkPayment', hint: 'checkPaymentHint', tone: 'bg-white border-[#176B58]' },
-  { to: '/family-shield', icon: Users, title: 'family', hint: 'familyHint', tone: 'bg-white border-[#176B58]' },
-  { to: '/golden-hour', icon: LifeBuoy, title: 'lostMoney', hint: 'lostMoneyHint', tone: 'bg-red-50 border-red-700' },
+  { to: '/scanner', icon: WarningAlt, title: 'checkMessage', hint: 'checkMessageHint', tone: 'border-l-4 border-l-[#0f62fe]' },
+  { to: '/payment-checkpoint', icon: Wallet, title: 'checkPayment', hint: 'checkPaymentHint', tone: 'border-l-4 border-l-[#0f62fe]' },
+  { to: '/family-shield', icon: UserMultiple, title: 'family', hint: 'familyHint', tone: 'border-l-4 border-l-[#0f62fe]' },
+  { to: '/golden-hour', icon: Help, title: 'lostMoney', hint: 'lostMoneyHint', tone: 'border-l-4 border-l-[#da1e28] bg-[#fff1f1]' },
 ];
 
 /** Simplified home shown instead of the dashboard when Senior Mode is on. */
@@ -112,62 +121,68 @@ export const SeniorHome: React.FC = () => {
   }, []);
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6" data-testid="senior-home">
-      <h1 className="text-3xl font-bold text-[#142A36]">{t.title}</h1>
+    <div className="max-w-4xl mx-auto space-y-6" data-testid="senior-home">
+      <h1 className="text-3xl font-bold text-[#161616] tracking-tight">{t.title}</h1>
 
       <nav aria-label={t.title} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {tiles.map(({ to, icon: Icon, title, hint, tone }) => (
           <Link
             key={to}
             to={to}
-            className={`flex items-start gap-4 p-5 rounded-2xl border-2 ${tone} hover:shadow-md focus-visible:ring-4 focus-visible:ring-amber-500`}
+            className={`cds--tile flex items-start gap-4 p-6 bg-white border border-[#c6c6c6] ${tone} hover:border-[#0f62fe] transition-colors focus-visible:outline-4 focus-visible:outline-[#0f62fe] min-h-[110px]`}
           >
-            <Icon className="w-9 h-9 shrink-0 text-[#142A36]" aria-hidden="true" />
+            <Icon size={36} className="shrink-0 text-[#161616]" aria-hidden="true" />
             <span>
-              <span className="block text-xl font-bold text-[#142A36]">{t[title]}</span>
-              <span className="block text-base text-[#1F2937] mt-1">{t[hint]}</span>
+              <span className="block text-xl font-bold text-[#161616]">{t[title]}</span>
+              <span className="block text-sm text-[#525252] mt-1">{t[hint]}</span>
             </span>
           </Link>
         ))}
       </nav>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <a href="tel:1930" className="flex items-center justify-center gap-3 p-5 rounded-2xl bg-red-700 hover:bg-red-800 text-white text-xl font-bold">
-          <PhoneCall className="w-7 h-7" aria-hidden="true" />
+        <a
+          href="tel:1930"
+          className="flex items-center justify-center gap-3 p-6 bg-[#da1e28] hover:bg-[#ba1b23] text-white text-xl font-bold transition-colors min-h-[70px] shadow-sm"
+        >
+          <Phone size={28} aria-hidden="true" />
           {t.call1930}
         </a>
         {guardian && (
           <a
             href={`tel:${guardian.phone_number.replace(/\s/g, '')}`}
-            className="flex items-center justify-center gap-3 p-5 rounded-2xl bg-[#176B58] hover:bg-[#135948] text-white text-xl font-bold"
+            className="flex items-center justify-center gap-3 p-6 bg-[#0f62fe] hover:bg-[#0353e9] text-white text-xl font-bold transition-colors min-h-[70px] shadow-sm"
           >
-            <Users className="w-7 h-7" aria-hidden="true" />
+            <UserMultiple size={28} aria-hidden="true" />
             {t.callFamily.replace('{name}', guardian.name)}
           </a>
         )}
       </div>
 
-      <section className="p-5 rounded-2xl border-2 border-[#142A36] bg-white space-y-2" aria-labelledby="senior-rules">
-        <h2 id="senior-rules" className="text-xl font-bold text-[#142A36]">{t.remember}</h2>
-        <ul className="list-disc pl-6 space-y-2 text-lg text-[#111827]">
+      <Tile className="p-6 border-l-4 border-l-[#161616] bg-white space-y-3" aria-labelledby="senior-rules">
+        <h2 id="senior-rules" className="text-xl font-bold text-[#161616]">
+          {t.remember}
+        </h2>
+        <ul className="list-disc pl-6 space-y-2 text-base text-[#161616] font-medium leading-relaxed">
           <li>{t.rule1}</li>
           <li>{currentMeta.goldenRule}</li>
           <li>{t.rule3}</li>
         </ul>
-      </section>
+      </Tile>
 
-      <div className="flex flex-wrap gap-3">
-        <Link to="/mock-upi" className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-[#142A36] text-base font-semibold text-[#142A36] bg-white">
-          <Smartphone className="w-5 h-5" aria-hidden="true" />
-          {t.mockUpi}
+      <div className="flex flex-wrap gap-4 pt-2">
+        <Link to="/mock-upi">
+          <Button kind="secondary" size="lg">
+            {t.mockUpi}
+          </Button>
         </Link>
-        <button
-          type="button"
+        <Button
+          kind="tertiary"
+          size="lg"
           onClick={() => setSeniorMode(false)}
-          className="px-4 py-3 rounded-xl border-2 border-slate-500 text-base font-semibold text-[#142A36] bg-white cursor-pointer"
         >
           {t.exit}
-        </button>
+        </Button>
       </div>
     </div>
   );
