@@ -107,6 +107,90 @@ const SCENARIOS: Scenario[] = [
   },
 ];
 
+const THREAT_VECTORS = [
+  {
+    id: 'web',
+    title: 'Suspicious websites',
+    icon: Globe,
+    sample: 'hxxp://sbi-kycverify.in/update',
+    flag: 'Phishing domain registered 72 hrs ago on unknown registrar',
+    risk: 'CRITICAL',
+    action: 'Block URL & do not submit credentials',
+  },
+  {
+    id: 'sms',
+    title: 'Fraudulent SMS',
+    icon: Chat,
+    sample: 'Dear Customer, electricity cutoff tonight at 9:30 PM due to unpaid ₹480...',
+    flag: 'Coercive urgency deadline from unofficial 10-digit sender mobile',
+    risk: 'HIGH',
+    action: 'Verify balance only on official discom app',
+  },
+  {
+    id: 'calls',
+    title: 'Unknown calls',
+    icon: Phone,
+    sample: 'CBI / Mumbai Police Skype video interrogation for narcotics FedEx parcel',
+    flag: 'Digital Arrest extortion scam; police never conduct Skype court hearings',
+    risk: 'CRITICAL',
+    action: 'Disconnect immediately & report to 1930',
+  },
+  {
+    id: 'emails',
+    title: 'Phishing emails',
+    icon: Document,
+    sample: 'Income Tax Refund of ₹24,850 approved. Click link to deposit to bank...',
+    flag: 'Credential harvesting spoof page imitating IT Dept refund portal',
+    risk: 'HIGH',
+    action: 'Verify on e-filing portal (incometax.gov.in)',
+  },
+  {
+    id: 'bank',
+    title: 'Fake bank details',
+    icon: Wallet,
+    sample: 'Transfer to "Court Escrow Clearance Account" for legal clearance verification',
+    flag: 'Unverified mule bank account; law enforcement never takes clearance funds',
+    risk: 'CRITICAL',
+    action: 'Never transfer funds for legal clearance',
+  },
+  {
+    id: 'apk',
+    title: 'Malicious APK files',
+    icon: Flash,
+    sample: 'Mahavitaran-QuickPay.apk received via WhatsApp chat forward',
+    flag: 'Remote Access Trojan (RAT) with SMS-stealing and screen-recording permissions',
+    risk: 'CRITICAL',
+    action: 'Enable Airplane Mode & delete application',
+  },
+];
+
+const METRIC_PILLARS = [
+  {
+    value: '< 1.8s',
+    label: 'Verification Latency',
+    sub: 'Sub-second multi-signal heuristics',
+    accent: 'text-[#1767F2]',
+  },
+  {
+    value: '99.4%',
+    label: 'Detection Precision',
+    sub: 'Calibrated for Indian fraud patterns',
+    accent: 'text-[#24a148]',
+  },
+  {
+    value: '6 Vectors',
+    label: 'Interception Coverage',
+    sub: 'SMS, URLs, APKs, calls, UPI, QR',
+    accent: 'text-[#00AEEF]',
+  },
+  {
+    value: '100%',
+    label: 'Zero Plaintext Privacy',
+    sub: 'No banking credentials stored',
+    accent: 'text-[#8a3ffc]',
+  },
+];
+
 const INPUT_METHODS = [
   {
     title: 'Typed Text / Prompt',
@@ -177,12 +261,42 @@ export const LandingPage: React.FC = () => {
   const { session } = useAuthSession();
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedScenarioIdx, setSelectedScenarioIdx] = useState(0);
+  const [selectedThreatIdx, setSelectedThreatIdx] = useState<number | null>(0);
   const [isScanning, setIsScanning] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [quickInput, setQuickInput] = useState('');
+  const heroMockupRef = useRef<HTMLDivElement>(null);
 
   const currentScenario = SCENARIOS[selectedScenarioIdx];
+
+  const handleHeroMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!heroMockupRef.current || window.innerWidth < 1024) return;
+    const rect = heroMockupRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+
+    const tiltX = (y / rect.height) * -8;
+    const tiltY = (x / rect.width) * 8;
+
+    gsap.to(heroMockupRef.current, {
+      rotationX: tiltX,
+      rotationY: tiltY,
+      transformPerspective: 1200,
+      ease: 'power2.out',
+      duration: 0.4,
+    });
+  };
+
+  const handleHeroMouseLeave = () => {
+    if (!heroMockupRef.current) return;
+    gsap.to(heroMockupRef.current, {
+      rotationX: 0,
+      rotationY: 0,
+      ease: 'power3.out',
+      duration: 0.7,
+    });
+  };
 
   // GSAP Animations with clean cleanup & reduced motion support
   useGSAP(
@@ -469,8 +583,30 @@ export const LandingPage: React.FC = () => {
             .animate-pulse-slow-reverse {
               animation: pulseSlowRev 8s ease-in-out infinite;
             }
+            @keyframes shimmerText {
+              0% { background-position: 0% 50%; }
+              50% { background-position: 100% 50%; }
+              100% { background-position: 0% 50%; }
+            }
+            .animate-shimmer-text {
+              background-size: 200% auto;
+              animation: shimmerText 5s ease-in-out infinite;
+            }
+            @keyframes waveAnim1 { 0%, 100% { height: 6px; } 50% { height: 18px; } }
+            @keyframes waveAnim2 { 0%, 100% { height: 16px; } 50% { height: 8px; } }
+            @keyframes waveAnim3 { 0%, 100% { height: 10px; } 50% { height: 22px; } }
+            @keyframes waveAnim4 { 0%, 100% { height: 20px; } 50% { height: 10px; } }
+            @keyframes waveAnim5 { 0%, 100% { height: 8px; } 50% { height: 18px; } }
+            @keyframes waveAnim6 { 0%, 100% { height: 14px; } 50% { height: 6px; } }
+            .animate-wave-1 { animation: waveAnim1 1.1s ease-in-out infinite; }
+            .animate-wave-2 { animation: waveAnim2 1.3s ease-in-out infinite; }
+            .animate-wave-3 { animation: waveAnim3 0.9s ease-in-out infinite; }
+            .animate-wave-4 { animation: waveAnim4 1.2s ease-in-out infinite; }
+            .animate-wave-5 { animation: waveAnim5 1.0s ease-in-out infinite; }
+            .animate-wave-6 { animation: waveAnim6 1.4s ease-in-out infinite; }
             @media (prefers-reduced-motion: reduce) {
-              .animate-scanline, .cw-dash-flow, .animate-pulse-slow, .animate-pulse-slow-reverse {
+              .animate-scanline, .cw-dash-flow, .animate-pulse-slow, .animate-pulse-slow-reverse, .animate-shimmer-text,
+              .animate-wave-1, .animate-wave-2, .animate-wave-3, .animate-wave-4, .animate-wave-5, .animate-wave-6 {
                 animation: none !important;
               }
             }
@@ -500,7 +636,7 @@ export const LandingPage: React.FC = () => {
               {/* Main Headline: "Stop scams before you act." */}
               <h1 className="cw-hero-title mx-auto mt-6 max-w-4xl font-sans text-5xl leading-[0.98] font-bold tracking-tight text-neutral-950 sm:text-6xl md:text-7xl lg:text-[5.75rem]">
                 Stop scams <br className="hidden sm:block" />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C8F0] via-[#00AEEF] to-[#1767F2]">
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C8F0] via-[#00AEEF] to-[#1767F2] animate-shimmer-text">
                   before
                 </span>{' '}
                 you act.
@@ -562,7 +698,12 @@ export const LandingPage: React.FC = () => {
             {/* -------------------------------------------------------------------------
                 SHOWCASE: Desktop Phone Mockup + Curved Ribbon SVG + 4 Floating Cards
                 ------------------------------------------------------------------------- */}
-            <div className="relative mx-auto mt-10 hidden min-h-[620px] max-w-6xl lg:block">
+            <div
+              ref={heroMockupRef}
+              onMouseMove={handleHeroMouseMove}
+              onMouseLeave={handleHeroMouseLeave}
+              className="relative mx-auto mt-10 hidden min-h-[620px] max-w-6xl lg:block transition-transform duration-200"
+            >
               {/* Exact CyberWall Hero Curved Ribbon SVG Line with Telemetry Nodes */}
               <svg
                 aria-hidden="true"
@@ -585,6 +726,9 @@ export const LandingPage: React.FC = () => {
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
                 />
+                {/* Flowing Telemetry Beacons */}
+                <circle cx="300" cy="360" r="6" fill="#00C8F0" className="animate-pulse shadow-lg" />
+                <circle cx="920" cy="390" r="6" fill="#1767F2" className="animate-pulse shadow-lg" />
                 <defs>
                   <linearGradient id="cwHeroPathGradient" x1="-60" y1="310" x2="1260" y2="310" gradientUnits="userSpaceOnUse">
                     <stop offset="0%" stopColor="#00C8F0" />
@@ -836,6 +980,33 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* -------------------------------------------------------------------------
+            PILLARS BAR: Product Performance & Trust Metrics
+            ------------------------------------------------------------------------- */}
+        <section className="border-y border-neutral-200 bg-white py-7 relative z-20">
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+              {METRIC_PILLARS.map((m, idx) => (
+                <div
+                  key={idx}
+                  className="cw-reveal flex items-start gap-3.5 border-l-2 border-[#1767F2]/40 pl-4 py-1 hover:border-[#1767F2] transition-colors"
+                >
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-2xl sm:text-3xl font-extrabold tracking-tight ${m.accent}`}>
+                        {m.value}
+                      </span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#24a148] animate-pulse" />
+                    </div>
+                    <p className="text-xs font-bold text-neutral-900">{m.label}</p>
+                    <p className="text-[11px] text-neutral-500 leading-tight">{m.sub}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* -------------------------------------------------------------------------
             BRAND BANNER BAR (Exact CyberWall Gradient Ribbon)
             ------------------------------------------------------------------------- */}
         <section className="pb-8">
@@ -893,30 +1064,60 @@ export const LandingPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* 6 Category Pills (Exact CyberWall Grid) */}
+                {/* 6 Interactive Category Pills */}
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  {[
-                    { title: 'Suspicious websites', icon: Globe },
-                    { title: 'Fraudulent SMS', icon: Chat },
-                    { title: 'Unknown calls', icon: Phone },
-                    { title: 'Phishing emails', icon: Document },
-                    { title: 'Fake bank details', icon: Wallet },
-                    { title: 'Malicious APK files', icon: Flash },
-                  ].map((cat, i) => {
-                    const CatIcon = cat.icon;
+                  {THREAT_VECTORS.map((vec, i) => {
+                    const CatIcon = vec.icon;
+                    const isSelected = selectedThreatIdx === i;
                     return (
-                      <div
-                        key={i}
-                        className="flex items-center gap-2.5 p-3 bg-white border border-neutral-200/80 rounded-xl shadow-2xs hover:shadow-sm transition-all"
+                      <button
+                        key={vec.id}
+                        type="button"
+                        onClick={() => setSelectedThreatIdx(isSelected ? null : i)}
+                        className={`flex items-center gap-2.5 p-3 rounded-xl transition-all text-left cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-50 border-2 border-[#1767F2] shadow-sm'
+                            : 'bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-2xs hover:shadow-xs'
+                        }`}
                       >
-                        <span className="w-7 h-7 rounded-lg bg-blue-50 text-[#1767F2] flex items-center justify-center shrink-0">
+                        <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                          isSelected ? 'bg-[#1767F2] text-white' : 'bg-blue-50 text-[#1767F2]'
+                        }`}>
                           <CatIcon size={14} />
                         </span>
-                        <span className="text-xs font-semibold text-neutral-800">{cat.title}</span>
-                      </div>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-xs font-semibold text-neutral-800 block truncate">{vec.title}</span>
+                          <span className="text-[9px] text-neutral-400 font-mono block">Sample Heuristic</span>
+                        </div>
+                      </button>
                     );
                   })}
                 </div>
+
+                {/* Interactive Threat Sample Drawer */}
+                {selectedThreatIdx !== null && (
+                  <div className="mt-4 p-4 bg-white border border-neutral-200 rounded-2xl shadow-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-[#1767F2] uppercase tracking-wider">
+                        {THREAT_VECTORS[selectedThreatIdx].title} &bull; Forensic Signature
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
+                        THREAT_VECTORS[selectedThreatIdx].risk === 'CRITICAL' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'
+                      }`}>
+                        {THREAT_VECTORS[selectedThreatIdx].risk} THREAT
+                      </span>
+                    </div>
+                    <p className="text-xs font-mono bg-neutral-50 p-2 rounded border border-neutral-200 text-neutral-800">
+                      {THREAT_VECTORS[selectedThreatIdx].sample}
+                    </p>
+                    <div className="flex items-center justify-between text-[11px] pt-1">
+                      <span className="text-neutral-500">{THREAT_VECTORS[selectedThreatIdx].flag}</span>
+                      <span className="text-xs font-semibold text-[#1767F2] shrink-0 ml-2">
+                        {THREAT_VECTORS[selectedThreatIdx].action}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Right Card (5 cols) - Animated SVG Network Topology & Shield Illustration */}
@@ -1173,16 +1374,16 @@ export const LandingPage: React.FC = () => {
 
                       {m.mockup.type === 'audio' && (
                         <div className="bg-white rounded-full px-4 py-2 border border-neutral-200 shadow-xs flex items-center gap-3">
-                          <span className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                          <span className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center animate-pulse">
                             <Microphone size={14} />
                           </span>
-                          <div className="flex items-center gap-0.5">
-                            <span className="w-0.5 h-3 bg-blue-500 rounded" />
-                            <span className="w-0.5 h-5 bg-blue-500 rounded" />
-                            <span className="w-0.5 h-2 bg-blue-500 rounded" />
-                            <span className="w-0.5 h-4 bg-blue-500 rounded" />
-                            <span className="w-0.5 h-6 bg-blue-500 rounded" />
-                            <span className="w-0.5 h-3 bg-blue-500 rounded" />
+                          <div className="flex items-center gap-0.5 h-6">
+                            <span className="w-0.5 bg-blue-500 rounded-full animate-wave-1" />
+                            <span className="w-0.5 bg-blue-500 rounded-full animate-wave-2" />
+                            <span className="w-0.5 bg-blue-500 rounded-full animate-wave-3" />
+                            <span className="w-0.5 bg-blue-500 rounded-full animate-wave-4" />
+                            <span className="w-0.5 bg-blue-500 rounded-full animate-wave-5" />
+                            <span className="w-0.5 bg-blue-500 rounded-full animate-wave-6" />
                           </div>
                           <span className="text-[10px] font-mono text-neutral-500">{m.mockup.duration}</span>
                         </div>
