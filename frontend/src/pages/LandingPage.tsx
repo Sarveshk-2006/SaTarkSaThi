@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -316,17 +317,7 @@ export const LandingPage: React.FC = () => {
       });
 
       mm.add('(prefers-reduced-motion: no-preference)', () => {
-        // Hero entrance sequence with staggered text & components
-        const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
-
-        tl.from('.cw-hero-badge', { y: -15, opacity: 0, duration: 0.5 })
-          .from('.cw-hero-title', { y: 25, opacity: 0, duration: 0.7 }, '-=0.3')
-          .from('.cw-hero-sub', { y: 18, opacity: 0, duration: 0.6 }, '-=0.4')
-          .from('.cw-hero-cta', { y: 16, opacity: 0, stagger: 0.1, duration: 0.5 }, '-=0.3')
-          .from('.cw-hero-phone', { y: 40, opacity: 0, scale: 0.95, duration: 0.9 }, '-=0.5')
-          .from('.cw-hero-card', { y: 24, opacity: 0, stagger: 0.12, duration: 0.6 }, '-=0.5');
-
-        // Continuous subtle floating motion on the 4 surrounding spatial cards
+        // Continuous subtle floating motion on the 4 surrounding spatial cards (managed by GSAP)
         gsap.to('.cw-float-1', { y: -8, duration: 2.8, repeat: -1, yoyo: true, ease: 'sine.inOut' });
         gsap.to('.cw-float-2', { y: -10, duration: 3.2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.4 });
         gsap.to('.cw-float-3', { y: -7, duration: 2.9, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.8 });
@@ -527,25 +518,33 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile dropdown menu */}
-        {mobileMenuOpen && (
-          <div className="md:hidden mx-auto max-w-7xl mt-2 rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl space-y-3">
-            <nav className="flex flex-col space-y-2 text-sm font-medium text-neutral-700">
-              <a href="#why-satark" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">Why Satark</a>
-              <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">How it Works</a>
-              <a href="#inputs" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">Engine &amp; Inputs</a>
-              <a href="#recovery" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">Recovery 1930</a>
-              <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">FAQ</a>
-            </nav>
-            <div className="pt-2 border-t border-neutral-100 flex flex-col gap-2">
-              <Link to="/scanner" onClick={() => setMobileMenuOpen(false)}>
-                <Button kind="primary" size="md" renderIcon={ArrowRight} className="w-full">
-                  Launch Scam Scanner
-                </Button>
-              </Link>
-            </div>
-          </div>
-        )}
+        {/* Mobile dropdown menu with Motion for React */}
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="md:hidden mx-auto max-w-7xl mt-2 rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl space-y-3"
+            >
+              <nav className="flex flex-col space-y-2 text-sm font-medium text-neutral-700">
+                <a href="#why-satark" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">Why Satark</a>
+                <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">How it Works</a>
+                <a href="#inputs" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">Engine &amp; Inputs</a>
+                <a href="#recovery" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">Recovery 1930</a>
+                <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50 transition-colors">FAQ</a>
+              </nav>
+              <div className="pt-2 border-t border-neutral-100 flex flex-col gap-2">
+                <Link to="/scanner" onClick={() => setMobileMenuOpen(false)}>
+                  <Button kind="primary" size="md" renderIcon={ArrowRight} className="w-full">
+                    Launch Scam Scanner
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <main>
@@ -622,58 +621,97 @@ export const LandingPage: React.FC = () => {
 
           <div className="mx-auto w-full max-w-7xl px-5 md:px-6 relative z-10">
             {/* Centered Eyebrow, Headline & Slogan */}
+            {/* Centered Eyebrow, Headline & Slogan with Motion for React */}
             <div className="mx-auto max-w-4xl text-center">
               {/* Eyebrow Pill */}
-              <div className="cw-hero-badge inline-flex items-center gap-2 rounded-full border border-neutral-200/80 bg-white py-1.5 pr-4 pl-2 shadow-xs">
+              <motion.div
+                initial={{ opacity: 0, y: -16, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.03, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+                className="inline-flex items-center gap-2 rounded-full border border-neutral-200/80 bg-white py-1.5 pr-4 pl-2 shadow-xs cursor-default"
+              >
                 <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[#1767F2]">
                   <Security size={14} />
                 </span>
                 <span className="text-xs font-semibold text-neutral-700">
                   Official Indian Digital Safety Initiative
                 </span>
-              </div>
+              </motion.div>
 
-              {/* Main Headline: "Stop scams before you act." */}
-              <h1 className="cw-hero-title mx-auto mt-6 max-w-4xl font-sans text-5xl leading-[0.98] font-bold tracking-tight text-neutral-950 sm:text-6xl md:text-7xl lg:text-[5.75rem]">
+              {/* Main Headline: "Stop scams before you act." with Staggered Entrance */}
+              <motion.h1
+                initial={{ opacity: 0, y: 28 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                className="mx-auto mt-6 max-w-4xl font-sans text-5xl leading-[0.98] font-bold tracking-tight text-neutral-950 sm:text-6xl md:text-7xl lg:text-[5.75rem]"
+              >
                 Stop scams <br className="hidden sm:block" />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C8F0] via-[#00AEEF] to-[#1767F2] animate-shimmer-text">
                   before
                 </span>{' '}
                 you act.
-              </h1>
+              </motion.h1>
 
-              {/* Subtitles */}
-              <p className="cw-hero-sub mx-auto mt-5 max-w-2xl text-lg leading-relaxed font-semibold text-neutral-700 sm:text-xl">
-                AI-powered digital safety assistant for Indian citizens.
-              </p>
-              <p className="cw-hero-sub mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-neutral-500 sm:text-base">
-                Share anything suspicious and receive a clear risk assessment before you click, pay, install, reply, or share personal information.
-              </p>
+              {/* Subtitles with Fluid Motion Reveal */}
+              <motion.div
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed font-semibold text-neutral-700 sm:text-xl">
+                  AI-powered digital safety assistant for Indian citizens.
+                </p>
+                <p className="mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-neutral-500 sm:text-base">
+                  Share anything suspicious and receive a clear risk assessment before you click, pay, install, reply, or share personal information.
+                </p>
+              </motion.div>
 
-              {/* Centered CTAs */}
-              <div className="cw-hero-cta mt-7 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
-                <Link to="/scanner">
-                  <Button
-                    kind="primary"
-                    size="lg"
-                    renderIcon={ArrowRight}
-                    className="min-h-[48px] px-6 text-sm sm:text-base font-medium tracking-normal shadow-md"
-                  >
-                    Try Now
-                  </Button>
-                </Link>
+              {/* Centered CTAs with Hover & Tap Spring Physics */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                className="mt-7 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6"
+              >
+                <motion.div
+                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileTap={{ scale: 0.97 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+                >
+                  <Link to="/scanner">
+                    <Button
+                      kind="primary"
+                      size="lg"
+                      renderIcon={ArrowRight}
+                      className="min-h-[48px] px-6 text-sm sm:text-base font-medium tracking-normal shadow-md"
+                    >
+                      Try Now
+                    </Button>
+                  </Link>
+                </motion.div>
 
-                <a
+                <motion.a
                   href="tel:1930"
+                  whileHover={{ x: 3 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
                   className="inline-flex items-center gap-2 font-medium underline decoration-neutral-300 underline-offset-4 text-sm text-neutral-700 hover:text-[#0f62fe] transition-colors py-2"
                 >
                   <Phone size={16} className="text-[#da1e28]" />
                   <span>Already lost money? Call 1930</span>
-                </a>
-              </div>
+                </motion.a>
+              </motion.div>
 
-              {/* Quick Input Bar (Instant Free Resource) */}
-              <form onSubmit={handleQuickSubmit} className="mt-6 max-w-xl mx-auto flex items-center gap-2 bg-white border border-neutral-300 rounded p-1.5 shadow-sm">
+              {/* Quick Input Bar with Focus State Micro-Transition */}
+              <motion.form
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ scale: 1.008 }}
+                onSubmit={handleQuickSubmit}
+                className="mt-6 max-w-xl mx-auto flex items-center gap-2 bg-white border border-neutral-300 rounded p-1.5 shadow-sm transition-all focus-within:border-[#0f62fe] focus-within:ring-3 focus-within:ring-[#0f62fe]/15"
+              >
                 <input
                   type="text"
                   value={quickInput}
@@ -692,7 +730,7 @@ export const LandingPage: React.FC = () => {
                 >
                   Check
                 </Button>
-              </form>
+              </motion.form>
             </div>
 
             {/* -------------------------------------------------------------------------
@@ -739,16 +777,23 @@ export const LandingPage: React.FC = () => {
                 </defs>
               </svg>
 
-              {/* Central Smartphone Mockup (iPhone with WhatsApp Simulation & Risk Meter) */}
-              <div className="cw-hero-phone absolute top-4 left-1/2 z-10 -translate-x-1/2 w-68">
+              {/* Central Smartphone Mockup with Motion for React */}
+              <motion.div
+                initial={{ opacity: 0, y: 35, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.75, delay: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                className="cw-hero-phone absolute top-4 left-1/2 z-10 -translate-x-1/2 w-68"
+              >
                 {/* Demo status & rescan controls */}
                 <div className="flex items-center justify-between gap-1 mb-2 px-1">
                   <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200/60 text-[9px] font-semibold text-[#0f62fe]">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#0f62fe] animate-pulse" />
                     <span>Demo Simulation</span>
                   </div>
-                  <button
+                  <motion.button
                     type="button"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={handleRescan}
                     disabled={isScanning}
                     className="text-[9px] font-medium text-neutral-500 hover:text-[#0f62fe] flex items-center gap-1 transition-colors cursor-pointer"
@@ -756,24 +801,27 @@ export const LandingPage: React.FC = () => {
                   >
                     <Flash size={10} />
                     <span>{isScanning ? 'Analyzing...' : 'Simulate Scan'}</span>
-                  </button>
+                  </motion.button>
                 </div>
 
-                {/* Scenario switcher pills above phone */}
+                {/* Scenario switcher pills above phone with Spring Gestures */}
                 <div className="flex items-center justify-center gap-1.5 mb-2.5">
                   {SCENARIOS.map((sc, i) => (
-                    <button
+                    <motion.button
                       key={sc.id}
                       type="button"
+                      whileHover={{ scale: 1.05, y: -1 }}
+                      whileTap={{ scale: 0.95 }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 18 }}
                       onClick={() => handleScenarioChange(i)}
-                      className={`text-[10px] font-medium px-2.5 py-1 transition-all cursor-pointer ${
+                      className={`text-[10px] font-medium px-2.5 py-1 transition-all cursor-pointer rounded-sm ${
                         selectedScenarioIdx === i
                           ? 'bg-[#0f62fe] text-white shadow-xs font-semibold'
                           : 'bg-white text-neutral-600 hover:text-neutral-900 border border-neutral-200 hover:border-neutral-300'
                       }`}
                     >
                       {sc.category.split('/')[0].trim()}
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
 
@@ -793,14 +841,20 @@ export const LandingPage: React.FC = () => {
                       <span className="text-xs text-neutral-500">⋮</span>
                     </div>
 
-                    {/* Chat Area */}
+                    {/* Chat Area with AnimatePresence */}
                     <div className="cw-phone-chat flex-1 overflow-y-auto px-2 py-2 space-y-2 text-[9px] bg-[#efeae2] relative">
                       <div className="flex justify-center">
                         <span className="rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-neutral-500">Today</span>
                       </div>
 
                       {/* Outgoing User Message */}
-                      <div className="ml-auto max-w-[88%] rounded-lg rounded-tr-none bg-[#d9fdd3] p-2 shadow-xs text-neutral-800 leading-relaxed relative overflow-hidden">
+                      <motion.div
+                        key={`user-msg-${currentScenario.id}`}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="ml-auto max-w-[88%] rounded-lg rounded-tr-none bg-[#d9fdd3] p-2 shadow-xs text-neutral-800 leading-relaxed relative overflow-hidden"
+                      >
                         <p>{currentScenario.userQuery}</p>
                         <div className="mt-0.5 text-right text-[6px] text-neutral-400">10:24 ✓✓</div>
 
@@ -810,68 +864,89 @@ export const LandingPage: React.FC = () => {
                             <div className="w-full h-1 bg-gradient-to-r from-transparent via-[#00C8F0] to-transparent shadow-[0_0_10px_#00C8F0] animate-scanline" />
                           </div>
                         )}
-                      </div>
+                      </motion.div>
 
-                      {/* Live Scanning Indicator */}
-                      {isScanning && (
-                        <div className="mx-auto max-w-[90%] bg-blue-900/90 text-white rounded-lg p-2 text-center shadow-md animate-pulse">
-                          <p className="text-[7.5px] font-mono tracking-wider">RUNNING 40+ HEURISTIC VALIDATIONS...</p>
-                        </div>
-                      )}
-
-                      {/* Incoming Satark Saathi Analysis with Animated Risk Meter */}
-                      {!isScanning && (
-                        <div className="cw-verdict-card mr-auto max-w-[95%] rounded-lg rounded-tl-none bg-white p-2.5 shadow-xs text-neutral-800 space-y-2 leading-relaxed">
-                          {/* Animated Risk Meter Header */}
-                          <div className="space-y-1 pb-1.5 border-b border-neutral-100">
-                            <div className="flex items-center justify-between text-[8px]">
-                              <span className="font-bold text-neutral-700">Heuristic Trust Score</span>
-                              <span className={`font-mono font-bold ${
-                                currentScenario.trustScore < 30 ? 'text-[#da1e28]' : 'text-[#f1c21b]'
-                              }`}>
-                                {currentScenario.trustScore}/100 &bull; {currentScenario.trustScore < 30 ? 'CRITICAL RISK' : 'SUSPICIOUS'}
-                              </span>
-                            </div>
-                            <div className="w-full bg-neutral-200 h-1.5 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full transition-all duration-700 ease-out ${
-                                  currentScenario.trustScore < 30 ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'
-                                }`}
-                                style={{ width: `${currentScenario.trustScore}%` }}
-                              />
-                            </div>
-                          </div>
-
-                          {/* Staged Indicator Reveals */}
-                          <div className="space-y-1">
-                            {currentScenario.checks.map((chk, i) => (
-                              <div key={i} className="cw-staged-check flex items-start justify-between gap-1 text-[7.5px] leading-tight">
-                                <span className="font-semibold text-neutral-800 flex items-center gap-1 shrink-0">
-                                  <span className={`w-1.5 h-1.5 rounded-full ${
-                                    chk.status === 'critical' ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'
-                                  }`} />
-                                  {chk.label}:
+                      {/* Live Scanning or Incoming Analysis Transition via AnimatePresence */}
+                      <AnimatePresence mode="wait">
+                        {isScanning ? (
+                          <motion.div
+                            key="scanning-state"
+                            initial={{ opacity: 0, scale: 0.94 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.94 }}
+                            transition={{ duration: 0.2 }}
+                            className="mx-auto max-w-[90%] bg-blue-900/90 text-white rounded-lg p-2 text-center shadow-md animate-pulse"
+                          >
+                            <p className="text-[7.5px] font-mono tracking-wider">RUNNING 40+ HEURISTIC VALIDATIONS...</p>
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            key={`verdict-${currentScenario.id}`}
+                            initial={{ opacity: 0, scale: 0.96, y: 8 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.96, y: -6 }}
+                            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                            className="cw-verdict-card mr-auto max-w-[95%] rounded-lg rounded-tl-none bg-white p-2.5 shadow-xs text-neutral-800 space-y-2 leading-relaxed"
+                          >
+                            {/* Animated Risk Meter Header */}
+                            <div className="space-y-1 pb-1.5 border-b border-neutral-100">
+                              <div className="flex items-center justify-between text-[8px]">
+                                <span className="font-bold text-neutral-700">Heuristic Trust Score</span>
+                                <span className={`font-mono font-bold ${
+                                  currentScenario.trustScore < 30 ? 'text-[#da1e28]' : 'text-[#f1c21b]'
+                                }`}>
+                                  {currentScenario.trustScore}/100 &bull; {currentScenario.trustScore < 30 ? 'CRITICAL RISK' : 'SUSPICIOUS'}
                                 </span>
-                                <span className="text-neutral-500 text-right truncate max-w-[130px]">{chk.detail}</span>
                               </div>
-                            ))}
-                          </div>
+                              <div className="w-full bg-neutral-200 h-1.5 rounded-full overflow-hidden">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${currentScenario.trustScore}%` }}
+                                  transition={{ duration: 0.7, ease: "easeOut", delay: 0.1 }}
+                                  className={`h-full ${
+                                    currentScenario.trustScore < 30 ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'
+                                  }`}
+                                />
+                              </div>
+                            </div>
 
-                          <p className="font-semibold text-neutral-950 text-[8.5px] pt-1 border-t border-neutral-100">{currentScenario.responseHeadline}</p>
-                          <p className="text-[8px] text-neutral-600 leading-snug">{currentScenario.body}</p>
+                            {/* Staged Indicator Reveals */}
+                            <div className="space-y-1">
+                              {currentScenario.checks.map((chk, i) => (
+                                <motion.div
+                                  key={i}
+                                  initial={{ opacity: 0, x: -6 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 0.15 + i * 0.08, duration: 0.25 }}
+                                  className="cw-staged-check flex items-start justify-between gap-1 text-[7.5px] leading-tight"
+                                >
+                                  <span className="font-semibold text-neutral-800 flex items-center gap-1 shrink-0">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                      chk.status === 'critical' ? 'bg-[#da1e28]' : 'bg-[#f1c21b]'
+                                    }`} />
+                                    {chk.label}:
+                                  </span>
+                                  <span className="text-neutral-500 text-right truncate max-w-[130px]">{chk.detail}</span>
+                                </motion.div>
+                              ))}
+                            </div>
 
-                          {/* Advisory Alert Box */}
-                          <div className="p-1.5 bg-red-50 border border-red-200 rounded text-[7.5px] text-red-700 font-medium leading-tight">
-                            &bull; {currentScenario.warningNote}
-                          </div>
+                            <p className="font-semibold text-neutral-950 text-[8.5px] pt-1 border-t border-neutral-100">{currentScenario.responseHeadline}</p>
+                            <p className="text-[8px] text-neutral-600 leading-snug">{currentScenario.body}</p>
 
-                          {/* Watermark for Demo transparency */}
-                          <div className="text-[7px] font-mono text-neutral-400 text-center pt-1 border-t border-neutral-100 flex items-center justify-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
-                            <span>Demo Simulation &bull; Sample Heuristics</span>
-                          </div>
-                        </div>
-                      )}
+                            {/* Advisory Alert Box */}
+                            <div className="p-1.5 bg-red-50 border border-red-200 rounded text-[7.5px] text-red-700 font-medium leading-tight">
+                              &bull; {currentScenario.warningNote}
+                            </div>
+
+                            {/* Watermark for Demo transparency */}
+                            <div className="text-[7px] font-mono text-neutral-400 text-center pt-1 border-t border-neutral-100 flex items-center justify-center gap-1">
+                              <span className="w-1 h-1 rounded-full bg-blue-500 animate-pulse" />
+                              <span>Demo Simulation &bull; Sample Heuristics</span>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
 
                     {/* Bottom Input Pill */}
@@ -883,12 +958,18 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* 4 Floating White Cards (Exact CyberWall Placements) */}
+              {/* 4 Floating White Cards with Motion for React */}
               {/* Card 1: Top-Left */}
-              <div className="cw-hero-card cw-float-1 absolute top-[90px] left-[6%] z-30 w-[270px] -rotate-1">
-                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl transition-transform hover:-translate-y-1">
+              <motion.div
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.45 }}
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="cw-hero-card cw-float-1 absolute top-[90px] left-[6%] z-30 w-[270px] -rotate-1 cursor-default"
+              >
+                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl">
                   <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
                       <Chat size={20} />
@@ -902,11 +983,17 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Card 2: Top-Right */}
-              <div className="cw-hero-card cw-float-2 absolute top-[105px] right-[5%] z-30 w-[280px] rotate-1">
-                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl transition-transform hover:-translate-y-1">
+              <motion.div
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.55 }}
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="cw-hero-card cw-float-2 absolute top-[105px] right-[5%] z-30 w-[280px] rotate-1 cursor-default"
+              >
+                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl">
                   <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
                       <Globe size={20} />
@@ -920,11 +1007,17 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Card 3: Bottom-Left */}
-              <div className="cw-hero-card cw-float-3 absolute bottom-[65px] left-[7%] z-30 w-[270px] rotate-1">
-                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl transition-transform hover:-translate-y-1">
+              <motion.div
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.65 }}
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="cw-hero-card cw-float-3 absolute bottom-[65px] left-[7%] z-30 w-[270px] rotate-1 cursor-default"
+              >
+                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl">
                   <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
                       <Enterprise size={20} />
@@ -938,11 +1031,17 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Card 4: Bottom-Right */}
-              <div className="cw-hero-card cw-float-4 absolute bottom-[45px] right-[7%] z-30 w-[280px] -rotate-1">
-                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl transition-transform hover:-translate-y-1">
+              <motion.div
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.75 }}
+                whileHover={{ y: -6, scale: 1.02 }}
+                className="cw-hero-card cw-float-4 absolute bottom-[45px] right-[7%] z-30 w-[280px] -rotate-1 cursor-default"
+              >
+                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl">
                   <div className="flex items-start gap-3">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
                       <Security size={20} />
@@ -956,7 +1055,7 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Mobile Stack Visual for Small Screens */}
@@ -986,9 +1085,14 @@ export const LandingPage: React.FC = () => {
           <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               {METRIC_PILLARS.map((m, idx) => (
-                <div
+                <motion.div
                   key={idx}
-                  className="cw-reveal flex items-start gap-3.5 border-l-2 border-[#1767F2]/40 pl-4 py-1 hover:border-[#1767F2] transition-colors"
+                  initial={{ opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-20px' }}
+                  transition={{ duration: 0.5, delay: idx * 0.1, ease: 'easeOut' }}
+                  whileHover={{ y: -3 }}
+                  className="flex items-start gap-3.5 border-l-2 border-[#1767F2]/40 pl-4 py-1 hover:border-[#1767F2] transition-colors cursor-default"
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-2">
@@ -1000,7 +1104,7 @@ export const LandingPage: React.FC = () => {
                     <p className="text-xs font-bold text-neutral-900">{m.label}</p>
                     <p className="text-[11px] text-neutral-500 leading-tight">{m.sub}</p>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -1064,17 +1168,20 @@ export const LandingPage: React.FC = () => {
                   </p>
                 </div>
 
-                {/* 6 Interactive Category Pills */}
+                {/* 6 Interactive Category Pills with Motion for React */}
                 <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {THREAT_VECTORS.map((vec, i) => {
                     const CatIcon = vec.icon;
                     const isSelected = selectedThreatIdx === i;
                     return (
-                      <button
+                      <motion.button
                         key={vec.id}
                         type="button"
+                        whileHover={{ scale: 1.02, y: -2 }}
+                        whileTap={{ scale: 0.97 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 17 }}
                         onClick={() => setSelectedThreatIdx(isSelected ? null : i)}
-                        className={`flex items-center gap-2.5 p-3 rounded-xl transition-all text-left cursor-pointer ${
+                        className={`flex items-center gap-2.5 p-3 rounded-xl transition-colors text-left cursor-pointer ${
                           isSelected
                             ? 'bg-blue-50 border-2 border-[#1767F2] shadow-sm'
                             : 'bg-white border border-neutral-200/80 hover:border-neutral-300 shadow-2xs hover:shadow-xs'
@@ -1089,35 +1196,44 @@ export const LandingPage: React.FC = () => {
                           <span className="text-xs font-semibold text-neutral-800 block truncate">{vec.title}</span>
                           <span className="text-[9px] text-neutral-400 font-mono block">Sample Heuristic</span>
                         </div>
-                      </button>
+                      </motion.button>
                     );
                   })}
                 </div>
 
-                {/* Interactive Threat Sample Drawer */}
-                {selectedThreatIdx !== null && (
-                  <div className="mt-4 p-4 bg-white border border-neutral-200 rounded-2xl shadow-xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold text-[#1767F2] uppercase tracking-wider">
-                        {THREAT_VECTORS[selectedThreatIdx].title} &bull; Forensic Signature
-                      </span>
-                      <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
-                        THREAT_VECTORS[selectedThreatIdx].risk === 'CRITICAL' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'
-                      }`}>
-                        {THREAT_VECTORS[selectedThreatIdx].risk} THREAT
-                      </span>
-                    </div>
-                    <p className="text-xs font-mono bg-neutral-50 p-2 rounded border border-neutral-200 text-neutral-800">
-                      {THREAT_VECTORS[selectedThreatIdx].sample}
-                    </p>
-                    <div className="flex items-center justify-between text-[11px] pt-1">
-                      <span className="text-neutral-500">{THREAT_VECTORS[selectedThreatIdx].flag}</span>
-                      <span className="text-xs font-semibold text-[#1767F2] shrink-0 ml-2">
-                        {THREAT_VECTORS[selectedThreatIdx].action}
-                      </span>
-                    </div>
-                  </div>
-                )}
+                {/* Interactive Threat Sample Drawer with AnimatePresence */}
+                <AnimatePresence>
+                  {selectedThreatIdx !== null && (
+                    <motion.div
+                      key={`threat-drawer-${selectedThreatIdx}`}
+                      initial={{ opacity: 0, height: 0, y: -8 }}
+                      animate={{ opacity: 1, height: 'auto', y: 0 }}
+                      exit={{ opacity: 0, height: 0, y: -8 }}
+                      transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
+                      className="mt-4 p-4 bg-white border border-neutral-200 rounded-2xl shadow-xs space-y-2 overflow-hidden"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold text-[#1767F2] uppercase tracking-wider">
+                          {THREAT_VECTORS[selectedThreatIdx].title} &bull; Forensic Signature
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase ${
+                          THREAT_VECTORS[selectedThreatIdx].risk === 'CRITICAL' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'
+                        }`}>
+                          {THREAT_VECTORS[selectedThreatIdx].risk} THREAT
+                        </span>
+                      </div>
+                      <p className="text-xs font-mono bg-neutral-50 p-2 rounded border border-neutral-200 text-neutral-800">
+                        {THREAT_VECTORS[selectedThreatIdx].sample}
+                      </p>
+                      <div className="flex items-center justify-between text-[11px] pt-1">
+                        <span className="text-neutral-500">{THREAT_VECTORS[selectedThreatIdx].flag}</span>
+                        <span className="text-xs font-semibold text-[#1767F2] shrink-0 ml-2">
+                          {THREAT_VECTORS[selectedThreatIdx].action}
+                        </span>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
               {/* Right Card (5 cols) - Animated SVG Network Topology & Shield Illustration */}
