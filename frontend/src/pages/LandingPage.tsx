@@ -721,7 +721,7 @@ export const LandingPage: React.FC = () => {
               ref={heroMockupRef}
               onMouseMove={handleHeroMouseMove}
               onMouseLeave={handleHeroMouseLeave}
-              className="relative mx-auto mt-12 hidden min-h-[720px] max-w-7xl lg:block transition-transform duration-200 px-4"
+              className="relative mx-auto mt-10 md:mt-12 min-h-[660px] xl:min-h-[720px] max-w-7xl transition-transform duration-200 px-3 sm:px-4"
             >
               {/* Refined Cyber Telemetry Curved Ribbon SVG in Background */}
               <svg
@@ -955,7 +955,7 @@ export const LandingPage: React.FC = () => {
                 </motion.div>
               </div>
 
-              {/* 4 Floating Cybersecurity Capability Cards (Flanking left & right with zero overlap) */}
+              {/* 4 Floating Cybersecurity Capability Cards (Flanking left & right on xl screens) */}
               {/* Card 1: Top-Left */}
               <motion.div
                 initial={{ opacity: 0, x: -24 }}
@@ -966,7 +966,7 @@ export const LandingPage: React.FC = () => {
                   y: { duration: 4.0, repeat: Infinity, ease: 'easeInOut' },
                 }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="cw-hero-card absolute top-12 left-0 xl:left-4 z-10 w-[270px] xl:w-[290px] cursor-default"
+                className="cw-hero-card hidden xl:block absolute top-12 left-0 xl:left-4 z-10 w-[270px] xl:w-[290px] cursor-default"
               >
                 <div className="rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-md p-4 shadow-lg shadow-neutral-950/5">
                   <div className="flex items-start gap-3">
@@ -994,7 +994,7 @@ export const LandingPage: React.FC = () => {
                   y: { duration: 4.4, repeat: Infinity, ease: 'easeInOut', delay: 0.5 },
                 }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="cw-hero-card absolute top-12 right-0 xl:right-4 z-10 w-[270px] xl:w-[290px] cursor-default"
+                className="cw-hero-card hidden xl:block absolute top-12 right-0 xl:right-4 z-10 w-[270px] xl:w-[290px] cursor-default"
               >
                 <div className="rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-md p-4 shadow-lg shadow-neutral-950/5">
                   <div className="flex items-start gap-3">
@@ -1022,7 +1022,7 @@ export const LandingPage: React.FC = () => {
                   y: { duration: 3.8, repeat: Infinity, ease: 'easeInOut', delay: 1 },
                 }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="cw-hero-card absolute bottom-12 left-0 xl:left-4 z-10 w-[270px] xl:w-[290px] cursor-default"
+                className="cw-hero-card hidden xl:block absolute bottom-12 left-0 xl:left-4 z-10 w-[270px] xl:w-[290px] cursor-default"
               >
                 <div className="rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-md p-4 shadow-lg shadow-neutral-950/5">
                   <div className="flex items-start gap-3">
@@ -1050,7 +1050,7 @@ export const LandingPage: React.FC = () => {
                   y: { duration: 4.2, repeat: Infinity, ease: 'easeInOut', delay: 1.5 },
                 }}
                 whileHover={{ y: -6, scale: 1.02 }}
-                className="cw-hero-card absolute bottom-12 right-0 xl:right-4 z-10 w-[270px] xl:w-[290px] cursor-default"
+                className="cw-hero-card hidden xl:block absolute bottom-12 right-0 xl:right-4 z-10 w-[270px] xl:w-[290px] cursor-default"
               >
                 <div className="rounded-2xl border border-neutral-200/90 bg-white/95 backdrop-blur-md p-4 shadow-lg shadow-neutral-950/5">
                   <div className="flex items-start gap-3">
@@ -1069,20 +1069,65 @@ export const LandingPage: React.FC = () => {
               </motion.div>
             </div>
 
-            {/* Mobile Stack Visual for Small Screens */}
-            <div className="lg:hidden mt-8 max-w-sm mx-auto space-y-4">
-              <div className="bg-white border border-neutral-200 rounded-2xl p-4 shadow-md space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-neutral-100">
-                  <Security size={16} className="text-[#1767F2]" />
-                  <span className="text-xs font-bold text-neutral-950">WhatsApp Threat Simulation</span>
+            {/* 4 Capability Cards Grid on screens < xl (including 982px tablet & mobile) */}
+            <div className="xl:hidden mt-8 max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3.5 px-2">
+              <div className="rounded-2xl border border-neutral-200/90 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2] ring-1 ring-blue-100">
+                    <Chat size={20} />
+                  </span>
+                  <div>
+                    <p className="text-[9px] font-bold tracking-wider text-[#1767F2] uppercase">Flexible Input</p>
+                    <p className="font-bold text-sm text-neutral-950 mt-0.5">5+ input types supported</p>
+                    <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                      Send text, screenshots, audio, links, files, and transaction context.
+                    </p>
+                  </div>
                 </div>
-                <div className="p-3 bg-[#d9fdd3] rounded-lg text-xs text-neutral-900 leading-relaxed">
-                  {currentScenario.userQuery}
+              </div>
+
+              <div className="rounded-2xl border border-neutral-200/90 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2] ring-1 ring-blue-100">
+                    <Globe size={20} />
+                  </span>
+                  <div>
+                    <p className="text-[9px] font-bold tracking-wider text-[#1767F2] uppercase">Deep Analysis</p>
+                    <p className="font-bold text-sm text-neutral-950 mt-0.5">40+ validations and checks</p>
+                    <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                      Examines technical domains, behavioural urgency, and threat intelligence.
+                    </p>
+                  </div>
                 </div>
-                <div className="p-3 bg-white border border-neutral-200 rounded-lg text-xs text-neutral-900 space-y-1.5">
-                  <Tag type="red" size="sm">Trust Score: {currentScenario.trustScore}/100 &bull; Dangerous</Tag>
-                  <p className="font-semibold text-neutral-950">{currentScenario.responseHeadline}</p>
-                  <p className="text-neutral-600">{currentScenario.body}</p>
+              </div>
+
+              <div className="rounded-2xl border border-neutral-200/90 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2] ring-1 ring-blue-100">
+                    <Enterprise size={20} />
+                  </span>
+                  <div>
+                    <p className="text-[9px] font-bold tracking-wider text-[#1767F2] uppercase">Practical Next Steps</p>
+                    <p className="font-bold text-sm text-neutral-950 mt-0.5">Clear guidance</p>
+                    <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                      Know whether to proceed, ignore, block, report, or seek immediate help.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-neutral-200/90 bg-white p-4 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-3">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2] ring-1 ring-blue-100">
+                    <Security size={20} />
+                  </span>
+                  <div>
+                    <p className="text-[9px] font-bold tracking-wider text-[#1767F2] uppercase">Trusted Initiative</p>
+                    <p className="font-bold text-sm text-neutral-950 mt-0.5">Public Safety Defense</p>
+                    <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                      A digital safety initiative designed to help citizens make safer online decisions.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

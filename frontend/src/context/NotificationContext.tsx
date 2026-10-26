@@ -142,17 +142,17 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
         ws.onclose = () => {
           setIsWsConnected(false);
-          // Auto reconnect after 4 seconds
-          reconnectTimeout = setTimeout(connectWebSocket, 4000);
+          // Only reconnect if token is active to prevent spam on public/unauthenticated routes
+          if (getAuthToken()) {
+            reconnectTimeout = setTimeout(connectWebSocket, 5000);
+          }
         };
 
         ws.onerror = () => {
           setIsWsConnected(false);
-          ws?.close();
         };
       } catch (err) {
         setIsWsConnected(false);
-        reconnectTimeout = setTimeout(connectWebSocket, 4000);
       }
     };
 

@@ -1,0 +1,20 @@
+{
+  "short_name": "SatarkSaathi",
+  "name": "Satark Saathi - AI Scam Prevention & Family Protection",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "48x48 72x72 96x96 128x128 256x256"
+    },
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "24x24 48x48"
+    }
+  ],
+  "start_url": "/welcome",
+  "background_color": "#ffffff",
+  "theme_color": "#0f62fe",
+  "display": "standalone"
+}
