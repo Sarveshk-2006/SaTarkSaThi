@@ -27,9 +27,9 @@ import {
   RecoveryDraft,
   BankHelpline,
   RecoveryWizardRequest,
-  BankFreezeResponse,
-  CybercrimePortalSubmitResponse,
+  GoldenHourResponse,
 } from '../api/types';
+import { GoldenHourResponsePanel } from '../components/recovery/GoldenHourResponsePanel';
 import { CopyButton } from '../components/common/CopyButton';
 import { LoadingSkeleton } from '../components/common/LoadingSkeleton';
 import { SimulationBanner } from '../components/common/SimulationBanner';
@@ -197,13 +197,9 @@ export const GoldenHourRecoveryPage: React.FC = () => {
       setEditedPortalText(draft.portal_complaint_text);
       setEditedBankText(draft.bank_complaint_text);
       setEditedPoliceText(draft.police_complaint_text);
+      setGhResponse(null);
       setWizardStep(4);
-
-      showToast({
-        type: 'success',
-        title: 'Golden Hour Drafts Generated',
-        message: 'Pre-filled complaints ready for Cyber Crime 1930 and your Bank Nodal Officer.',
-      });
+      await activateResponse(draft.id);
     } catch (err: any) {
       showToast({ type: 'error', title: 'Wizard Error', message: err.message });
     } finally {
@@ -245,56 +241,20 @@ export const GoldenHourRecoveryPage: React.FC = () => {
     }
   };
 
-  // Automated Banking Freeze & Cybercrime Portal e-Filing
-  const [bankFreezeReceipt, setBankFreezeReceipt] = useState<BankFreezeResponse | null>(null);
-  const [isFreezingBank, setIsFreezingBank] = useState(false);
-  const [cybercrimeAckReceipt, setCybercrimeAckReceipt] = useState<CybercrimePortalSubmitResponse | null>(null);
-  const [isSubmittingPortal, setIsSubmittingPortal] = useState(false);
+  // One-tap Golden Hour response (simulated dispatches)
+  const [ghResponse, setGhResponse] = useState<GoldenHourResponse | null>(null);
+  const [isActivating, setIsActivating] = useState(false);
 
-  const handleDispatchBankFreeze = async () => {
-    setIsFreezingBank(true);
+  const activateResponse = async (draftId: number) => {
+    setIsActivating(true);
     try {
-      const res = await api.submitBankFreeze({
-        incident_id: linkedIncidentId || undefined,
-        bank_name: bankName || 'State Bank of India',
-        account_number_last4: '9821',
-        transaction_amount: parseFloat(financialLoss) || 0,
-        suspect_vpa_or_account: suspectContact || 'suspect@fakeupi',
-        utr_number: transactionRef || undefined,
-      });
-      setBankFreezeReceipt(res);
-      showToast({
-        type: 'success',
-        title: 'Interbank Freeze Initiated',
-        message: `Lien request dispatched under protocol: ${res.freeze_reference}`,
-      });
+      const res = await api.activateGoldenHourResponse(draftId);
+      setGhResponse(res);
+      setLinkedIncidentId(res.incident_reference || linkedIncidentId);
     } catch (err: any) {
-      showToast({ type: 'error', title: 'Freeze Dispatch Failed', message: err.message });
+      showToast({ type: 'error', title: 'Activation failed', message: err.message });
     } finally {
-      setIsFreezingBank(false);
-    }
-  };
-
-  const handleSubmitCybercrimePortal = async () => {
-    setIsSubmittingPortal(true);
-    try {
-      const res = await api.submitCybercrimePortal({
-        incident_id: linkedIncidentId || undefined,
-        complaint_text: editedPortalText || 'Cyber Financial Fraud complaint details pending police verification.',
-        scam_category: scamType || 'Cyber Financial Fraud',
-        financial_loss: parseFloat(financialLoss) || 0,
-        suspect_details: suspectContact || undefined,
-      });
-      setCybercrimeAckReceipt(res);
-      showToast({
-        type: 'success',
-        title: 'Cybercrime Portal e-Filing Registered',
-        message: `National Portal Acknowledgement issued: ${res.portal_ack_number}`,
-      });
-    } catch (err: any) {
-      showToast({ type: 'error', title: 'e-Filing Failed', message: err.message });
-    } finally {
-      setIsSubmittingPortal(false);
+      setIsActivating(false);
     }
   };
 
@@ -311,7 +271,7 @@ export const GoldenHourRecoveryPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <SimulationBanner message="Golden Hour Incident Recovery prepares verified, structured dispute drafts for cyber authorities and bank nodal desks. Dispatches under Step 4 demonstrate prototype electronic freeze formatting without creating real FIR police filings." />
+      <SimulationBanner message="Enter what happened, then press one button. Satark Saathi prepares the complaint, the bank lien request and the police intimation at once. In this demo the dispatches are simulated — nothing reaches a real bank, police station or government portal." />
 
       {/* 1930 Cyber Fraud Helpline Urgent Banner (Mandatory Requirement) */}
       <div className="bg-[#991B1B] text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-5 border border-red-700/60">
@@ -696,9 +656,10 @@ export const GoldenHourRecoveryPage: React.FC = () => {
               type="button"
               onClick={handleExecuteWizard}
               disabled={isGenerating}
-              className="px-6 py-2.5 rounded-xl bg-[#176B58] hover:bg-[#125243] text-white font-semibold text-xs flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm flex items-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              {isGenerating ? 'Generating Structured Drafts...' : 'Generate Official Complaint Drafts'}
+              <Zap className="w-4 h-4" />
+              {isGenerating ? 'Activating Golden Hour Response…' : 'Activate Golden Hour Response'}
               <CheckCircle2 className="w-4 h-4" />
             </button>
           </div>
@@ -783,120 +744,27 @@ export const GoldenHourRecoveryPage: React.FC = () => {
             </div>
           )}
 
-          {/* Prototype Simulation Notice & Statutory Filing Guidance */}
-          <div className="mx-6 mt-6 p-4 rounded-2xl bg-[#142A36] text-white flex flex-col gap-3 border border-slate-700/60 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-400 text-slate-950 uppercase tracking-wider">
-                  Prototype Sandbox Simulation
-                </span>
-                <span className="text-xs text-amber-200 font-mono">No Live External Integration</span>
+          {/* One-tap Golden Hour response */}
+          {ghResponse ? (
+            <GoldenHourResponsePanel key={ghResponse.activated_at} response={ghResponse} />
+          ) : (
+            <div className="mx-6 mt-6 p-5 rounded-2xl bg-[#142A36] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-bold">Act now with one tap</h3>
+                <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                  Sends the complaint to the cyber crime cell, asks your bank to block the amount in the fraudster&apos;s account,
+                  and informs the cyber police — <strong className="text-amber-300">simulated in this demo</strong>.
+                </p>
               </div>
-              <span className="text-[11px] text-slate-300">
-                Official filing requires calling 1930 or visiting cybercrime.gov.in
-              </span>
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-slate-100">
-                Statutory Reporting Workflow Demonstration
-              </h3>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                Satark Saathi prepares compliant dispute documentation. In this demonstration environment, the actions below simulate how electronic lien requests and e-filings would be formatted for beneficiary banks and the National Cyber Crime Reporting Portal.
-                <strong className="text-amber-300 block mt-1">
-                  DISCLAIMER: These sandbox actions do NOT freeze actual bank accounts or create police FIR records. To stop fund movement in real emergencies, immediately dial 1930 and contact your bank's fraud desk.
-                </strong>
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-700">
               <button
                 type="button"
-                onClick={handleDispatchBankFreeze}
-                disabled={isFreezingBank || !!bankFreezeReceipt}
-                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-                  bankFreezeReceipt
-                    ? 'bg-emerald-700 text-white cursor-default'
-                    : 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-md'
-                }`}
+                onClick={() => activateResponse(generatedDraft.id)}
+                disabled={isActivating}
+                className="shrink-0 min-h-[48px] px-6 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm flex items-center gap-2 cursor-pointer disabled:opacity-60"
               >
-                <Zap className="w-4 h-4" />
-                {isFreezingBank
-                  ? 'Simulating Gateway Dispatch...'
-                  : bankFreezeReceipt
-                  ? `Simulation Ref: ${bankFreezeReceipt.freeze_reference}`
-                  : '⚡ Simulate Interbank Freeze (Sandbox)'}
+                <Zap className="w-5 h-5" />
+                {isActivating ? 'Activating…' : 'Activate Golden Hour Response'}
               </button>
-
-              <button
-                type="button"
-                onClick={handleSubmitCybercrimePortal}
-                disabled={isSubmittingPortal || !!cybercrimeAckReceipt}
-                className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer transition-all ${
-                  cybercrimeAckReceipt
-                    ? 'bg-teal-700 text-white cursor-default'
-                    : 'bg-teal-600 hover:bg-teal-500 text-white shadow-md'
-                }`}
-              >
-                <Send className="w-4 h-4" />
-                {isSubmittingPortal
-                  ? 'Simulating 1930 Filing...'
-                  : cybercrimeAckReceipt
-                  ? `Simulated Ack: ${cybercrimeAckReceipt.portal_ack_number}`
-                  : '🚀 Simulate 1930 e-Filing (Sandbox)'}
-              </button>
-            </div>
-          </div>
-
-          {/* Electronic Receipts Banner when either action has been dispatched */}
-          {(bankFreezeReceipt || cybercrimeAckReceipt) && (
-            <div className="mx-6 mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-              {bankFreezeReceipt && (
-                <div className="p-4 rounded-xl bg-amber-50/90 border border-amber-300 text-xs text-amber-950">
-                  <div className="flex items-center justify-between font-bold">
-                    <span className="flex items-center gap-1.5 text-amber-900">
-                      <CheckCircle2 className="w-4 h-4 text-amber-700" /> [PROTOTYPE SIMULATION] Freeze Request
-                    </span>
-                    <span className="font-mono bg-amber-200 text-amber-950 px-2 py-0.5 rounded text-[11px]">
-                      {bankFreezeReceipt.freeze_reference}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[11px] text-amber-900">
-                    {bankFreezeReceipt.action_summary}
-                  </p>
-                  <p className="mt-1 text-[10px] text-amber-800 font-mono">
-                    Desk: {bankFreezeReceipt.nodal_desk_assigned} (Demonstration Model)
-                  </p>
-                  {bankFreezeReceipt.simulation_notice && (
-                    <p className="mt-2 text-[10px] text-amber-800 bg-white/70 p-2 rounded border border-amber-200">
-                      {bankFreezeReceipt.simulation_notice}
-                    </p>
-                  )}
-                </div>
-              )}
-
-              {cybercrimeAckReceipt && (
-                <div className="p-4 rounded-xl bg-teal-50/90 border border-teal-300 text-xs text-teal-950">
-                  <div className="flex items-center justify-between font-bold">
-                    <span className="flex items-center gap-1.5 text-teal-900">
-                      <ShieldAlert className="w-4 h-4 text-teal-700" /> [PROTOTYPE SIMULATION] 1930 Portal Filing
-                    </span>
-                    <span className="font-mono bg-teal-200 text-teal-950 px-2 py-0.5 rounded text-[11px]">
-                      {cybercrimeAckReceipt.portal_ack_number}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-[11px] text-teal-900">
-                    Jurisdiction: {cybercrimeAckReceipt.jurisdiction}
-                  </p>
-                  <p className="mt-1 text-[10px] text-teal-800">
-                    Status: {cybercrimeAckReceipt.status} (Simulated Dispatch)
-                  </p>
-                  {cybercrimeAckReceipt.simulation_notice && (
-                    <p className="mt-2 text-[10px] text-teal-800 bg-white/70 p-2 rounded border border-teal-200">
-                      {cybercrimeAckReceipt.simulation_notice}
-                    </p>
-                  )}
-                </div>
-              )}
             </div>
           )}
 

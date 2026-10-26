@@ -395,6 +395,31 @@ export interface CybercrimePortalSubmitResponse {
   simulation_notice?: string;
 }
 
+export interface GoldenHourAction {
+  key: 'CYBERCRIME_CELL' | 'BANK_LIEN' | 'CYBER_POLICE' | string;
+  title: string;
+  recipient: string;
+  reference: string;
+  channel: string;
+  status: string;
+  subject: string;
+  body: string;
+  completed_at: string;
+  real_next_step: string;
+  real_action_label: string;
+  real_action_url: string;
+}
+
+export interface GoldenHourResponse {
+  draft_id: number;
+  incident_reference?: string | null;
+  activated_at: string;
+  actions: GoldenHourAction[];
+  already_activated: boolean;
+  is_simulation: boolean;
+  simulation_notice: string;
+}
+
 export interface RecoveryCaseContextResponse {
   incident_id: string;
   analysis_id?: number;

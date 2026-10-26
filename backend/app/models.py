@@ -306,6 +306,7 @@ class RecoveryDraft(Base):
     police_complaint_text = Column(Text, nullable=False)  # Formal police station format
 
     status = Column(String(30), default="DRAFT")  # "DRAFT", "REVIEWED", "EXPORTED"
+    golden_hour_response = Column(Text, nullable=True)  # JSON of the one-tap (simulated) response
     generated_at = Column(DateTime(timezone=True), default=utc_now)
     last_edited_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
 

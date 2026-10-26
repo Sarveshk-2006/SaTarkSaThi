@@ -452,6 +452,32 @@ class CybercrimePortalSubmitResponse(BaseModel):
     is_simulation: bool = True
     simulation_notice: str = "SANDBOX SIMULATION ONLY: This draft has not been filed with police. Export the dossier and submit formally at cybercrime.gov.in."
 
+class GoldenHourAction(BaseModel):
+    key: str  # CYBERCRIME_CELL, BANK_LIEN, CYBER_POLICE
+    title: str
+    recipient: str
+    reference: str
+    channel: str
+    status: str = "SIMULATED_DISPATCHED"
+    subject: str
+    body: str
+    completed_at: datetime
+    real_next_step: str
+    real_action_label: str
+    real_action_url: str
+
+class GoldenHourResponse(BaseModel):
+    draft_id: int
+    incident_reference: Optional[str] = None
+    activated_at: datetime
+    actions: List[GoldenHourAction]
+    already_activated: bool = False
+    is_simulation: bool = True
+    simulation_notice: str = (
+        "DEMO SIMULATION: no e-mail was actually sent and no bank, police or government system was contacted. "
+        "In a real emergency call 1930, report at cybercrime.gov.in and call your bank's fraud line."
+    )
+
 class RecoveryCaseContextResponse(BaseModel):
     incident_id: str
     scam_type: str

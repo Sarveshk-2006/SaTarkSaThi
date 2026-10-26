@@ -15,7 +15,9 @@ from backend.app.schemas import (
     BankFreezeResponse,
     CybercrimePortalSubmitRequest,
     CybercrimePortalSubmitResponse,
-    RecoveryCaseContextResponse
+    RecoveryCaseContextResponse,
+    GoldenHourAction,
+    GoldenHourResponse,
 )
 
 router = APIRouter(prefix="/recovery", tags=["Golden Hour Recovery"])
@@ -559,6 +561,116 @@ DO NOT AUTOMATICALLY SUBMIT: Review and sign before submitting to authorities.
         media_type="text/plain; charset=utf-8",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+# Legacy alias for backward compatibility
+@router.post("/drafts/{draft_id}/activate-response", response_model=GoldenHourResponse)
+def activate_golden_hour_response(
+    draft_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db)
+):
+    """
+    One-tap Golden Hour response. Prepares and *simulates* three dispatches at once:
+    complaint e-mail to the cyber crime cell, lien/freeze request to the bank, and intimation
+    to the cyber police station. Nothing is actually sent; every action is labelled as a
+    simulation and paired with the real step the user must take. Idempotent per draft.
+    """
+    draft = db.query(RecoveryDraft).filter(
+        RecoveryDraft.id == draft_id,
+        RecoveryDraft.user_id == current_user_id
+    ).first()
+    if not draft:
+        raise HTTPException(status_code=404, detail="Recovery draft not found or access denied")
+
+    incident = db.query(Incident).filter(Incident.id == draft.incident_id).first()
+    incident_ref = incident.incident_id if incident else None
+
+    if draft.golden_hour_response:
+        try:
+            stored = json.loads(draft.golden_hour_response)
+            return GoldenHourResponse(**stored, already_activated=True)
+        except (ValueError, TypeError):
+            pass
+
+    profile = db.query(UserProfile).filter(UserProfile.id == current_user_id).first()
+    city = profile.city if profile and profile.city else "your city"
+    bank = (draft.bank_or_app or (incident.bank_name if incident else None) or "your bank").strip()
+    amount = draft.financial_loss or 0.0
+    utr = (draft.transaction_reference or "").strip() or "UTR pending"
+    now = datetime.now(timezone.utc)
+    year = now.strftime("%Y")
+
+    bank_email = next(
+        (h.get("email") for h in BANK_HELPLINES if h.get("email") and h["bank"].split(" (")[0].lower() in bank.lower()),
+        "",
+    )
+    mail_subject = f"Fraudulent transaction {utr} - request to recall and mark lien"
+    from urllib.parse import quote
+    bank_mailto = f"mailto:{bank_email}?subject={quote(mail_subject)}&body={quote(draft.bank_complaint_text[:1500])}"
+
+    actions = [
+        GoldenHourAction(
+            key="CYBERCRIME_CELL",
+            title="Complaint e-mailed to the Cyber Crime cell",
+            recipient="National Cyber Crime Reporting Portal / 1930 cell (simulated)",
+            reference=f"MHA-1930-SIM-{year}-{random.randint(100000, 999999)}",
+            channel="Simulated e-mail gateway",
+            subject=f"Cyber financial fraud complaint - {draft.scam_category or 'Cyber fraud'} - INR {amount:,.2f}",
+            body=draft.portal_complaint_text,
+            completed_at=now,
+            real_next_step="Call 1930 now and register the complaint at cybercrime.gov.in using this draft.",
+            real_action_label="Call 1930",
+            real_action_url="tel:1930",
+        ),
+        GoldenHourAction(
+            key="BANK_LIEN",
+            title="Bank asked to block the amount in the fraudster's account",
+            recipient=f"{bank} - Nodal Officer / Fraud Desk (simulated)",
+            reference=f"BF-STAT-SIM-{year}-{random.randint(100000, 999999)}",
+            channel="Simulated bank dispute request",
+            subject=mail_subject,
+            body=draft.bank_complaint_text,
+            completed_at=now,
+            real_next_step=f"Call {bank}'s fraud helpline and send this letter from your registered e-mail.",
+            real_action_label="Open e-mail draft to bank",
+            real_action_url=bank_mailto,
+        ),
+        GoldenHourAction(
+            key="CYBER_POLICE",
+            title="Cyber police station informed",
+            recipient=f"Cyber Crime Police Station, {city} (simulated)",
+            reference=f"CYB-PS-SIM-{year}-{random.randint(100000, 999999)}",
+            channel="Simulated intimation",
+            subject=f"Complaint of cyber financial fraud (IT Act s.66D / BNS) - {incident_ref or 'new case'}",
+            body=draft.police_complaint_text,
+            completed_at=now,
+            real_next_step="Visit the cyber police station (or file online) with the PDF pack and your ID.",
+            real_action_label="Open cybercrime.gov.in",
+            real_action_url="https://cybercrime.gov.in",
+        ),
+    ]
+
+    response = GoldenHourResponse(
+        draft_id=draft.id,
+        incident_reference=incident_ref,
+        activated_at=now,
+        actions=actions,
+    )
+    draft.golden_hour_response = response.model_dump_json(exclude={"already_activated"})
+    if incident:
+        incident.status = "REPORTED_1930"
+        incident.updated_at = now
+    for a in actions:
+        db.add(AuditEvent(
+            user_id=current_user_id,
+            event_type=f"GOLDEN_HOUR_{a.key}_SIMULATED",
+            entity_type="incident",
+            entity_id=incident_ref or str(draft.incident_id),
+            description=f"[DEMO SIMULATION] {a.title} - ref {a.reference}. Nothing was actually sent.",
+        ))
+    db.commit()
+    return response
+
 
 # Legacy alias for backward compatibility
 @router.post("/draft/{incident_id}", response_model=RecoveryDraftResponse)
