@@ -19,327 +19,134 @@ import {
   Close,
   Menu,
   ChevronDown,
-  View,
-  Notification,
-  Timer,
-  Time,
-  Mobile,
-  Gateway,
+  Microphone,
+  Globe,
+  Enterprise,
+  Image as ImageIcon,
 } from '@carbon/icons-react';
 import { Button, Tag } from '@carbon/react';
 import { useAuthSession } from '../context/AuthSessionContext';
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
-interface DemoScenario {
+interface Scenario {
   id: string;
   category: string;
-  sender: string;
-  timestamp: string;
-  messageText: string;
-  severity: 'Severe Risk' | 'High Risk' | 'Suspicious';
-  tagKind: 'red' | 'warm-gray' | 'teal';
-  indicators: string[];
-  counterSignals: string[];
-  explanation: string;
-  recommendedAction: string;
-  metricLabel: string;
-  metricValue: string;
+  userQuery: string;
+  responseHeadline: string;
+  trustScore: number;
+  body: string;
+  warningNote: string;
+  recoveryNote: string;
 }
 
-const DEMO_SCENARIOS: DemoScenario[] = [
+const SCENARIOS: Scenario[] = [
   {
     id: 'sbi-kyc',
-    category: 'Bank / KYC Impersonation',
-    sender: '+91 98210-44129 (Disguised as SBI-INB)',
-    timestamp: 'Today, 11:42 AM',
-    messageText:
-      'Dear SBI Customer, your YONO account has been suspended due to pending PAN KYC. Click http://sbi-secure-kyc.in/portal to update immediately within 2 hours or your debit card will be permanently blocked.',
-    severity: 'Severe Risk',
-    tagKind: 'red',
-    indicators: [
-      'Unregistered third-party domain: sbi-secure-kyc.in (Official bank domain is sbi.co.in)',
-      'Artificial coercive urgency: 2-hour account suspension ultimatum',
-      'Requests PAN and banking credentials through unverified HTTP web form',
-    ],
-    counterSignals: [
-      'Message sent from a standard +91 10-digit mobile number instead of an authorized 6-character bank shortcode (e.g. VK-SBIINB)',
-    ],
-    explanation:
-      'Public-sector banks never issue SMS alerts demanding immediate KYC compliance via arbitrary .in domains or threaten 2-hour card deactivation. This is an aggressive credential-harvesting vector targeting net-banking passwords and OTPs.',
-    recommendedAction:
-      'Do not tap or forward the link. Verify your actual account status inside the official YONO application or visit your home branch.',
-    metricLabel: 'Urgency Pressure',
-    metricValue: '94% Coercive',
+    category: 'Bank / KYC Scam',
+    userQuery:
+      "Is this SBI KYC message genuine? - 'Dear Customer, your SBI account KYC will expire today. Update immediately at sbi-kycverify.in or your account will be suspended. For help call +91 8xxxx xxxx7'",
+    responseHeadline:
+      'This message is a scam and you should definitely not interact with it.',
+    trustScore: 18,
+    body: 'The website link you were sent has a trust score of 18 out of 100, which is very low and indicates it is dangerous. The site is not secure, has unknown origins, and is likely trying to steal your personal or banking information.',
+    warningNote:
+      'Please do not click the link, do not enter any details, and do not call the phone number provided. Banks like SBI will never ask you to update your KYC through an unofficial website link sent via text message.',
+    recoveryNote:
+      'If you have already entered any information on that site, please call your bank immediately to block your account and card. Also, call the national cybercrime helpline at 1930 and report the incident at cybercrime.gov.in.',
   },
   {
     id: 'power-bill',
-    category: 'Utility Disconnection Scam',
-    sender: '+91 87621-99014 (Electricity Billing Officer)',
-    timestamp: 'Today, 7:15 PM',
-    messageText:
-      'Urgent: Your electricity power supply will be disconnected tonight at 9:30 PM by electricity office because your previous month bill was not updated. Please immediately contact our bill officer at 9832104412 or download Mahavitaran-QuickPay.apk.',
-    severity: 'High Risk',
-    tagKind: 'red',
-    indicators: [
-      'Demands sideloading an untrusted Android APK file (remote-access trojan)',
-      'Extreme time pressure threatening nighttime power outage within 2 hours',
-      'Directs citizen to an unofficial personal mobile number for instant settlement',
-    ],
-    counterSignals: [
-      'Official discoms provide consumer CA numbers, invoice references, and 15-day formal notice before disconnection',
-    ],
-    explanation:
-      'Electricity distribution companies never demand payment through personal mobile numbers or instruct consumers to install .apk files via WhatsApp or SMS. The APK file is typically remote-access malware (RAT) designed to intercept SMS OTPs.',
-    recommendedAction:
-      'Never download or install APK files from SMS links. Check your electricity bill status exclusively through your state discom portal or official consumer app.',
-    metricLabel: 'Malware Risk',
-    metricValue: 'Remote RAT Vector',
+    category: 'Electricity Cutoff',
+    userQuery:
+      "Electricity bill alert: 'Your power will be disconnected tonight at 9:30 PM due to unpaid bill of ₹480. Call bill officer at 9832104412 or install Mahavitaran-QuickPay.apk immediately.'",
+    responseHeadline:
+      'This is an extortion utility scam deploying remote-access malware.',
+    trustScore: 12,
+    body: 'Discoms never request bill payments via personal 10-digit mobile numbers or send Android APK download links via WhatsApp. The APK file contains an SMS-intercepting remote access trojan (RAT).',
+    warningNote:
+      'Do not download or install the APK file. Check your pending electricity bill balance exclusively through your official state discom web portal or consumer app.',
+    recoveryNote:
+      'If the APK was already installed, turn on Airplane Mode immediately, uninstall the application from device settings, and inform your bank fraud desk.',
   },
   {
     id: 'digital-arrest',
-    category: 'Digital Arrest / Legal Extortion',
-    sender: 'CBI / Mumbai Cyber Police (VoIP Skype Notice)',
-    timestamp: 'Today, 2:10 PM',
-    messageText:
-      'Notice of Immediate Warrant: An illegal FedEx parcel containing expired passports and narcotics was intercepted at Mumbai International Airport registered under your Aadhaar. You must remain on video call for interrogation or a non-bailable arrest warrant will be executed.',
-    severity: 'Severe Risk',
-    tagKind: 'red',
-    indicators: [
-      'Claims of "Digital Arrest" via Skype, WhatsApp video, or Telegram (No such legal procedure exists in Indian Law)',
-      'Coercive isolation tactic forbidding victim from disconnecting or speaking with family',
-      'Demands transfer of funds to "RBI Secret Supervision" or "Court Verification" accounts',
-    ],
-    counterSignals: [
-      'Law enforcement agencies (CBI, ED, Police) issue formal physical summons under CrPC/BNSS, never video-call arrest warrants',
-    ],
-    explanation:
-      'The Supreme Court of India, CBI, and Ministry of Home Affairs have explicitly stated that "Digital Arrest" is completely fraudulent. Law enforcement agencies never interrogate citizens via video calls or ask for funds to be transferred for clearing names.',
-    recommendedAction:
-      'Disconnect the video call immediately. Do not transfer funds. Report the caller ID and screenshot to the National Cybercrime Helpline 1930.',
-    metricLabel: 'Extortion Pressure',
-    metricValue: 'Extreme Panic Vector',
+    category: 'Digital Arrest Warrant',
+    userQuery:
+      "Urgent Police Skype Call: 'CBI & Mumbai Police have intercepted a FedEx parcel with narcotics in your name. Join Skype interrogation now or a non-bailable warrant will be issued.'",
+    responseHeadline:
+      'Complete fraud. Digital Arrest does not exist in Indian Criminal Law.',
+    trustScore: 5,
+    body: 'The Supreme Court of India, CBI, and Ministry of Home Affairs have explicitly confirmed that law enforcement agencies never conduct video interrogations or demand fund transfers for clearance.',
+    warningNote:
+      'Disconnect the video call immediately. Do not transfer funds to any "court verification" or "RBI clearance" accounts. The callers are impersonators.',
+    recoveryNote:
+      'Call the National Cybercrime Helpline at 1930 right away and save caller Skype IDs and phone numbers for official cyber police filing.',
   },
 ];
 
-const METRIC_PILLARS = [
+const INPUT_METHODS = [
   {
-    label: 'Verification Latency',
-    value: '< 4.5s',
-    subtext: 'Dual heuristic & semantic inference',
-    badge: 'Real-time',
-  },
-  {
-    label: 'Duress Phrase Privacy',
-    value: '100%',
-    subtext: 'Salted SHA-256 hash storage',
-    badge: 'Zero Plaintext',
-  },
-  {
-    label: 'Helpline Compliance',
-    value: '1930 Ready',
-    subtext: 'Official Cyber Crime portal dossier',
-    badge: 'National Standard',
-  },
-  {
-    label: 'Safety Checkpoints',
-    value: '3 Layers',
-    subtext: 'Cooldown + VPA audit + Coercion check',
-    badge: 'Pre-Flight',
-  },
-];
-
-const INTERCEPTION_PIPELINE = [
-  {
-    step: 'Stage 01',
-    title: 'Signal Ingestion & OCR Extraction',
-    desc: 'Extracts sender headers, domain origins, QR payloads, and image OCR from SMS, WhatsApp, and banking push alerts.',
-    icon: Mobile,
-    tag: 'Input Layer',
-  },
-  {
-    step: 'Stage 02',
-    title: 'Dual Heuristic & Coercion Engine',
-    desc: 'Evaluates lookalike domains against official RBI/IBA registries, flags 2-hour panic deadlines, and detects malware APK calls.',
-    icon: Gateway,
-    tag: 'Analysis Core',
-  },
-  {
-    step: 'Stage 03',
-    title: 'Multi-Desk Actionable Output',
-    desc: 'Dispatches plain-language citizen guidance, triggers Family Shield guardian push alerts, and generates 1930 recovery dossiers.',
-    icon: Security,
-    tag: 'Response Grid',
-  },
-];
-
-const WHY_VECTORS = [
-  {
-    icon: WarningAlt,
-    title: 'Impersonation & KYC Suspension',
-    description:
-      'Fraudsters disguise SMS sender headers as national banks (SBI, HDFC, PNB) threatening instant freeze of pensions or savings accounts unless PAN is re-verified.',
-    badge: 'Banking Vector',
-    sample: '"Your SBI account will be permanently blocked in 2 hours. Update PAN: sbi-kyc.in"',
-  },
-  {
-    icon: Flash,
-    title: 'Midnight Utility Cutoffs',
-    description:
-      'Panicked shopkeepers and senior citizens receive evening SMS alerts threatening power disconnection within two hours unless a fraudulent APK is downloaded.',
-    badge: 'Utility Vector',
-    sample: '"Electricity will be disconnected at 9:30 PM. Call bill officer at 9832104412."',
-  },
-  {
-    icon: Security,
-    title: 'Digital Arrest & Courier Coercion',
-    description:
-      'Organized crime syndicates pose as police, CBI, or customs officials on video calls, keeping victims isolated for hours while demanding "bail clearance" transfers.',
-    badge: 'Extortion Vector',
-    sample: '"FedEx customs parcel seized with narcotics under your Aadhaar. Join Skype immediately."',
-  },
-  {
-    icon: Wallet,
-    title: 'Work-from-Home & Task Traps',
-    description:
-      'Telegram channels promise lucrative daily earnings for rating hotels or videos, leading victims through psychological escalation into irreversible deposits.',
-    badge: 'Investment Vector',
-    sample: '"Earn ₹3,500 daily by rating Google Maps hotels. Deposit ₹500 to unlock tier 1 task."',
-  },
-];
-
-const STEPS = [
-  {
-    step: '01',
-    title: 'Share',
-    description:
-      'Paste suspicious text, forwarded SMS, WhatsApp messages, unverified URLs, or upload a payment screenshot for instant analysis.',
-  },
-  {
-    step: '02',
-    title: 'Assess',
-    description:
-      'Satark Saathi runs dual heuristic and AI threat models cross-referencing known banking shortcodes, domain typo-squats, and coercive phrasing.',
-  },
-  {
-    step: '03',
-    title: 'Understand',
-    description:
-      'Receive an explainable risk dossier detailing matched threat indicators, counter-signals, domain authenticity, and plain-language reasoning.',
-  },
-  {
-    step: '04',
-    title: 'Act Safely',
-    description:
-      'Follow step-by-step verification protocols, alert linked family guardians, or compile a complete Golden Hour dossier for helpline 1930.',
-  },
-];
-
-const INPUT_CAPABILITIES = [
-  {
+    title: 'Typed Text / Prompt',
+    subtitle: 'Type or paste the suspicious message, claim, or situation directly.',
+    badge: 'TEXT',
     icon: Chat,
-    title: 'Suspicious Messages & SMS',
-    status: 'Operational',
-    statusKind: 'teal' as const,
-    description:
-      'Analyzes SMS sender headers, coercive time limits, unverified banking claims, and credential-harvesting phrasing.',
-    limitation: 'Best with full message body and sender headers intact.',
+    bgTone: 'bg-[#eff6ff]',
+    borderTone: 'border-[#bfdbfe]',
+    mockup: {
+      type: 'text',
+      label: 'Message',
+      content: 'I received a message saying my bank account will be blocked. Is it genuine?',
+    },
   },
   {
-    icon: Launch,
-    title: 'Phishing URLs & Web Domains',
-    status: 'Operational',
-    statusKind: 'teal' as const,
-    description:
-      'Detects typo-squatted bank portals, suspicious top-level domains, newly registered domains, and credential submission forms.',
-    limitation: 'Static URL heuristics; live sandbox fetches are rate-limited.',
+    title: 'Screenshot / Image',
+    subtitle: 'Upload an image or screenshot containing suspicious information.',
+    badge: 'OCR',
+    icon: ImageIcon,
+    bgTone: 'bg-[#ecfeff]',
+    borderTone: 'border-[#a5f3fc]',
+    mockup: {
+      type: 'image',
+      label: 'Payment Notice',
+      alert: 'Payment required immediately',
+    },
   },
   {
-    icon: Document,
-    title: 'Screenshots & Receipts (OCR)',
-    status: 'Operational',
-    statusKind: 'teal' as const,
-    description:
-      'Extracts text from screenshots of UPI payment requests, suspicious WhatsApp chats, and fraudulent courier summons.',
-    limitation: 'High-contrast images recommended; handwriting recognition not supported.',
-  },
-  {
-    icon: Phone,
-    title: 'Call Transcripts & Voicemails',
-    status: 'Operational',
-    statusKind: 'teal' as const,
-    description:
-      'Evaluates verbal coercion transcripts for impersonation keywords, threats of legal action, and demands for immediate fund transfer.',
-    limitation: 'Requires text transcript input or uploaded audio file.',
-  },
-  {
-    icon: Wallet,
-    title: 'Payment Checkpoint',
-    status: 'Operational',
-    statusKind: 'teal' as const,
-    description:
-      'Pre-transactional psychological cooling-off, recipient VPA verification, and coercive pressure evaluation before funds leave your account.',
-    limitation: 'Pre-flight advisory assessment; does not replace your bank OTP authentication.',
+    title: 'Voice Note / Audio',
+    subtitle: 'Send a voice note or audio recording when explaining it is easier.',
+    badge: 'VOICE',
+    icon: Microphone,
+    bgTone: 'bg-[#f5f3ff]',
+    borderTone: 'border-[#ddd6fe]',
+    mockup: {
+      type: 'audio',
+      label: 'Audio Note',
+      duration: '0:18',
+    },
   },
 ];
 
-const GOLDEN_HOUR_TIMELINE = [
+const FAQ_LIST = [
   {
-    time: 'Minutes 0–15',
-    title: 'Freeze & Evidence Lock',
-    desc: 'Immediately stop any further communication. Take full-resolution screenshots showing transaction UTR, sender number, and payment time.',
-    badge: 'Immediate',
+    q: 'What is Satark Saathi?',
+    a: 'Satark Saathi (सतर्क साथी) is an AI-assisted digital public safety platform designed to prevent cyber fraud and support victims in India. It verifies suspicious messages, websites, and claims before you act.',
   },
   {
-    time: 'Minutes 15–45',
-    title: 'Call National Helpline 1930',
-    desc: 'Dial 1930 from your registered mobile. State your bank account, transaction ID, and the fraudster beneficiary account to request a fast lien.',
-    badge: 'Crucial Lien Window',
+    q: 'Does Satark Saathi automatically freeze bank accounts?',
+    a: 'No. Satark Saathi is an advisory intelligence system. To officially freeze fraudulent transactions, citizens must dial the National Cybercrime Helpline 1930 or submit a complaint at cybercrime.gov.in.',
   },
   {
-    time: 'Minutes 45–90',
-    title: 'Bank Fraud Escalation',
-    desc: 'Contact your bank branch manager or 24x7 fraud desk. Quote the 1930 complaint acknowledgment to freeze outward fund dissipation.',
-    badge: 'Bank Coordination',
+    q: 'What types of content can I verify right now?',
+    a: 'You can check SMS messages, WhatsApp forwards, suspicious URLs, payment screenshots via client-side OCR, call transcripts, and pre-flight UPI payment scenarios.',
   },
   {
-    time: 'Minutes 90–180',
-    title: 'Formal Cybercrime.gov.in Filing',
-    desc: 'Export Satark Saathi’s formatted evidence dossier and register the complete incident report on the National Cyber Crime Reporting Portal.',
-    badge: 'Police Dossier',
-  },
-];
-
-const FAQ_ITEMS = [
-  {
-    question: 'What is Satark Saathi and how does it protect citizens?',
-    answer:
-      'Satark Saathi (सतर्क साथी) is an AI-assisted digital public-safety platform designed to prevent cyber fraud and support victims in India. It enables citizens to analyze suspicious messages, verify coercive payment demands, link elderly family members through Family Shield, and compile structured recovery dossiers during the critical Golden Hour.',
+    q: 'How is my submitted data protected?',
+    a: 'Satark Saathi operates with a zero-plaintext privacy architecture. We do not store banking passwords or sensitive credentials. Duress phrases are stored solely as salted SHA-256 hashes.',
   },
   {
-    question: 'Does Satark Saathi automatically freeze bank accounts or contact the police?',
-    answer:
-      'No. Satark Saathi is strictly an advisory defense system. It generates structured, evidence-backed incident dossiers that citizens or law enforcement can immediately use. To officially freeze fraudulent transactions, citizens must dial the National Cybercrime Helpline 1930 or submit a complaint on the official government portal at cybercrime.gov.in.',
-  },
-  {
-    question: 'What types of content can I check right now?',
-    answer:
-      'You can check suspicious text messages (SMS and WhatsApp), phishing URLs, payment screenshots via client-side OCR, call transcripts, and pre-flight UPI payment scenarios. Each check provides matched warning indicators, counter-signals, and actionable safety steps.',
-  },
-  {
-    question: 'How is my personal data and submitted message privacy protected?',
-    answer:
-      'Satark Saathi operates with a zero-leakage privacy model. We do not store plain-text banking passwords or sensitive credentials. Family Shield duress codes are stored solely as salted cryptographic hashes. Submitted messages are analyzed strictly for fraud indicators without advertising or third-party data broker sharing.',
-  },
-  {
-    question: 'What should I do if I have already transferred money to a scammer?',
-    answer:
-      'Act immediately within the Golden Hour window (the first 2 to 3 hours). First, do not send any more money. Second, dial 1930 immediately to request an urgent lien on the recipient bank account. Third, file an official report at cybercrime.gov.in. Fourth, use Satark Saathi’s Golden Hour recovery desk to compile transaction IDs, timestamps, and screenshots into a structured PDF dossier for your bank and police.',
-  },
-  {
-    question: 'How does Family Shield protect elderly family members without invading privacy?',
-    answer:
-      'Family Shield uses a mutual two-way consent architecture. It does not monitor personal private chats or bank balances. Instead, if an elderly member encounters a high-risk scam signal or triggers their discrete safety phrase, linked guardians receive an immediate cross-device alert so they can intervene before an irreversible payment is made.',
+    q: 'What should I do if I have already sent money to a scammer?',
+    a: 'Act immediately within the Golden Hour (first 2 to 3 hours). Stop further payments, call 1930 right away to initiate an inter-bank lien, and export Satark Saathi’s structured incident dossier for your bank and police.',
   },
 ];
 
@@ -347,659 +154,450 @@ export const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const { session } = useAuthSession();
   const containerRef = useRef<HTMLDivElement>(null);
-  const previewCardRef = useRef<HTMLDivElement>(null);
-  const [selectedScenarioIndex, setSelectedScenarioIndex] = useState(0);
+  const [selectedScenarioIdx, setSelectedScenarioIdx] = useState(0);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
-  const [customInputText, setCustomInputText] = useState('');
-  const [familyShieldView, setFamilyShieldView] = useState<'guardian' | 'senior'>('guardian');
-  const [activeVectorIndex, setActiveVectorIndex] = useState<number | null>(null);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [quickInput, setQuickInput] = useState('');
 
-  const scenario = DEMO_SCENARIOS[selectedScenarioIndex];
+  const currentScenario = SCENARIOS[selectedScenarioIdx];
 
-  // GSAP 3D and ScrollTrigger animations
+  // GSAP Animations matching CyberWall style
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
 
-      // Respect prefers-reduced-motion
       mm.add('(prefers-reduced-motion: reduce)', () => {
-        gsap.set(
-          '.gsap-hero-header, .gsap-hero-eyebrow, .gsap-hero-title, .gsap-hero-desc, .gsap-hero-cta, .gsap-hero-trust, .gsap-hero-preview, .gsap-floating-badge, .gsap-reveal, .gsap-step-line, .gsap-3d-card',
-          {
-            opacity: 1,
-            y: 0,
-            x: 0,
-            scale: 1,
-            scaleX: 1,
-            rotateX: 0,
-            rotateY: 0,
-            clearProps: 'all',
-          }
-        );
+        gsap.set('.cw-reveal, .cw-hero-phone, .cw-hero-card, .cw-wavy-path', {
+          opacity: 1,
+          y: 0,
+          scale: 1,
+          clearProps: 'all',
+        });
       });
 
-      // Desktop animation (min-width: 768px)
-      mm.add('(min-width: 768px) and (prefers-reduced-motion: no-preference)', () => {
-        // Hero entrance timeline
-        const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        // Hero entrance sequence
+        const tl = gsap.timeline({ defaults: { ease: 'power3.out', duration: 0.8 } });
 
-        heroTl
-          .from('.gsap-hero-header', { y: -20, opacity: 0, duration: 0.6 })
-          .from('.gsap-hero-eyebrow', { y: 14, opacity: 0, duration: 0.5 }, '-=0.3')
-          .from('.gsap-hero-title', { y: 22, opacity: 0, duration: 0.7 }, '-=0.3')
-          .from('.gsap-hero-desc', { y: 18, opacity: 0, duration: 0.6 }, '-=0.4')
-          .from('.gsap-hero-cta', { y: 16, opacity: 0, stagger: 0.1, duration: 0.5 }, '-=0.3')
-          .from('.gsap-hero-trust', { opacity: 0, y: 10, duration: 0.5 }, '-=0.2')
-          .from('.gsap-hero-preview', { y: 36, opacity: 0, scale: 0.97, rotateX: 6, transformPerspective: 1000, duration: 0.9 }, '-=0.6')
-          .from('.gsap-floating-badge', { y: 20, opacity: 0, stagger: 0.12, duration: 0.5 }, '-=0.4');
+        tl.from('.cw-hero-badge', { y: -15, opacity: 0, duration: 0.5 })
+          .from('.cw-hero-title', { y: 25, opacity: 0, duration: 0.7 }, '-=0.3')
+          .from('.cw-hero-sub', { y: 18, opacity: 0, duration: 0.6 }, '-=0.4')
+          .from('.cw-hero-cta', { y: 16, opacity: 0, stagger: 0.1, duration: 0.5 }, '-=0.3')
+          .from('.cw-hero-phone', { y: 40, opacity: 0, scale: 0.95, duration: 0.9 }, '-=0.5')
+          .from('.cw-hero-card', { y: 24, opacity: 0, stagger: 0.12, duration: 0.6 }, '-=0.5');
 
-        // Continuous subtle 3D floating effect on floating badges
-        gsap.to('.gsap-float-1', {
-          y: -7,
-          duration: 2.6,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-        });
-        gsap.to('.gsap-float-2', {
-          y: -9,
-          duration: 3.1,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 0.5,
-        });
-        gsap.to('.gsap-float-3', {
-          y: -6,
-          duration: 2.8,
-          repeat: -1,
-          yoyo: true,
-          ease: 'sine.inOut',
-          delay: 1.0,
-        });
+        // Continuous floating motion on floating cards
+        gsap.to('.cw-float-1', { y: -8, duration: 2.8, repeat: -1, yoyo: true, ease: 'sine.inOut' });
+        gsap.to('.cw-float-2', { y: -10, duration: 3.2, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.4 });
+        gsap.to('.cw-float-3', { y: -7, duration: 2.9, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 0.8 });
+        gsap.to('.cw-float-4', { y: -9, duration: 3.4, repeat: -1, yoyo: true, ease: 'sine.inOut', delay: 1.2 });
 
-        // Linear step connector animation on ScrollTrigger
-        gsap.from('.gsap-step-line', {
-          scrollTrigger: {
-            trigger: '#how',
-            start: 'top 75%',
-          },
-          scaleX: 0,
-          transformOrigin: 'left center',
-          duration: 1.2,
-          ease: 'power2.inOut',
-        });
-
-        // 3D section reveals with perspective
-        const cards3D = gsap.utils.toArray<HTMLElement>('.gsap-3d-card');
-        cards3D.forEach((card) => {
-          gsap.from(card, {
+        // Scroll reveals for sections
+        const sections = gsap.utils.toArray<HTMLElement>('.cw-section');
+        sections.forEach((sec) => {
+          gsap.from(sec.querySelectorAll('.cw-reveal'), {
             scrollTrigger: {
-              trigger: card,
-              start: 'top 85%',
+              trigger: sec,
+              start: 'top 82%',
               toggleActions: 'play none none none',
             },
-            y: 35,
+            y: 30,
             opacity: 0,
-            rotateX: 4,
-            transformPerspective: 1000,
-            duration: 0.75,
+            stagger: 0.08,
+            duration: 0.65,
             ease: 'power2.out',
           });
-        });
-
-        // Standard ScrollTrigger section reveals
-        const sections = gsap.utils.toArray<HTMLElement>('.gsap-section');
-        sections.forEach((sec) => {
-          const targets = sec.querySelectorAll('.gsap-reveal');
-          if (targets.length > 0) {
-            gsap.from(targets, {
-              scrollTrigger: {
-                trigger: sec,
-                start: 'top 82%',
-                toggleActions: 'play none none none',
-              },
-              y: 28,
-              opacity: 0,
-              stagger: 0.08,
-              duration: 0.65,
-              ease: 'power2.out',
-            });
-          }
-        });
-      });
-
-      // Mobile animation (max-width: 767px)
-      mm.add('(max-width: 767px) and (prefers-reduced-motion: no-preference)', () => {
-        const heroTl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-        heroTl
-          .from('.gsap-hero-header', { opacity: 0, duration: 0.4 })
-          .from('.gsap-hero-eyebrow, .gsap-hero-title, .gsap-hero-desc', { opacity: 0, y: 12, stagger: 0.1, duration: 0.5 }, '-=0.2')
-          .from('.gsap-hero-cta', { opacity: 0, y: 10, stagger: 0.08, duration: 0.4 }, '-=0.2')
-          .from('.gsap-hero-preview', { opacity: 0, y: 16, duration: 0.6 }, '-=0.2');
-
-        const sections = gsap.utils.toArray<HTMLElement>('.gsap-section');
-        sections.forEach((sec) => {
-          const targets = sec.querySelectorAll('.gsap-reveal');
-          if (targets.length > 0) {
-            gsap.from(targets, {
-              scrollTrigger: {
-                trigger: sec,
-                start: 'top 88%',
-                toggleActions: 'play none none none',
-              },
-              y: 16,
-              opacity: 0,
-              stagger: 0.06,
-              duration: 0.5,
-              ease: 'power2.out',
-            });
-          }
         });
       });
     },
     { scope: containerRef }
   );
 
-  // 3D Interactive Mouse Tilt on Preview Card
-  const handlePreviewMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!previewCardRef.current || window.innerWidth < 1024) return;
-    const rect = previewCardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    gsap.to(previewCardRef.current, {
-      rotateY: x * 0.02,
-      rotateX: -y * 0.02,
-      transformPerspective: 1000,
-      ease: 'power1.out',
-      duration: 0.4,
-    });
+  const handleScenarioChange = (idx: number) => {
+    if (idx === selectedScenarioIdx) return;
+    setSelectedScenarioIdx(idx);
+
+    gsap.fromTo(
+      '.cw-phone-chat',
+      { opacity: 0.5, y: 8 },
+      { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
+    );
   };
 
-  const handlePreviewMouseLeave = () => {
-    if (!previewCardRef.current) return;
-    gsap.to(previewCardRef.current, {
-      rotateY: 0,
-      rotateX: 0,
-      ease: 'power2.out',
-      duration: 0.6,
-    });
-  };
-
-  // Coordinated GSAP reveal when user switches demo scenarios
-  const handleSelectScenario = (index: number) => {
-    if (index === selectedScenarioIndex) return;
-    setSelectedScenarioIndex(index);
-
-    const tl = gsap.timeline({ defaults: { ease: 'power2.out' } });
-    tl.fromTo(
-      '.preview-inner',
-      { opacity: 0.7, y: 6 },
-      { opacity: 1, y: 0, duration: 0.25 }
-    )
-      .fromTo(
-        '.preview-message',
-        { opacity: 0, y: 8 },
-        { opacity: 1, y: 0, duration: 0.25 },
-        '-=0.15'
-      )
-      .fromTo(
-        '.preview-badge',
-        { opacity: 0, scale: 0.95 },
-        { opacity: 1, scale: 1, duration: 0.2 },
-        '-=0.1'
-      )
-      .fromTo(
-        '.preview-indicator',
-        { opacity: 0, x: -6 },
-        { opacity: 1, x: 0, stagger: 0.06, duration: 0.2 },
-        '-=0.1'
-      )
-      .fromTo(
-        '.preview-explanation',
-        { opacity: 0, y: 6 },
-        { opacity: 1, y: 0, duration: 0.25 },
-        '-=0.1'
-      )
-      .fromTo(
-        '.preview-action',
-        { opacity: 0, y: 6 },
-        { opacity: 1, y: 0, duration: 0.25 },
-        '-=0.15'
-      );
-  };
-
-  const toggleFaq = (index: number) => {
-    setOpenFaqIndex(openFaqIndex === index ? null : index);
-  };
-
-  const handleRunCustomCheck = (e: React.FormEvent) => {
+  const handleQuickSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customInputText.trim()) {
+    if (quickInput.trim()) {
+      navigate('/scanner', { state: { text: quickInput.trim() } });
+    } else {
       navigate('/scanner');
-      return;
     }
-    navigate('/scanner', { state: { text: customInputText.trim() } });
   };
 
   return (
     <div
       ref={containerRef}
-      className="min-h-screen bg-[#F7F9FC] text-[#182230] font-sans antialiased selection:bg-[#0F766E]/15 overflow-x-hidden"
+      className="min-h-screen bg-[#F8FAFC] text-neutral-950 font-sans antialiased selection:bg-blue-500/15 overflow-x-hidden"
     >
-      {/* Skip to Main Content Link for WCAG Accessibility */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#0F766E] focus:text-white focus:rounded-md focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#0F62FE]"
-      >
-        Skip to main content
-      </a>
-
       {/* -------------------------------------------------------------------------
-          SECTION 1: Header and Navigation (Clean, restrained, sticky)
+          HEADER: Floating Pill Capsule Header (Exact CyberWall Style)
           ------------------------------------------------------------------------- */}
-      <header className="gsap-hero-header sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-[#E2E8F0] transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-          {/* Brand mark */}
-          <Link
-            to="/welcome"
-            className="flex items-center gap-3 group focus:outline-none focus:ring-2 focus:ring-[#0F62FE] rounded px-1 py-0.5"
-            aria-label="Satark Saathi Home"
-          >
-            <div className="w-9 h-9 rounded-lg bg-[#0F766E] text-white flex items-center justify-center shadow-sm group-hover:bg-[#0d655e] transition-colors">
-              <Security size={20} />
+      <header className="sticky top-0 z-50 px-3 pt-3">
+        <div className="mx-auto flex h-fit w-full max-w-7xl items-center justify-between rounded-full border border-neutral-200/80 bg-white/85 px-4 py-2.5 shadow-sm shadow-neutral-950/5 backdrop-blur-xl md:px-6">
+          {/* Logo on Left */}
+          <Link to="/welcome" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#00C8F0] via-[#00AEEF] to-[#1767F2] text-white flex items-center justify-center shadow-sm">
+              <Security size={18} />
             </div>
-            <div className="flex flex-col">
-              <span className="font-semibold text-sm sm:text-base tracking-tight text-[#182230]">
+            <div className="flex flex-col leading-tight">
+              <span className="font-bold text-sm tracking-tight text-neutral-950">
                 Satark Saathi
               </span>
-              <span className="text-[11px] text-[#586474] font-medium leading-none">
-                सतर्क साथी &bull; Stop. Verify. Stay Safe.
+              <span className="text-[10px] text-neutral-500 font-medium">
+                सतर्क साथी &bull; Digital Safety
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-xs font-semibold text-[#586474]" aria-label="Main Navigation">
-            <a href="#pipeline" className="hover:text-[#0F766E] transition-colors">Architecture</a>
-            <a href="#why" className="hover:text-[#0F766E] transition-colors">Why Satark</a>
-            <a href="#how" className="hover:text-[#0F766E] transition-colors">How It Works</a>
-            <a href="#inputs" className="hover:text-[#0F766E] transition-colors">Capabilities</a>
-            <a href="#family-shield" className="hover:text-[#0F766E] transition-colors">Family Shield</a>
-            <a href="#recovery" className="hover:text-[#0F766E] transition-colors">Recovery 1930</a>
-            <a href="#faq" className="hover:text-[#0F766E] transition-colors">FAQ</a>
+          {/* Centered Navigation */}
+          <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-neutral-600">
+            <a href="#why-satark" className="hover:text-[#1767F2] transition-colors">Why Satark</a>
+            <a href="#how-it-works" className="hover:text-[#1767F2] transition-colors">How it Works</a>
+            <a href="#inputs" className="hover:text-[#1767F2] transition-colors">Engine</a>
+            <a href="#recovery" className="hover:text-[#1767F2] transition-colors">Recovery 1930</a>
+            <a href="#faq" className="hover:text-[#1767F2] transition-colors">FAQ</a>
           </nav>
 
-          {/* Action CTAs */}
-          <div className="hidden sm:flex items-center gap-3">
-            <a
-              href="tel:1930"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#D92D20] bg-[#FEF3F2] border border-[#FECDCA] rounded-full hover:bg-[#FEE4E2] transition-colors"
-              title="Official National Cybercrime Helpline 1930"
-              aria-label="Call National Cybercrime Helpline 1930"
-            >
-              <Phone size={14} />
-              <span>Helpline 1930</span>
-            </a>
-
+          {/* Right Action */}
+          <div className="flex items-center gap-3">
             <Link to="/scanner">
-              <Button kind="primary" size="sm" renderIcon={ArrowRight}>
-                Check a message
-              </Button>
+              <button
+                type="button"
+                className="bg-gradient-to-r from-[#00AEEF] to-[#1767F2] hover:opacity-95 text-white font-semibold text-xs sm:text-sm rounded-full px-5 py-2 shadow-sm shadow-blue-500/20 transition-all cursor-pointer"
+              >
+                Try Now
+              </button>
             </Link>
 
             {session ? (
-              <Link to="/">
-                <Button kind="tertiary" size="sm">
-                  Dashboard
-                </Button>
+              <Link to="/" className="hidden sm:inline-block">
+                <Button kind="ghost" size="sm">Dashboard</Button>
               </Link>
             ) : (
-              <Link to="/login">
-                <Button kind="ghost" size="sm">
-                  Sign in
-                </Button>
+              <Link to="/login" className="hidden sm:inline-block">
+                <Button kind="ghost" size="sm">Sign In</Button>
               </Link>
             )}
-          </div>
 
-          {/* Mobile hamburger menu toggle */}
-          <div className="flex items-center sm:hidden">
+            {/* Mobile menu hamburger */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-[#586474] hover:text-[#182230] rounded-md focus:outline-none focus:ring-2 focus:ring-[#0F62FE]"
-              aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
-              aria-expanded={mobileMenuOpen}
+              className="p-1.5 md:hidden text-neutral-700 hover:text-neutral-950"
+              aria-label="Toggle navigation menu"
             >
-              {mobileMenuOpen ? <Close size={22} /> : <Menu size={22} />}
+              {mobileMenuOpen ? <Close size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
+        {/* Mobile dropdown menu */}
         {mobileMenuOpen && (
-          <div className="sm:hidden border-t border-[#E2E8F0] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg">
-            <nav className="flex flex-col space-y-2 text-sm font-medium text-[#586474]" aria-label="Mobile Navigation">
-              <a
-                href="#pipeline"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded hover:bg-[#F7F9FC] hover:text-[#0F766E]"
-              >
-                Interception Architecture
-              </a>
-              <a
-                href="#why"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded hover:bg-[#F7F9FC] hover:text-[#0F766E]"
-              >
-                Why Satark Saathi
-              </a>
-              <a
-                href="#how"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded hover:bg-[#F7F9FC] hover:text-[#0F766E]"
-              >
-                How It Works
-              </a>
-              <a
-                href="#inputs"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded hover:bg-[#F7F9FC] hover:text-[#0F766E]"
-              >
-                What You Can Check
-              </a>
-              <a
-                href="#family-shield"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded hover:bg-[#F7F9FC] hover:text-[#0F766E]"
-              >
-                Family Shield
-              </a>
-              <a
-                href="#recovery"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded hover:bg-[#F7F9FC] hover:text-[#0F766E]"
-              >
-                Emergency Recovery (1930)
-              </a>
-              <a
-                href="#faq"
-                onClick={() => setMobileMenuOpen(false)}
-                className="py-1.5 px-2 rounded hover:bg-[#F7F9FC] hover:text-[#0F766E]"
-              >
-                Frequently Asked Questions
-              </a>
+          <div className="md:hidden mx-auto max-w-7xl mt-2 rounded-2xl border border-neutral-200 bg-white p-4 shadow-xl space-y-3">
+            <nav className="flex flex-col space-y-2 text-sm font-medium text-neutral-700">
+              <a href="#why-satark" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">Why Satark</a>
+              <a href="#how-it-works" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">How it Works</a>
+              <a href="#inputs" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">Engine &amp; Inputs</a>
+              <a href="#recovery" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">Recovery 1930</a>
+              <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-1 px-2 rounded hover:bg-neutral-50">FAQ</a>
             </nav>
-
-            <div className="pt-3 border-t border-[#E2E8F0] flex flex-col gap-2">
+            <div className="pt-2 border-t border-neutral-100 flex flex-col gap-2">
               <Link to="/scanner" onClick={() => setMobileMenuOpen(false)}>
-                <Button kind="primary" size="md" className="w-full justify-between" renderIcon={ArrowRight}>
-                  Check for a scam
-                </Button>
+                <button type="button" className="w-full bg-[#1767F2] text-white py-2 rounded-xl font-semibold text-xs">
+                  Launch Scam Scanner
+                </button>
               </Link>
-              <a
-                href="tel:1930"
-                className="flex items-center justify-center gap-2 py-2 px-3 text-sm font-semibold text-[#D92D20] bg-[#FEF3F2] border border-[#FECDCA] rounded"
-              >
-                <Phone size={16} />
-                <span>Call National Helpline 1930</span>
-              </a>
-              {session ? (
-                <Link to="/" onClick={() => setMobileMenuOpen(false)}>
-                  <Button kind="tertiary" size="md" className="w-full">
-                    Command Centre
-                  </Button>
-                </Link>
-              ) : (
-                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                  <Button kind="ghost" size="md" className="w-full">
-                    Sign in to Account
-                  </Button>
-                </Link>
-              )}
             </div>
           </div>
         )}
       </header>
 
-      <main id="main-content">
+      <main>
         {/* -------------------------------------------------------------------------
-            SECTION 2 & 3: Hero Section & Interactive Product Demonstration with 3D Depth
+            HERO SECTION: CyberWall Centered Typography + Wavy Ribbon + Phone Mockup
             ------------------------------------------------------------------------- */}
-        <section className="relative pt-12 pb-20 md:pt-16 md:pb-28 overflow-hidden bg-gradient-to-b from-white via-[#F7F9FC] to-[#F7F9FC] border-b border-[#E2E8F0]">
-          {/* Subtle Ambient Radial Mesh Pattern */}
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-[radial-gradient(ellipse_at_top,_rgba(15,118,110,0.08)_0%,_transparent_70%)] pointer-events-none" />
+        <section className="relative isolate overflow-hidden pt-8 pb-12 sm:pt-12 md:pt-14 lg:pb-16">
+          {/* Ambient Blurred Colored Glow Blobs (Exact CyberWall Style) */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+            <div className="absolute top-16 left-[-8rem] h-[26rem] w-[26rem] rounded-full bg-[#00C8F0]/15 blur-[90px]" />
+            <div className="absolute top-12 right-[-10rem] h-[30rem] w-[30rem] rounded-full bg-[#1767F2]/15 blur-[100px]" />
+            <div className="absolute bottom-0 left-1/2 h-64 w-[50rem] -translate-x-1/2 rounded-full bg-blue-500/5 blur-[90px]" />
+          </div>
 
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center">
-              {/* Left Column: Headline, Description, and CTAs */}
-              <div className="lg:col-span-6 space-y-6">
-                {/* Eyebrow badge */}
-                <div className="gsap-hero-eyebrow inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#E6F4F2] text-[#0F766E] border border-[#BCE3DE]">
-                  <span className="w-2 h-2 rounded-full bg-[#0F766E] animate-pulse" />
-                  <span>Digital Public Safety &bull; AI-Powered Cyber-Fraud Defense</span>
-                </div>
-
-                {/* Slogan & Headline */}
-                <h1 className="gsap-hero-title text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#182230] leading-[1.15]">
-                  Stop. Verify. <br className="hidden sm:block" />
-                  <span className="text-[#0F766E]">Stay Safe.</span>
-                </h1>
-
-                {/* Supporting copy */}
-                <p className="gsap-hero-desc text-base sm:text-lg text-[#586474] leading-relaxed max-w-xl">
-                  Check suspicious messages, phishing links, and coercive payment demands before you act. Understand hidden warning signals, assess coercive pressure, and get immediate, verified recovery steps.
-                </p>
-
-                {/* CTAs */}
-                <div className="gsap-hero-cta flex flex-wrap items-center gap-3 pt-2">
-                  <Link to="/scanner">
-                    <Button kind="primary" size="lg" renderIcon={ArrowRight}>
-                      Check for a scam
-                    </Button>
-                  </Link>
-
-                  <Link to="/golden-hour">
-                    <Button kind="tertiary" size="lg" renderIcon={Flash}>
-                      Already affected? Get recovery guidance
-                    </Button>
-                  </Link>
-                </div>
-
-                {/* Trust and Assurance Micro-Indicators */}
-                <div className="gsap-hero-trust pt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-[#E2E8F0]/80">
-                  <div className="flex items-start gap-2">
-                    <CheckmarkFilled size={16} className="text-[#0F766E] mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-[#182230]">Helpline 1930</p>
-                      <p className="text-[11px] text-[#586474]">Aligned with National Cybercrime Portal standards</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <CheckmarkFilled size={16} className="text-[#0F766E] mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-[#182230]">Zero Plaintext</p>
-                      <p className="text-[11px] text-[#586474]">Salted cryptographic hashes for all confidential phrases</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <CheckmarkFilled size={16} className="text-[#0F766E] mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-xs font-semibold text-[#182230]">Advisory Defense</p>
-                      <p className="text-[11px] text-[#586474]">Plain-language indicators, no black-box scores</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Interactive Direct Check Input Form */}
-                <div className="gsap-hero-trust pt-2">
-                  <form onSubmit={handleRunCustomCheck} className="bg-white border border-[#CBD5E1] rounded-xl p-3 shadow-sm flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="text"
-                      value={customInputText}
-                      onChange={(e) => setCustomInputText(e.target.value)}
-                      placeholder="Paste suspicious SMS, link or sender number..."
-                      className="flex-1 px-3 py-2 text-xs text-[#182230] bg-[#F8FAFC] border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0F62FE]"
-                      aria-label="Direct message input"
-                    />
-                    <Button type="submit" kind="primary" size="sm" renderIcon={ArrowRight} className="shrink-0">
-                      Verify Text
-                    </Button>
-                  </form>
-                  <span className="block text-[11px] text-[#586474] mt-1.5 pl-1">
-                    Direct input routes straight to our explainable Scam Analyzer.
-                  </span>
-                </div>
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6 relative z-10">
+            {/* Centered Eyebrow, Headline & Slogan */}
+            <div className="mx-auto max-w-4xl text-center">
+              {/* Eyebrow Pill */}
+              <div className="cw-hero-badge inline-flex items-center gap-2 rounded-full border border-neutral-200/80 bg-white py-1.5 pr-4 pl-2 shadow-xs">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-50 text-[#1767F2]">
+                  <Security size={14} />
+                </span>
+                <span className="text-xs font-semibold text-neutral-700">
+                  Official Indian Digital Safety Initiative
+                </span>
               </div>
 
-              {/* Right Column: Realistic Product Preview with 3D Depth & Floating CyberWall Badges */}
-              <div
-                className="lg:col-span-6 relative"
-                onMouseMove={handlePreviewMouseMove}
-                onMouseLeave={handlePreviewMouseLeave}
+              {/* Main Headline: "Stop scams before you act." */}
+              <h1 className="cw-hero-title mx-auto mt-6 max-w-4xl font-sans text-5xl leading-[0.98] font-bold tracking-tight text-neutral-950 sm:text-6xl md:text-7xl lg:text-[5.75rem]">
+                Stop scams <br className="hidden sm:block" />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00C8F0] via-[#00AEEF] to-[#1767F2]">
+                  before
+                </span>{' '}
+                you act.
+              </h1>
+
+              {/* Subtitles */}
+              <p className="cw-hero-sub mx-auto mt-5 max-w-2xl text-lg leading-relaxed font-semibold text-neutral-700 sm:text-xl">
+                AI-powered digital safety assistant for Indian citizens.
+              </p>
+              <p className="cw-hero-sub mx-auto mt-2 max-w-2xl text-sm leading-relaxed text-neutral-500 sm:text-base">
+                Share anything suspicious and receive a clear risk assessment before you click, pay, install, reply, or share personal information.
+              </p>
+
+              {/* Centered CTAs */}
+              <div className="cw-hero-cta mt-7 flex flex-col items-center justify-center gap-4 sm:flex-row sm:gap-6">
+                <Link to="/scanner">
+                  <button
+                    type="button"
+                    className="bg-gradient-to-r from-[#00AEEF] to-[#1767F2] hover:opacity-95 text-white font-semibold text-base rounded-full px-8 py-3.5 shadow-lg shadow-blue-500/25 transition-all min-w-36 cursor-pointer"
+                  >
+                    Try Now
+                  </button>
+                </Link>
+
+                <a
+                  href="tel:1930"
+                  className="inline-flex items-center gap-1.5 font-medium underline decoration-neutral-300 underline-offset-4 text-sm text-neutral-600 hover:text-[#1767F2] transition-colors"
+                >
+                  <Phone size={14} className="text-[#D92D20]" />
+                  <span>Already lost money? Call 1930</span>
+                </a>
+              </div>
+
+              {/* Quick Input Bar (Instant Free Resource) */}
+              <form onSubmit={handleQuickSubmit} className="mt-6 max-w-xl mx-auto flex items-center gap-2 bg-white border border-neutral-300 rounded-full p-1.5 shadow-sm">
+                <input
+                  type="text"
+                  value={quickInput}
+                  onChange={(e) => setQuickInput(e.target.value)}
+                  placeholder="Paste suspicious SMS, link or sender number to test..."
+                  className="flex-1 px-4 py-2 text-xs sm:text-sm text-neutral-900 bg-transparent focus:outline-none"
+                  aria-label="Test a message"
+                />
+                <button
+                  type="submit"
+                  className="bg-[#1767F2] hover:bg-blue-700 text-white font-semibold text-xs px-5 py-2.5 rounded-full transition-colors shrink-0"
+                >
+                  Check
+                </button>
+              </form>
+            </div>
+
+            {/* -------------------------------------------------------------------------
+                SHOWCASE: Desktop Phone Mockup + Curved Ribbon SVG + 4 Floating Cards
+                ------------------------------------------------------------------------- */}
+            <div className="relative mx-auto mt-10 hidden min-h-[620px] max-w-6xl lg:block">
+              {/* Exact CyberWall Hero Curved Ribbon SVG Line */}
+              <svg
+                aria-hidden="true"
+                className="cw-wavy-path pointer-events-none absolute inset-x-0 top-12 z-0 h-[500px] w-full overflow-visible"
+                viewBox="0 0 1200 500"
+                fill="none"
+                preserveAspectRatio="none"
               >
-                {/* Threat scenario switcher tabs */}
-                <div className="mb-3 flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" role="tablist" aria-label="Sample Scenarios">
-                  <span className="text-[11px] font-semibold text-[#586474] uppercase tracking-wider mr-1 shrink-0">
-                    Try Scenario:
-                  </span>
-                  {DEMO_SCENARIOS.map((s, idx) => (
+                <path
+                  d="
+                    M-60 80
+                    C120 80 130 360 300 360
+                    S470 140 620 180
+                    S760 420 920 390
+                    S1080 250 1260 440
+                  "
+                  stroke="url(#cwHeroPathGradient)"
+                  strokeWidth="19"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+                <defs>
+                  <linearGradient id="cwHeroPathGradient" x1="-60" y1="310" x2="1260" y2="310" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#00C8F0" />
+                    <stop offset="45%" stopColor="#00AEEF" />
+                    <stop offset="70%" stopColor="#1767F2" />
+                    <stop offset="100%" stopColor="#4169E1" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              {/* Central Smartphone Mockup (iPhone with WhatsApp Simulation) */}
+              <div className="cw-hero-phone absolute top-4 left-1/2 z-10 -translate-x-1/2 w-64">
+                {/* Scenario switcher pills above phone */}
+                <div className="flex items-center justify-center gap-1.5 mb-2.5">
+                  {SCENARIOS.map((sc, i) => (
                     <button
-                      key={s.id}
+                      key={sc.id}
                       type="button"
-                      role="tab"
-                      aria-selected={selectedScenarioIndex === idx}
-                      onClick={() => handleSelectScenario(idx)}
-                      className={`px-3 py-1.5 rounded-full font-semibold transition-all whitespace-nowrap text-xs ${
-                        selectedScenarioIndex === idx
-                          ? 'bg-[#0F766E] text-white shadow-sm ring-2 ring-[#0F766E]/20'
-                          : 'bg-white text-[#586474] hover:bg-[#E2E8F0]/60 border border-[#E2E8F0]'
+                      onClick={() => handleScenarioChange(i)}
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full transition-all cursor-pointer ${
+                        selectedScenarioIdx === i
+                          ? 'bg-[#1767F2] text-white shadow-xs'
+                          : 'bg-white/90 text-neutral-600 hover:bg-neutral-100 border border-neutral-200'
                       }`}
                     >
-                      {s.category.split('/')[0].trim()}
+                      {sc.category.split('/')[0].trim()}
                     </button>
                   ))}
                 </div>
 
-                {/* Main Product Preview Container with 3D Tilt Ref */}
-                <div
-                  ref={previewCardRef}
-                  className="gsap-hero-preview bg-white rounded-2xl border border-[#CBD5E1] shadow-2xl overflow-hidden transition-shadow hover:shadow-teal-900/10"
-                >
-                  {/* Top Header of the Preview Card */}
-                  <div className="px-5 py-3.5 bg-[#182230] text-white flex items-center justify-between gap-3 border-b border-[#334155]">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#D92D20] animate-ping" />
-                      <span className="font-mono text-xs font-semibold tracking-wide">
-                        ANALYSIS DOSSIER &bull; {scenario.category.toUpperCase()}
+                <div className="aspect-[9/19] overflow-hidden rounded-[2.65rem] border-[7px] border-neutral-950 bg-neutral-950 shadow-2xl shadow-blue-500/20">
+                  <div className="flex h-full w-full flex-col overflow-hidden rounded-[2rem] bg-[#efeae2]">
+                    {/* Phone Header */}
+                    <div className="relative flex shrink-0 items-center gap-2 bg-white px-2.5 pt-5 pb-2 shadow-xs">
+                      <span className="absolute top-1.5 left-1/2 h-3 w-12 -translate-x-1/2 rounded-full bg-neutral-950" />
+                      <span className="text-sm font-bold text-neutral-700">‹</span>
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full bg-blue-50 text-[#1767F2] ring-1 ring-neutral-200">
+                        <Security size={16} />
                       </span>
+                      <div className="min-w-0 flex-1 leading-tight">
+                        <p className="truncate text-[10px] font-bold text-neutral-950">Satark Saathi</p>
+                        <p className="text-[7px] text-[#24a148] font-medium">online</p>
+                      </div>
+                      <span className="text-xs text-neutral-500">⋮</span>
                     </div>
-                    <span className="inline-flex items-center text-[10px] font-mono uppercase tracking-wider bg-white/10 px-2.5 py-0.5 rounded text-white/90">
-                      Illustrative Demo Preview
+
+                    {/* Chat Area */}
+                    <div className="cw-phone-chat flex-1 overflow-y-auto px-2 py-2 space-y-2 text-[9px] bg-[#efeae2]">
+                      <div className="flex justify-center">
+                        <span className="rounded bg-white/90 px-1.5 py-0.5 text-[7px] font-medium text-neutral-500">Today</span>
+                      </div>
+
+                      {/* Outgoing User Message */}
+                      <div className="ml-auto max-w-[88%] rounded-lg rounded-tr-none bg-[#d9fdd3] p-2 shadow-xs text-neutral-800 leading-relaxed">
+                        <p>{currentScenario.userQuery}</p>
+                        <div className="mt-0.5 text-right text-[6px] text-neutral-400">10:24 ✓✓</div>
+                      </div>
+
+                      {/* Incoming Satark Saathi Analysis */}
+                      <div className="mr-auto max-w-[94%] rounded-lg rounded-tl-none bg-white p-2.5 shadow-xs text-neutral-800 space-y-1.5 leading-relaxed">
+                        <p className="font-semibold text-neutral-950">{currentScenario.responseHeadline}</p>
+                        <div className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[8px] font-bold">
+                          Trust Score: {currentScenario.trustScore}/100 &bull; DANGEROUS
+                        </div>
+                        <p className="text-[8.5px] text-neutral-600">{currentScenario.body}</p>
+                        <p className="text-[8.5px] text-neutral-600">{currentScenario.warningNote}</p>
+                        <p className="text-[8px] text-neutral-500 pt-0.5 border-t border-neutral-100">{currentScenario.recoveryNote}</p>
+                        <div className="text-right text-[6px] text-neutral-400">10:25</div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Input Pill */}
+                    <div className="flex items-center gap-1 px-2 py-1.5 bg-neutral-100 border-t border-neutral-200">
+                      <div className="flex-1 bg-white rounded-full px-2 py-1 text-[8px] text-neutral-400">Message</div>
+                      <div className="w-5 h-5 rounded-full bg-[#00a884] text-white flex items-center justify-center text-[9px]">
+                        <Microphone size={10} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4 Floating White Cards (Exact CyberWall Placements) */}
+              {/* Card 1: Top-Left */}
+              <div className="cw-hero-card cw-float-1 absolute top-[90px] left-[6%] z-30 w-[270px] -rotate-1">
+                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl transition-transform hover:-translate-y-1">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
+                      <Chat size={20} />
                     </span>
-                  </div>
-
-                  <div className="preview-inner p-5 sm:p-6 space-y-5">
-                    {/* Suspicious Incoming Message Box */}
-                    <div className="preview-message bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl p-4 space-y-2">
-                      <div className="flex items-center justify-between text-xs text-[#586474]">
-                        <span className="font-semibold text-[#182230]">From: {scenario.sender}</span>
-                        <span>{scenario.timestamp}</span>
-                      </div>
-                      <p className="text-sm font-mono text-[#182230] bg-white p-3 rounded-lg border border-[#E2E8F0]/80 leading-relaxed break-words">
-                        "{scenario.messageText}"
+                    <div>
+                      <p className="text-[9px] font-bold tracking-wider text-[#1767F2] uppercase">Flexible Input</p>
+                      <p className="font-bold text-sm text-neutral-950 mt-0.5">5+ input types supported</p>
+                      <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                        Send text, screenshots, audio, links, files, and transaction context.
                       </p>
-                    </div>
-
-                    {/* Threat Assessment Header & Severity Badge */}
-                    <div className="preview-badge flex flex-wrap items-center justify-between gap-3 pt-1">
-                      <div className="flex items-center gap-2">
-                        <Tag type={scenario.tagKind} size="md">
-                          {scenario.severity}
-                        </Tag>
-                        <span className="text-xs font-semibold text-[#586474]">
-                          Multi-Signal Risk Assessment
-                        </span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-xs text-[#586474] font-medium mr-1.5">{scenario.metricLabel}:</span>
-                        <span className="text-xs font-bold text-[#D92D20]">{scenario.metricValue}</span>
-                      </div>
-                    </div>
-
-                    {/* Matched Warning Indicators */}
-                    <div className="space-y-2">
-                      <p className="text-xs font-bold uppercase tracking-wider text-[#586474]">
-                        Key Warning Signals:
-                      </p>
-                      <ul className="space-y-1.5 text-xs text-[#182230]">
-                        {scenario.indicators.map((ind, i) => (
-                          <li key={i} className="preview-indicator flex items-start gap-2">
-                            <Warning size={14} className="text-[#D92D20] mt-0.5 shrink-0" />
-                            <span>{ind}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Plain Language Explanation */}
-                    <div className="preview-explanation p-3 bg-[#FEF3F2] border-l-4 border-[#D92D20] rounded-r-lg space-y-1">
-                      <p className="text-xs font-bold text-[#D92D20] uppercase tracking-wider">
-                        Why This Is Fraudulent:
-                      </p>
-                      <p className="text-xs text-[#586474] leading-relaxed">
-                        {scenario.explanation}
-                      </p>
-                    </div>
-
-                    {/* Recommended Safe Next Step */}
-                    <div className="preview-action p-3.5 bg-[#E6F4F2] border border-[#BCE3DE] rounded-xl flex items-start gap-2.5">
-                      <Security size={18} className="text-[#0F766E] mt-0.5 shrink-0" />
-                      <div className="text-xs space-y-0.5">
-                        <span className="font-bold text-[#0F766E] block">Immediate Recommended Action:</span>
-                        <span className="text-[#182230] leading-relaxed block">{scenario.recommendedAction}</span>
-                      </div>
                     </div>
                   </div>
+                </div>
+              </div>
 
-                  {/* Preview Footer Actions */}
-                  <div className="px-5 py-3 bg-[#F8FAFC] border-t border-[#E2E8F0] flex items-center justify-between text-xs">
-                    <span className="text-[11px] text-[#586474]">
-                      Have a suspicious message?
+              {/* Card 2: Top-Right */}
+              <div className="cw-hero-card cw-float-2 absolute top-[105px] right-[5%] z-30 w-[280px] rotate-1">
+                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl transition-transform hover:-translate-y-1">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
+                      <Globe size={20} />
                     </span>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/scanner', { state: { text: scenario.messageText } })}
-                      className="font-semibold text-[#0F766E] hover:underline inline-flex items-center gap-1 focus:outline-none"
-                    >
-                      <span>Analyze this scenario in Scanner</span>
-                      <ArrowRight size={14} />
-                    </button>
+                    <div>
+                      <p className="text-[9px] font-bold tracking-wider text-[#1767F2] uppercase">Deep Analysis</p>
+                      <p className="font-bold text-sm text-neutral-950 mt-0.5">40+ validations and checks</p>
+                      <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                        Examines technical domains, behavioural urgency, and threat intelligence.
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                {/* Floating 3D CyberWall Badges */}
-                <div className="gsap-floating-badge gsap-float-1 hidden sm:flex absolute -bottom-5 -left-4 bg-white border border-[#CBD5E1] shadow-xl rounded-xl px-3.5 py-2.5 items-center gap-2.5 text-xs z-20">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#D92D20] animate-pulse" />
-                  <div>
-                    <span className="font-semibold text-[#182230] block">Fake 10-Digit Sender</span>
-                    <span className="text-[10px] text-[#586474]">Not an authorized RBI bank shortcode</span>
+              {/* Card 3: Bottom-Left */}
+              <div className="cw-hero-card cw-float-3 absolute bottom-[65px] left-[7%] z-30 w-[270px] rotate-1">
+                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl transition-transform hover:-translate-y-1">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
+                      <Enterprise size={20} />
+                    </span>
+                    <div>
+                      <p className="text-[9px] font-bold tracking-wider text-[#1767F2] uppercase">Practical Next Steps</p>
+                      <p className="font-bold text-sm text-neutral-950 mt-0.5">Clear guidance</p>
+                      <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                        Know whether to proceed, ignore, block, report, or seek immediate help.
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="gsap-floating-badge gsap-float-2 hidden sm:flex absolute -top-5 -right-4 bg-white border border-[#CBD5E1] shadow-xl rounded-xl px-3.5 py-2.5 items-center gap-2.5 text-xs z-20">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#0F766E]" />
-                  <div>
-                    <span className="font-semibold text-[#182230] block">Helpline 1930 Integration</span>
-                    <span className="text-[10px] text-[#586474]">One-tap dossier compilation</span>
+              {/* Card 4: Bottom-Right */}
+              <div className="cw-hero-card cw-float-4 absolute bottom-[45px] right-[7%] z-30 w-[280px] -rotate-1">
+                <div className="rounded-2xl border border-neutral-200/80 bg-white p-4 shadow-xl transition-transform hover:-translate-y-1">
+                  <div className="flex items-start gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-[#1767F2]">
+                      <Security size={20} />
+                    </span>
+                    <div>
+                      <p className="text-[9px] font-bold tracking-wider text-[#1767F2] uppercase">Trusted Initiative</p>
+                      <p className="font-bold text-sm text-neutral-950 mt-0.5">Public Safety Defense</p>
+                      <p className="text-xs text-neutral-500 mt-1 leading-relaxed">
+                        A digital safety initiative designed to help citizens make safer online decisions.
+                      </p>
+                    </div>
                   </div>
                 </div>
+              </div>
+            </div>
 
-                <div className="gsap-floating-badge gsap-float-3 hidden lg:flex absolute top-1/2 -right-8 bg-white border border-[#CBD5E1] shadow-lg rounded-xl px-3 py-2 items-center gap-2 text-xs z-20">
-                  <span className="w-2 h-2 rounded-full bg-[#B54708]" />
-                  <span className="text-[11px] font-semibold text-[#182230]">2-Hour Panic Ultimatum Flagged</span>
+            {/* Mobile Stack Visual for Small Screens */}
+            <div className="lg:hidden mt-8 max-w-sm mx-auto space-y-4">
+              <div className="bg-white border border-neutral-200 rounded-2xl p-4 shadow-md space-y-3">
+                <div className="flex items-center gap-2 pb-2 border-b border-neutral-100">
+                  <Security size={16} className="text-[#1767F2]" />
+                  <span className="text-xs font-bold text-neutral-950">WhatsApp Threat Simulation</span>
+                </div>
+                <div className="p-3 bg-[#d9fdd3] rounded-lg text-xs text-neutral-900 leading-relaxed">
+                  {currentScenario.userQuery}
+                </div>
+                <div className="p-3 bg-white border border-neutral-200 rounded-lg text-xs text-neutral-900 space-y-1.5">
+                  <Tag type="red" size="sm">Trust Score: {currentScenario.trustScore}/100 &bull; Dangerous</Tag>
+                  <p className="font-semibold text-neutral-950">{currentScenario.responseHeadline}</p>
+                  <p className="text-neutral-600">{currentScenario.body}</p>
                 </div>
               </div>
             </div>
@@ -1007,134 +605,308 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* -------------------------------------------------------------------------
-            PILLARS BAR: Product Performance & Trust Metrics
+            BRAND BANNER BAR (Exact CyberWall Gradient Ribbon)
             ------------------------------------------------------------------------- */}
-        <section className="bg-white border-b border-[#E2E8F0] py-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {METRIC_PILLARS.map((m, idx) => (
-                <div key={idx} className="gsap-reveal border-l-2 border-[#0F766E] pl-4 space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl sm:text-3xl font-bold font-mono text-[#182230]">{m.value}</span>
-                    <span className="text-[10px] uppercase tracking-wider font-semibold bg-[#E6F4F2] text-[#0F766E] px-2 py-0.5 rounded">
-                      {m.badge}
-                    </span>
-                  </div>
-                  <p className="text-xs font-semibold text-[#182230]">{m.label}</p>
-                  <p className="text-[11px] text-[#586474]">{m.subtext}</p>
+        <section className="pb-8">
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
+            <div className="relative flex flex-col items-center gap-5 overflow-hidden rounded-3xl bg-gradient-to-r from-[#00AEEF] via-[#1767F2] to-[#1e40af] px-6 py-8 text-white md:flex-row md:justify-between md:px-10 shadow-lg">
+              <div className="flex items-center gap-3.5">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-md">
+                  <Security size={22} className="text-white" />
+                </span>
+                <p className="text-sm leading-relaxed text-white/90 max-w-md font-medium">
+                  Developed for Indian digital public safety to help citizens identify digital scams before they happen.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-bold">
+                <span>Satark Saathi</span>
+                <span>&bull;</span>
+                <span>AI-Assisted Security</span>
+                <span>&bull;</span>
+                <span>National Helpline 1930 Aligned</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* -------------------------------------------------------------------------
+            SECTION 3: Why Satark Saathi (Exact CyberWall 2-Card Layout)
+            ------------------------------------------------------------------------- */}
+        <section id="why-satark" className="cw-section py-16 md:py-24 bg-white border-b border-neutral-200">
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
+            <div className="cw-reveal max-w-2xl space-y-4 mb-12">
+              <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-[#1767F2]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#1767F2]" />
+                Why Satark Saathi
+              </span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-950 leading-[1.06]">
+                Scams keep changing. Satark Saathi keeps you one step ahead.
+              </h2>
+              <p className="text-base text-neutral-600 leading-relaxed">
+                Modern scams appear across different channels. Satark Saathi helps you verify suspicious information before you trust it.
+              </p>
+            </div>
+
+            {/* 2-Card Grid (Left: Threat landscape with 6 pills / Right: Illuminated Shield) */}
+            <div className="grid lg:grid-cols-12 gap-6 items-stretch">
+              {/* Left Card (7 cols) */}
+              <div className="cw-reveal lg:col-span-7 bg-[#F8FAFC] border border-neutral-200 rounded-3xl p-7 sm:p-9 flex flex-col justify-between">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-wider text-[#1767F2]">The Threat Landscape</p>
+                  <h3 className="mt-3 text-2xl sm:text-3xl font-bold text-neutral-950 leading-tight">
+                    A scam does not always look like a scam.
+                  </h3>
+                  <p className="mt-4 text-sm sm:text-base text-neutral-600 leading-relaxed">
+                    It may look like a delivery update, a bank alert, a job offer, an urgent phone call, or an application sent by someone you appear to trust.
+                  </p>
                 </div>
-              ))}
+
+                {/* 6 Category Pills (Exact CyberWall Grid) */}
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { title: 'Suspicious websites', icon: Globe },
+                    { title: 'Fraudulent SMS', icon: Chat },
+                    { title: 'Unknown calls', icon: Phone },
+                    { title: 'Phishing emails', icon: Document },
+                    { title: 'Fake bank details', icon: Wallet },
+                    { title: 'Malicious APK files', icon: Flash },
+                  ].map((cat, i) => {
+                    const CatIcon = cat.icon;
+                    return (
+                      <div
+                        key={i}
+                        className="flex items-center gap-2.5 p-3 bg-white border border-neutral-200/80 rounded-xl shadow-2xs hover:shadow-sm transition-all"
+                      >
+                        <span className="w-7 h-7 rounded-lg bg-blue-50 text-[#1767F2] flex items-center justify-center shrink-0">
+                          <CatIcon size={14} />
+                        </span>
+                        <span className="text-xs font-semibold text-neutral-800">{cat.title}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Card (5 cols) - Illuminated Shield Banner */}
+              <div className="cw-reveal lg:col-span-5 rounded-3xl bg-gradient-to-br from-[#00C8F0] via-[#1767F2] to-[#1e40af] p-8 text-white flex flex-col justify-between shadow-lg relative overflow-hidden">
+                <div className="relative z-10 flex flex-col items-center justify-center py-12">
+                  {/* Concentric Pulsing Radar Rings */}
+                  <div className="relative flex items-center justify-center">
+                    <div className="w-36 h-36 rounded-full border border-white/20 animate-ping absolute" />
+                    <div className="w-28 h-28 rounded-full border border-white/30 animate-pulse absolute" />
+                    <div className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center shadow-2xl">
+                      <Security size={40} className="text-white" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative z-10 pt-4 border-t border-white/20 text-center">
+                  <p className="text-sm font-bold">The Satark Saathi Shield</p>
+                  <p className="text-xs text-white/80 mt-1">
+                    Continuous multi-signal verification guarding against extortion and financial loss.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* -------------------------------------------------------------------------
-            INTERCEPTION ARCHITECTURE (CyberWall-Inspired Threat Flow)
+            SECTION 4: How It Works (Exact CyberWall S-Curve Wavy Path)
             ------------------------------------------------------------------------- */}
-        <section id="pipeline" className="gsap-section py-20 bg-[#F7F9FC] border-b border-[#E2E8F0]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl space-y-3 mb-14">
-              <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
-                Technical Security Architecture
+        <section id="how-it-works" className="cw-section py-20 bg-[#F8FAFC] border-b border-neutral-200 relative">
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
+            <div className="cw-reveal max-w-2xl text-center mx-auto mb-16 space-y-3">
+              <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-[#1767F2]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#1767F2]" />
+                How It Works
               </span>
-              <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
-                How Satark Saathi Intercepts Threats
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-950">
+                Four steps to complete digital certainty.
               </h2>
-              <p className="gsap-reveal text-sm sm:text-base text-[#586474] leading-relaxed">
-                A multi-layered threat interception framework calibrated against the Indian digital payment and messaging ecosystem.
+              <p className="text-sm sm:text-base text-neutral-600">
+                A calm, deliberate protocol before clicking, paying, or installing unfamiliar applications.
               </p>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {INTERCEPTION_PIPELINE.map((p, idx) => {
-                const IconComponent = p.icon;
-                return (
-                  <div
-                    key={idx}
-                    className="gsap-3d-card bg-white border border-[#CBD5E1] rounded-2xl p-6 shadow-sm hover:shadow-md transition-all space-y-4"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="w-10 h-10 rounded-xl bg-[#E6F4F2] text-[#0F766E] flex items-center justify-center">
-                        <IconComponent size={20} />
-                      </div>
-                      <span className="text-xs font-mono font-bold text-[#586474] bg-[#F7F9FC] px-2.5 py-1 rounded-full border border-[#E2E8F0]">
-                        {p.step}
-                      </span>
-                    </div>
+            {/* S-Curve Continuous Alternating Path */}
+            <div className="relative max-w-4xl mx-auto py-8">
+              {/* S-Curve Connecting Ribbon SVG */}
+              <svg
+                aria-hidden="true"
+                className="hidden md:block pointer-events-none absolute inset-0 z-0 h-full w-full overflow-visible"
+                viewBox="0 0 800 900"
+                fill="none"
+              >
+                <path
+                  d="
+                    M 200 100
+                    C 650 100 650 350 400 350
+                    C 150 350 150 600 400 600
+                    C 650 600 650 820 400 820
+                  "
+                  stroke="url(#cwSCurveGradient)"
+                  strokeWidth="14"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <defs>
+                  <linearGradient id="cwSCurveGradient" x1="0" y1="0" x2="0" y2="900" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#00C8F0" />
+                    <stop offset="35%" stopColor="#00AEEF" />
+                    <stop offset="70%" stopColor="#1767F2" />
+                    <stop offset="100%" stopColor="#4169E1" />
+                  </linearGradient>
+                </defs>
+              </svg>
 
-                    <div className="space-y-2">
-                      <Tag type="teal" size="sm">
-                        {p.tag}
-                      </Tag>
-                      <h3 className="font-bold text-base text-[#182230] pt-1">
-                        {p.title}
-                      </h3>
-                      <p className="text-xs text-[#586474] leading-relaxed">
-                        {p.desc}
+              {/* 4 Alternating Step Cards */}
+              <div className="space-y-16 relative z-10">
+                {/* Step 01 (Left) */}
+                <div className="cw-reveal flex flex-col md:flex-row items-center gap-6 md:justify-start">
+                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">01</span>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1767F2]">Incoming Content</p>
+                      <h4 className="text-base font-bold text-neutral-950 mt-0.5">Share what you received</h4>
+                      <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
+                        Send the suspicious call details, message, link, QR code, screenshot, or application file to Satark Saathi.
                       </p>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+
+                {/* Step 02 (Right) */}
+                <div className="cw-reveal flex flex-col md:flex-row items-center gap-6 md:justify-end">
+                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">02</span>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1767F2]">AI + Heuristic Verification</p>
+                      <h4 className="text-base font-bold text-neutral-950 mt-0.5">Satark Saathi checks the threat</h4>
+                      <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
+                        The verification engine analyses available signals, banking domain registries, and coercive phrasing.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 03 (Left) */}
+                <div className="cw-reveal flex flex-col md:flex-row items-center gap-6 md:justify-start">
+                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">03</span>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1767F2]">Safe Actions</p>
+                      <h4 className="text-base font-bold text-neutral-950 mt-0.5">You receive clear guidance</h4>
+                      <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
+                        Explains the risk and tells you whether to proceed, verify further, block, report, or avoid.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Step 04 (Right) */}
+                <div className="cw-reveal flex flex-col md:flex-row items-center gap-6 md:justify-end">
+                  <div className="flex items-center gap-4 max-w-md bg-white border border-neutral-200 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <span className="text-4xl sm:text-5xl font-bold font-sans text-blue-500/25 shrink-0">04</span>
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-[#1767F2]">Protection Active</p>
+                      <h4 className="text-base font-bold text-neutral-950 mt-0.5">You act with confidence</h4>
+                      <p className="text-xs text-neutral-600 mt-1 leading-relaxed">
+                        The suspicious interaction is stopped before it turns into financial loss, identity theft, or malware exposure.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
         {/* -------------------------------------------------------------------------
-            SECTION 4: Why Satark Saathi ("Scams do not always look suspicious")
+            SECTION 5: Input Methods (Exact CyberWall 3-Card Layout)
             ------------------------------------------------------------------------- */}
-        <section id="why" className="gsap-section py-20 bg-white border-b border-[#E2E8F0]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="max-w-3xl space-y-4 mb-14">
-              <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
-                The Anatomy of Digital Fraud
+        <section id="inputs" className="cw-section py-20 bg-white border-b border-neutral-200">
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
+            <div className="cw-reveal flex flex-col md:flex-row md:items-end justify-between gap-4 mb-14">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-[#1767F2] block mb-2">
+                  Input Methods / How You Send
+                </span>
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-neutral-950">
+                  Send whatever you're unsure about.
+                </h2>
+                <p className="text-base text-neutral-600 mt-2">
+                  Satark Saathi understands what you're trying to verify.
+                </p>
+              </div>
+
+              <span className="text-xs font-semibold text-neutral-500 bg-neutral-100 px-3 py-1.5 rounded-full">
+                Text, image, or audio
               </span>
-              <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
-                Scams do not always look suspicious.
-              </h2>
-              <p className="gsap-reveal text-base text-[#586474] leading-relaxed">
-                Modern cyber syndicates rarely send broken English or obvious lottery wins. They weaponize official bank logos, fake court orders, evening electricity deadlines, and deep psychological intimidation to force rapid, unverified fund transfers.
-              </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {WHY_VECTORS.map((vec, idx) => {
-                const IconComponent = vec.icon;
-                const isSelected = activeVectorIndex === idx;
+            {/* 3 Large Input Method Showcase Cards */}
+            <div className="grid md:grid-cols-3 gap-6">
+              {INPUT_METHODS.map((m, idx) => {
+                const IconComp = m.icon;
                 return (
                   <div
                     key={idx}
-                    className="gsap-3d-card bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-6 flex flex-col justify-between hover:border-[#CBD5E1] transition-all hover:shadow-md cursor-pointer"
-                    onClick={() => setActiveVectorIndex(isSelected ? null : idx)}
+                    className="cw-reveal bg-[#F8FAFC] border border-neutral-200 rounded-3xl p-6 flex flex-col justify-between hover:shadow-md transition-shadow"
                   >
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-[#E2E8F0] text-[#0F766E] flex items-center justify-center shadow-sm">
-                          <IconComponent size={20} />
+                    {/* Visual Mockup inside card */}
+                    <div className={`h-40 rounded-2xl ${m.bgTone} border ${m.borderTone} p-4 flex items-center justify-center mb-6`}>
+                      {m.mockup.type === 'text' && (
+                        <div className="bg-white rounded-xl p-3 border border-neutral-200 shadow-xs max-w-[220px] space-y-1">
+                          <div className="flex items-center gap-1.5 text-[9px] font-bold text-blue-600">
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                            <span>{m.mockup.label}</span>
+                          </div>
+                          <p className="text-[10px] text-neutral-700 leading-snug font-medium">
+                            {m.mockup.content}
+                          </p>
                         </div>
-                        <span className="text-[11px] font-semibold text-[#586474] bg-white px-2.5 py-1 rounded-full border border-[#E2E8F0]">
-                          {vec.badge}
-                        </span>
-                      </div>
-                      <h3 className="font-bold text-base text-[#182230]">
-                        {vec.title}
-                      </h3>
-                      <p className="text-xs text-[#586474] leading-relaxed">
-                        {vec.description}
-                      </p>
+                      )}
 
-                      {/* Expandable Anatomy Sample */}
-                      {isSelected && (
-                        <div className="p-3 bg-white border border-[#CBD5E1] rounded-lg text-[11px] font-mono text-[#D92D20] space-y-1 animate-fadeIn">
-                          <span className="font-bold uppercase tracking-wider block text-[10px] text-[#586474]">Intercepted Pattern:</span>
-                          <p>{vec.sample}</p>
+                      {m.mockup.type === 'image' && (
+                        <div className="bg-white rounded-xl p-3 border border-neutral-200 shadow-xs max-w-[200px] w-full space-y-2">
+                          <div className="h-2 w-16 bg-neutral-200 rounded" />
+                          <div className="h-2 w-28 bg-neutral-100 rounded" />
+                          <div className="p-1.5 bg-red-50 text-red-600 text-[9px] font-bold rounded text-center">
+                            {m.mockup.alert}
+                          </div>
+                        </div>
+                      )}
+
+                      {m.mockup.type === 'audio' && (
+                        <div className="bg-white rounded-full px-4 py-2 border border-neutral-200 shadow-xs flex items-center gap-3">
+                          <span className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center">
+                            <Microphone size={14} />
+                          </span>
+                          <div className="flex items-center gap-0.5">
+                            <span className="w-0.5 h-3 bg-blue-500 rounded" />
+                            <span className="w-0.5 h-5 bg-blue-500 rounded" />
+                            <span className="w-0.5 h-2 bg-blue-500 rounded" />
+                            <span className="w-0.5 h-4 bg-blue-500 rounded" />
+                            <span className="w-0.5 h-6 bg-blue-500 rounded" />
+                            <span className="w-0.5 h-3 bg-blue-500 rounded" />
+                          </div>
+                          <span className="text-[10px] font-mono text-neutral-500">{m.mockup.duration}</span>
                         </div>
                       )}
                     </div>
 
-                    <div className="pt-5 mt-4 border-t border-[#E2E8F0]/70 flex items-center justify-between text-xs font-semibold text-[#0F766E]">
-                      <span>{isSelected ? 'Hide Sample' : 'Inspect Sample'}</span>
-                      <ChevronDown size={14} className={`transform transition-transform ${isSelected ? 'rotate-180' : ''}`} />
+                    <div>
+                      <h4 className="text-base font-bold text-neutral-950">{m.title}</h4>
+                      <p className="text-xs text-neutral-600 mt-1 leading-relaxed">{m.subtitle}</p>
+                    </div>
+
+                    <div className="pt-4 mt-4 border-t border-neutral-200/70 flex items-center justify-between text-xs font-semibold text-[#1767F2]">
+                      <Link to="/scanner" className="inline-flex items-center gap-1 hover:underline">
+                        <span>Launch in Engine</span>
+                        <ArrowRight size={14} />
+                      </Link>
                     </div>
                   </div>
                 );
@@ -1144,456 +916,61 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* -------------------------------------------------------------------------
-            SECTION 5: How It Works (4-Step Linear Sequence with Animated Track)
+            SECTION 6: Emergency Recovery 1930 & Golden Hour
             ------------------------------------------------------------------------- */}
-        <section id="how" className="gsap-section py-20 bg-[#F7F9FC] border-b border-[#E2E8F0] relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
-              <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
-                Verification Protocol
-              </span>
-              <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
-                Four steps to complete digital certainty.
-              </h2>
-              <p className="gsap-reveal text-sm sm:text-base text-[#586474]">
-                A deliberate, calm pause between receiving an alarming notification and making an irreversible financial decision.
-              </p>
-            </div>
-
-            {/* Desktop Connector Track */}
-            <div className="relative">
-              <div className="hidden lg:block absolute top-12 left-12 right-12 h-0.5 bg-[#CBD5E1]">
-                <div className="gsap-step-line h-full w-full bg-[#0F766E]" />
-              </div>
-
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10">
-                {STEPS.map((s, idx) => (
-                  <div
-                    key={idx}
-                    className="gsap-3d-card bg-white border border-[#E2E8F0] rounded-2xl p-6 relative flex flex-col justify-between shadow-sm hover:border-[#CBD5E1] transition-all"
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-2xl font-mono font-bold text-[#0F766E]/40">
-                          {s.step}
-                        </span>
-                        <span className="w-3 h-3 rounded-full bg-[#0F766E] ring-4 ring-[#E6F4F2]" />
-                      </div>
-                      <h3 className="text-lg font-bold text-[#182230]">
-                        {s.title}
-                      </h3>
-                      <p className="text-xs text-[#586474] leading-relaxed">
-                        {s.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-6 mt-4 border-t border-[#E2E8F0]/70 text-[11px] font-medium text-[#586474]">
-                      Step {idx + 1} of 4
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-12 text-center">
-              <Link to="/scanner">
-                <Button kind="primary" size="md" renderIcon={ArrowRight}>
-                  Try the 4-step scanner now
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        {/* -------------------------------------------------------------------------
-            SECTION 6: What You Can Check (Capabilities & Honest Limitations)
-            ------------------------------------------------------------------------- */}
-        <section id="inputs" className="gsap-section py-20 bg-white border-b border-[#E2E8F0]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
-              <div className="max-w-2xl space-y-3">
-                <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
-                  Supported Input Channels
-                </span>
-                <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
-                  What you can check right now.
-                </h2>
-                <p className="gsap-reveal text-sm sm:text-base text-[#586474]">
-                  Every analysis pipeline is calibrated for Indian fraud patterns with strict client-side data boundaries.
-                </p>
-              </div>
-
-              <div className="gsap-reveal text-xs text-[#586474] bg-[#F7F9FC] border border-[#E2E8F0] p-3 rounded-xl max-w-sm">
-                <p className="font-semibold text-[#182230] mb-0.5">Honest Capability Note:</p>
-                <p>All assessments are advisory risk evaluations based on heuristic and semantic pattern analysis. They do not replace formal law-enforcement investigations.</p>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {INPUT_CAPABILITIES.map((cap, idx) => {
-                const IconComp = cap.icon;
-                return (
-                  <div
-                    key={idx}
-                    className="gsap-3d-card bg-[#F7F9FC] border border-[#E2E8F0] rounded-2xl p-6 flex flex-col justify-between hover:border-[#CBD5E1] transition-all hover:shadow-sm"
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <div className="w-10 h-10 rounded-xl bg-white border border-[#E2E8F0] text-[#0F766E] flex items-center justify-center shadow-sm">
-                          <IconComp size={20} />
-                        </div>
-                        <Tag type={cap.statusKind} size="sm">
-                          {cap.status}
-                        </Tag>
-                      </div>
-
-                      <h3 className="font-bold text-base text-[#182230]">
-                        {cap.title}
-                      </h3>
-
-                      <p className="text-xs text-[#586474] leading-relaxed">
-                        {cap.description}
-                      </p>
-                    </div>
-
-                    <div className="pt-4 mt-4 border-t border-[#E2E8F0]/70 text-[11px] text-[#586474]">
-                      <span className="font-semibold text-[#182230]">Scope:</span> {cap.limitation}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        {/* -------------------------------------------------------------------------
-            SECTION 7: Explainable Risk Assessment ("No Black-Box Scores")
-            ------------------------------------------------------------------------- */}
-        <section className="gsap-section py-20 bg-[#F7F9FC] border-b border-[#E2E8F0]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-6 space-y-5">
-                <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
-                  Transparency First
-                </span>
-                <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
-                  No black-box scores. Understand exactly why a signal is flagged.
-                </h2>
-                <p className="gsap-reveal text-sm sm:text-base text-[#586474] leading-relaxed">
-                  A high percentage score without context breeds confusion. Satark Saathi dissects every message into observable signals: official domain verification, linguistic urgency triggers, payment routing anomalies, and known scam signatures.
-                </p>
-
-                <div className="gsap-reveal space-y-3 pt-2">
-                  <div className="p-4 bg-white border border-[#E2E8F0] rounded-xl flex items-start gap-3">
-                    <CheckmarkFilled size={18} className="text-[#0F766E] mt-0.5 shrink-0" />
-                    <div className="text-xs">
-                      <span className="font-bold text-[#182230] block">Domain Authenticity Check</span>
-                      <span className="text-[#586474]">Cross-checked against certified Reserve Bank of India, Indian Banks' Association, and government domains.</span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-white border border-[#E2E8F0] rounded-xl flex items-start gap-3">
-                    <CheckmarkFilled size={18} className="text-[#0F766E] mt-0.5 shrink-0" />
-                    <div className="text-xs">
-                      <span className="font-bold text-[#182230] block">Coercive Language Analysis</span>
-                      <span className="text-[#586474]">Detects threats of immediate police warrants, power cuts, pension blockage, or family harm.</span>
-                    </div>
-                  </div>
-
-                  <div className="p-4 bg-white border border-[#E2E8F0] rounded-xl flex items-start gap-3">
-                    <CheckmarkFilled size={18} className="text-[#0F766E] mt-0.5 shrink-0" />
-                    <div className="text-xs">
-                      <span className="font-bold text-[#182230] block">Counter-Signal Balance</span>
-                      <span className="text-[#586474]">Recognizes legitimate transactional alerts with verified shortcodes and no unprompted link requests.</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Visual Breakdown Dossier Card */}
-              <div className="lg:col-span-6">
-                <div className="gsap-3d-card bg-white border border-[#CBD5E1] rounded-2xl p-6 shadow-md space-y-5">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
-                    <div className="flex items-center gap-2">
-                      <Security size={18} className="text-[#0F766E]" />
-                      <span className="font-bold text-sm text-[#182230]">Signal Scorecard Architecture</span>
-                    </div>
-                    <span className="text-[11px] font-mono text-[#586474]">v2.4 Heuristic Model</span>
-                  </div>
-
-                  {/* Signal bars */}
-                  <div className="space-y-3 text-xs">
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="font-semibold text-[#182230]">Sender Header Trust</span>
-                        <span className="text-[#D92D20] font-bold">Unverified 10-Digit Mobile (High Risk)</span>
-                      </div>
-                      <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
-                        <div className="bg-[#D92D20] h-full w-[88%]" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="font-semibold text-[#182230]">Domain Squatting Severity</span>
-                        <span className="text-[#D92D20] font-bold">Lookalike .in Domain (Severe)</span>
-                      </div>
-                      <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
-                        <div className="bg-[#D92D20] h-full w-[95%]" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="font-semibold text-[#182230]">Urgency / Coercion Pressure</span>
-                        <span className="text-[#B54708] font-bold">2-Hour Card Suspension Deadline</span>
-                      </div>
-                      <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
-                        <div className="bg-[#B54708] h-full w-[78%]" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between mb-1">
-                        <span className="font-semibold text-[#182230]">Counter-Signals Present</span>
-                        <span className="text-[#586474]">None Detected (No official bank signatures)</span>
-                      </div>
-                      <div className="w-full bg-[#E2E8F0] h-2 rounded-full overflow-hidden">
-                        <div className="bg-[#586474] h-full w-[10%]" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-3 bg-[#F7F9FC] rounded-xl border border-[#E2E8F0] text-xs text-[#586474] flex items-center justify-between">
-                    <span>Advisory Classification:</span>
-                    <span className="font-bold text-[#D92D20]">Confirmed Impersonation Phishing</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* -------------------------------------------------------------------------
-            SECTION 8: Family Shield ("Make safer decisions with people you trust")
-            ------------------------------------------------------------------------- */}
-        <section id="family-shield" className="gsap-section py-20 bg-white border-b border-[#E2E8F0]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid lg:grid-cols-12 gap-12 items-center">
-              <div className="lg:col-span-6 space-y-6">
-                <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
-                  Family Defense Architecture
-                </span>
-                <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
-                  Make safer decisions with the people you trust.
-                </h2>
-                <p className="gsap-reveal text-sm sm:text-base text-[#586474] leading-relaxed">
-                  Extortion scammers systematically isolate elderly parents and less tech-savvy relatives with threats of immediate arrest. Family Shield creates an unbreakable circle of trusted guardians.
-                </p>
-
-                <div className="gsap-reveal space-y-3.5">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#E6F4F2] text-[#0F766E] flex items-center justify-center shrink-0 mt-0.5">
-                      <UserMultiple size={18} />
-                    </div>
-                    <div className="text-xs">
-                      <h3 className="font-bold text-sm text-[#182230]">Mutual Two-Way Consent</h3>
-                      <p className="text-[#586474]">No surveillance or chat spying. Both parties explicitly confirm guardianship linking through secure pairing codes.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#E6F4F2] text-[#0F766E] flex items-center justify-center shrink-0 mt-0.5">
-                      <Security size={18} />
-                    </div>
-                    <div className="text-xs">
-                      <h3 className="font-bold text-sm text-[#182230]">Pre-Transaction Checkpoints</h3>
-                      <p className="text-[#586474]">When high-risk payment patterns or unknown accounts are entered, linked guardians receive a quiet verification prompt.</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-[#E6F4F2] text-[#0F766E] flex items-center justify-center shrink-0 mt-0.5">
-                      <Flash size={18} />
-                    </div>
-                    <div className="text-xs">
-                      <h3 className="font-bold text-sm text-[#182230]">Salted Duress Phrase Architecture</h3>
-                      <p className="text-[#586474]">Family members agree on a discreet trigger word stored exclusively as a salted hash. Saying it instantly alerts guardians without tipping off the scammer.</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="gsap-reveal pt-2 flex items-center gap-3">
-                  <Link to="/family-shield">
-                    <Button kind="primary" size="md" renderIcon={ArrowRight}>
-                      Explore Family Shield
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-
-              {/* Family Shield Interactive Simulation Mockup */}
-              <div className="lg:col-span-6">
-                <div className="gsap-3d-card bg-[#F7F9FC] border border-[#CBD5E1] rounded-2xl p-6 shadow-md space-y-4">
-                  {/* View switcher: Guardian Dashboard vs Senior Citizen Mode */}
-                  <div className="flex items-center justify-between pb-3 border-b border-[#E2E8F0]">
-                    <div className="flex items-center gap-2">
-                      <UserMultiple size={18} className="text-[#0F766E]" />
-                      <span className="font-bold text-sm text-[#182230]">Interactive Family Mode View</span>
-                    </div>
-                    <div className="inline-flex rounded-lg border border-[#CBD5E1] bg-white p-0.5 text-xs font-semibold">
-                      <button
-                        type="button"
-                        onClick={() => setFamilyShieldView('guardian')}
-                        className={`px-2.5 py-1 rounded-md transition-colors ${
-                          familyShieldView === 'guardian'
-                            ? 'bg-[#0F766E] text-white shadow-xs'
-                            : 'text-[#586474] hover:text-[#182230]'
-                        }`}
-                      >
-                        Guardian View
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setFamilyShieldView('senior')}
-                        className={`px-2.5 py-1 rounded-md transition-colors ${
-                          familyShieldView === 'senior'
-                            ? 'bg-[#0F766E] text-white shadow-xs'
-                            : 'text-[#586474] hover:text-[#182230]'
-                        }`}
-                      >
-                        Senior Citizen Mode
-                      </button>
-                    </div>
-                  </div>
-
-                  {familyShieldView === 'guardian' ? (
-                    <div className="space-y-3">
-                      <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-[#182230]">Senior Protected Member: Ramesh (Father)</span>
-                          <span className="text-[11px] text-[#0F766E] font-semibold bg-[#E6F4F2] px-2 py-0.5 rounded">
-                            Senior Mode Active
-                          </span>
-                        </div>
-                        <p className="text-xs text-[#586474]">
-                          Pre-flight verification active for transfers exceeding ₹5,000 or unverified VPAs.
-                        </p>
-                      </div>
-
-                      <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] space-y-2">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-bold text-[#182230]">Primary Guardian: Priya (Daughter)</span>
-                          <span className="text-[11px] text-[#0F766E] font-semibold">Real-Time Alerts ON</span>
-                        </div>
-                        <p className="text-xs text-[#586474]">
-                          Receives quiet push alerts when coercive SMS or unknown APK installation is detected.
-                        </p>
-                      </div>
-
-                      <div className="p-3 bg-[#E6F4F2] border border-[#BCE3DE] rounded-xl text-xs text-[#0F766E] flex items-center gap-2">
-                        <Security size={16} className="shrink-0" />
-                        <span>Duress Phrase: "Tulsi Plant" &bull; Salted SHA-256 Hash Verified</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="p-5 bg-white rounded-xl border-2 border-[#0F766E] space-y-4">
-                      <div className="flex items-center gap-2 text-[#0F766E]">
-                        <View size={20} />
-                        <span className="font-bold text-base text-[#182230]">Senior Protected View</span>
-                      </div>
-                      <p className="text-sm font-semibold text-[#182230] leading-snug">
-                        "Stop. Do not tap unknown links. If you are unsure, press the button below to alert your daughter Priya."
-                      </p>
-                      <button
-                        type="button"
-                        className="w-full py-3.5 px-4 bg-[#0F766E] text-white text-base font-bold rounded-xl shadow-md hover:bg-[#0d655e] flex items-center justify-center gap-2 min-h-[48px]"
-                      >
-                        <Phone size={20} />
-                        <span>One-Tap Call Guardian (Priya)</span>
-                      </button>
-                      <span className="block text-[11px] text-[#586474] text-center">
-                        Minimum 48px tap targets &bull; High-contrast 20px typography &bull; Non-intimidating guidance
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* -------------------------------------------------------------------------
-            SECTION 9: Golden Hour Recovery ("Already lost money? Act quickly.")
-            ------------------------------------------------------------------------- */}
-        <section id="recovery" className="gsap-section py-20 bg-[#F7F9FC] border-b border-[#E2E8F0]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="bg-white border-2 border-[#D92D20]/20 rounded-3xl p-8 sm:p-12 shadow-md">
-              <div className="max-w-3xl space-y-4 mb-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-[#FEF3F2] text-[#D92D20] border border-[#FECDCA]">
+        <section id="recovery" className="cw-section py-20 bg-[#F8FAFC] border-b border-neutral-200">
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6">
+            <div className="cw-reveal bg-white border-2 border-red-200 rounded-3xl p-8 sm:p-12 shadow-md">
+              <div className="max-w-3xl space-y-3 mb-8">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600">
                   <Phone size={14} />
                   <span>National Cybercrime Helpline: 1930</span>
-                </div>
-                <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
-                  Already transferred money? Act immediately.
-                </h2>
-                <p className="gsap-reveal text-sm sm:text-base text-[#586474] leading-relaxed">
-                  The first 2 to 3 hours after fraudulent funds leave your account represent the <strong className="text-[#182230]">Golden Hour</strong>. Banking rails can place an immediate lien on the beneficiary account before syndicates withdraw funds via mule ATMs.
+                </span>
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-neutral-950">
+                  Already lost money? Act immediately.
+                </h3>
+                <p className="text-sm sm:text-base text-neutral-600 leading-relaxed">
+                  The first 2 to 3 hours represent the <strong>Golden Hour</strong>. Banking rails can place an immediate lien on the beneficiary account before funds are cashed out via mule ATMs.
                 </p>
               </div>
 
-              {/* 180-Minute Recovery Protocol Grid */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                {GOLDEN_HOUR_TIMELINE.map((step, idx) => (
-                  <div
-                    key={idx}
-                    className={`gsap-3d-card p-5 rounded-2xl border space-y-2 ${
-                      idx === 1
-                        ? 'bg-[#FEF3F2] border-[#FECDCA]'
-                        : 'bg-[#F7F9FC] border-[#E2E8F0]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className={`text-xs font-mono font-bold px-2 py-0.5 rounded ${
-                        idx === 1 ? 'bg-[#D92D20] text-white' : 'bg-[#182230] text-white'
-                      }`}>
-                        {step.time}
-                      </span>
-                      <span className="text-[10px] uppercase tracking-wider font-semibold text-[#586474]">
-                        {step.badge}
-                      </span>
-                    </div>
-                    <h3 className={`font-bold text-sm ${idx === 1 ? 'text-[#D92D20]' : 'text-[#182230]'}`}>
-                      {step.title}
-                    </h3>
-                    <p className="text-xs text-[#586474] leading-relaxed">
-                      {step.desc}
-                    </p>
-                  </div>
-                ))}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200">
+                  <span className="text-xs font-bold text-neutral-950 block">1. Stop Transfers</span>
+                  <p className="text-xs text-neutral-600 mt-1">Never pay "tax clearance" or "unfreeze" fees.</p>
+                </div>
+                <div className="p-4 bg-red-50 rounded-2xl border border-red-200">
+                  <span className="text-xs font-bold text-red-600 block">2. Call 1930</span>
+                  <p className="text-xs text-neutral-600 mt-1">Provide UTR and beneficiary account for instant lien.</p>
+                </div>
+                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200">
+                  <span className="text-xs font-bold text-neutral-950 block">3. Report Incident</span>
+                  <p className="text-xs text-neutral-600 mt-1">Register formal report on cybercrime.gov.in.</p>
+                </div>
+                <div className="p-4 bg-neutral-50 rounded-2xl border border-neutral-200">
+                  <span className="text-xs font-bold text-neutral-950 block">4. Generate Dossier</span>
+                  <p className="text-xs text-neutral-600 mt-1">Use Satark Saathi to format evidence for your bank.</p>
+                </div>
               </div>
 
-              {/* Action Buttons for Recovery */}
-              <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-[#E2E8F0]">
+              <div className="flex flex-wrap items-center gap-4 pt-4 border-t border-neutral-100">
                 <a href="tel:1930">
                   <Button kind="danger" size="lg" renderIcon={Phone}>
-                    Dial National Helpline 1930
+                    Dial Helpline 1930
                   </Button>
                 </a>
-
                 <Link to="/golden-hour">
                   <Button kind="tertiary" size="lg" renderIcon={Flash}>
-                    Launch Recovery Dossier Tool
+                    Open Recovery Dossier Tool
                   </Button>
                 </Link>
-
                 <a
-                  href="https://cybercrime.gov.in/"
+                  href="https://cybercrime.gov.in"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-semibold text-[#0F62FE] hover:underline inline-flex items-center gap-1 ml-auto"
+                  className="text-xs font-semibold text-blue-600 hover:underline inline-flex items-center gap-1 ml-auto"
                 >
-                  <span>Official Government Portal: cybercrime.gov.in</span>
+                  <span>Official Portal: cybercrime.gov.in</span>
                   <Launch size={14} />
                 </a>
               </div>
@@ -1602,49 +979,40 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* -------------------------------------------------------------------------
-            SECTION 10: Frequently Asked Questions (Accessible GSAP Accordion)
+            SECTION 7: Frequently Asked Questions
             ------------------------------------------------------------------------- */}
-        <section id="faq" className="gsap-section py-20 bg-white border-b border-[#E2E8F0]">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center max-w-2xl mx-auto mb-14 space-y-3">
-              <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#0F766E] block">
-                Clarity & Transparency
+        <section id="faq" className="cw-section py-20 bg-white border-b border-neutral-200">
+          <div className="mx-auto w-full max-w-4xl px-5 md:px-6">
+            <div className="cw-reveal text-center max-w-2xl mx-auto mb-14 space-y-3">
+              <span className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold bg-blue-50 text-[#1767F2]">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#1767F2]" />
+                FAQ
               </span>
-              <h2 className="gsap-reveal text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-[#182230]">
+              <h3 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-950">
                 Frequently Asked Questions
-              </h2>
-              <p className="gsap-reveal text-sm sm:text-base text-[#586474]">
-                Clear, honest answers about what Satark Saathi does, what it does not do, and how your data is treated.
-              </p>
+              </h3>
             </div>
 
-            <div className="space-y-4">
-              {FAQ_ITEMS.map((faq, idx) => {
-                const isOpen = openFaqIndex === idx;
+            <div className="space-y-3">
+              {FAQ_LIST.map((faq, idx) => {
+                const isOpen = openFaq === idx;
                 return (
                   <div
                     key={idx}
-                    className="gsap-reveal border border-[#E2E8F0] rounded-2xl overflow-hidden transition-all bg-[#F7F9FC]"
+                    className="cw-reveal border border-neutral-200 rounded-2xl overflow-hidden bg-[#F8FAFC] transition-colors"
                   >
                     <button
                       type="button"
-                      onClick={() => toggleFaq(idx)}
-                      className="w-full text-left px-6 py-4 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-[#182230] hover:text-[#0F766E] focus:outline-none focus:ring-2 focus:ring-[#0F62FE]"
+                      onClick={() => setOpenFaq(isOpen ? null : idx)}
+                      className="w-full text-left px-6 py-4 flex items-center justify-between gap-4 font-bold text-sm sm:text-base text-neutral-900 hover:text-[#1767F2] cursor-pointer"
                       aria-expanded={isOpen}
-                      aria-controls={`faq-answer-${idx}`}
                     >
-                      <span>{faq.question}</span>
-                      <span className={`transform transition-transform duration-200 text-[#586474] shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
-                        <ChevronDown size={18} />
-                      </span>
+                      <span>{faq.q}</span>
+                      <ChevronDown size={18} className={`transform transition-transform text-neutral-500 ${isOpen ? 'rotate-180' : ''}`} />
                     </button>
-
                     {isOpen && (
-                      <div
-                        id={`faq-answer-${idx}`}
-                        className="px-6 pb-5 pt-1 text-xs sm:text-sm text-[#586474] leading-relaxed border-t border-[#E2E8F0] bg-white animate-fadeIn"
-                      >
-                        {faq.answer}
+                      <div className="px-6 pb-5 pt-1 text-xs sm:text-sm text-neutral-600 leading-relaxed border-t border-neutral-200 bg-white">
+                        {faq.a}
                       </div>
                     )}
                   </div>
@@ -1655,31 +1023,32 @@ export const LandingPage: React.FC = () => {
         </section>
 
         {/* -------------------------------------------------------------------------
-            SECTION 11: Final Call to Action & Footer
+            SECTION 8: Final Call to Action
             ------------------------------------------------------------------------- */}
-        <section className="gsap-section py-20 bg-[#182230] text-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-            <span className="gsap-reveal text-xs font-bold uppercase tracking-wider text-[#25A296] block">
-              Proactive Public Protection
-            </span>
-            <h2 className="gsap-reveal text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
-              Pause. Check. Then decide.
-            </h2>
-            <p className="gsap-reveal text-sm sm:text-base text-[#94A3B8] max-w-2xl mx-auto leading-relaxed">
-              Take thirty seconds to verify suspicious messages, APK downloads, or coercive threats before transferring hard-earned savings.
+        <section className="cw-section py-20 bg-gradient-to-br from-[#00AEEF] via-[#1767F2] to-[#1e40af] text-white">
+          <div className="mx-auto w-full max-w-7xl px-5 md:px-6 text-center space-y-6">
+            <h3 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight">
+              Stop scams before you act.
+            </h3>
+            <p className="text-base text-white/90 max-w-xl mx-auto leading-relaxed">
+              Verify suspicious messages, links, and coercive payment demands with Satark Saathi.
             </p>
-
-            <div className="gsap-reveal flex flex-wrap items-center justify-center gap-4 pt-4">
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
               <Link to="/scanner">
-                <Button kind="primary" size="lg" renderIcon={ArrowRight}>
-                  Launch Scam Analyzer
-                </Button>
+                <button
+                  type="button"
+                  className="bg-white text-[#1767F2] hover:bg-neutral-100 font-bold text-sm sm:text-base rounded-full px-8 py-3.5 shadow-xl transition-all cursor-pointer"
+                >
+                  Try Satark Saathi Free
+                </button>
               </Link>
-
               <Link to="/golden-hour">
-                <Button kind="tertiary" size="lg" renderIcon={Flash}>
-                  Access Recovery Desk
-                </Button>
+                <button
+                  type="button"
+                  className="bg-black/30 hover:bg-black/50 text-white font-semibold text-sm sm:text-base rounded-full px-7 py-3.5 border border-white/20 transition-all cursor-pointer"
+                >
+                  Recovery Desk
+                </button>
               </Link>
             </div>
           </div>
@@ -1687,93 +1056,33 @@ export const LandingPage: React.FC = () => {
       </main>
 
       {/* -------------------------------------------------------------------------
-          Footer
+          FOOTER
           ------------------------------------------------------------------------- */}
-      <footer className="bg-[#0F172A] text-[#94A3B8] border-t border-[#334155] py-14 text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Col 1: Brand & Slogan */}
-            <div className="space-y-3 md:col-span-1">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-[#0F766E] text-white flex items-center justify-center">
-                  <Security size={18} />
-                </div>
-                <span className="font-bold text-white text-base">Satark Saathi</span>
+      <footer className="bg-neutral-900 text-neutral-400 py-12 text-xs border-t border-neutral-800">
+        <div className="mx-auto w-full max-w-7xl px-5 md:px-6 space-y-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pb-8 border-b border-neutral-800">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-[#1767F2] text-white flex items-center justify-center">
+                <Security size={18} />
               </div>
-              <p className="text-[11px] text-[#94A3B8] leading-relaxed">
-                सतर्क साथी &bull; Stop. Verify. Stay Safe. An AI-assisted digital public safety initiative for cyber-fraud prevention and recovery in India.
-              </p>
-              <div className="pt-2">
-                <a
-                  href="tel:1930"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-[#D92D20]/20 text-[#FDA29B] border border-[#D92D20]/40"
-                >
-                  <Phone size={14} />
-                  <span>National Cybercrime Helpline 1930</span>
-                </a>
+              <div>
+                <span className="font-bold text-white text-sm">Satark Saathi</span>
+                <span className="block text-[11px] text-neutral-400">सतर्क साथी &bull; Stop. Verify. Stay Safe.</span>
               </div>
             </div>
 
-            {/* Col 2: Defense Capabilities */}
-            <div className="space-y-2.5">
-              <span className="font-bold text-white uppercase tracking-wider text-[11px] block">
-                Defense Modules
-              </span>
-              <ul className="space-y-2">
-                <li><Link to="/scanner" className="hover:text-white transition-colors">Scam Message Analyzer</Link></li>
-                <li><Link to="/checkpoint" className="hover:text-white transition-colors">Pre-Flight Payment Check</Link></li>
-                <li><Link to="/family-shield" className="hover:text-white transition-colors">Family Shield Protection</Link></li>
-                <li><Link to="/golden-hour" className="hover:text-white transition-colors">Golden Hour Recovery Desk</Link></li>
-              </ul>
-            </div>
-
-            {/* Col 3: Official Portals */}
-            <div className="space-y-2.5">
-              <span className="font-bold text-white uppercase tracking-wider text-[11px] block">
-                Official Indian Portals
-              </span>
-              <ul className="space-y-2">
-                <li>
-                  <a href="https://cybercrime.gov.in/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors inline-flex items-center gap-1">
-                    <span>Cybercrime.gov.in</span>
-                    <Launch size={12} />
-                  </a>
-                </li>
-                <li>
-                  <a href="https://sachet.rbi.org.in/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors inline-flex items-center gap-1">
-                    <span>RBI Sachet Portal</span>
-                    <Launch size={12} />
-                  </a>
-                </li>
-                <li>
-                  <a href="https://sancharsaathi.gov.in/" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors inline-flex items-center gap-1">
-                    <span>Chakshu & Sanchar Saathi</span>
-                    <Launch size={12} />
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Col 4: Public Safety Disclaimer */}
-            <div className="space-y-2.5">
-              <span className="font-bold text-white uppercase tracking-wider text-[11px] block">
-                Public Safety Notice
-              </span>
-              <p className="text-[11px] text-[#94A3B8] leading-relaxed">
-                Satark Saathi is an independent advisory intelligence system. It is not a law-enforcement agency, government department, or commercial bank. In case of active financial fraud, immediately call 1930 or submit an official complaint to your local Cyber Police station.
-              </p>
+            <div className="flex flex-wrap items-center gap-6 text-neutral-300">
+              <Link to="/scanner" className="hover:text-white transition-colors">Scam Engine</Link>
+              <Link to="/payment-checkpoint" className="hover:text-white transition-colors">Payment Checkpoint</Link>
+              <Link to="/family-shield" className="hover:text-white transition-colors">Family Shield</Link>
+              <Link to="/golden-hour" className="hover:text-white transition-colors">1930 Recovery</Link>
+              <a href="https://cybercrime.gov.in" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">cybercrime.gov.in</a>
             </div>
           </div>
 
-          <div className="pt-8 border-t border-[#334155] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#64748B]">
-            <div>
-              &copy; {new Date().getFullYear()} Satark Saathi. Developed for Indian digital public safety.
-            </div>
-            <div className="flex items-center gap-4">
-              <span>Client-side Zero Plaintext Architecture</span>
-              <span>&bull;</span>
-              <span>Accessibility WCAG 2.2 AA</span>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-neutral-400">
+            <p>&copy; {new Date().getFullYear()} Satark Saathi. Developed for Indian digital public safety.</p>
+            <p>Advisory Platform &bull; Non-Invasive Heuristic Engine &bull; National Helpline 1930</p>
           </div>
         </div>
       </footer>
