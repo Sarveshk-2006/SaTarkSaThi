@@ -8,6 +8,8 @@ import pytest
 # developer's demo database (satark_saathi.db). Must be set before any backend.app import.
 _TEST_DB_DIR = tempfile.mkdtemp(prefix="satark_test_db_")
 os.environ["DATABASE_URL"] = "sqlite:///" + str(Path(_TEST_DB_DIR) / "satark_test.db").replace("\\", "/")
+# Many tests fire rapid requests; rate limiting is exercised explicitly in test_hardening_phase8.py.
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 # Add project root to sys.path
 root_path = Path(__file__).resolve().parent.parent
