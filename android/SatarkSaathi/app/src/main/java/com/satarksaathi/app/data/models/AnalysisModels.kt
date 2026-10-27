@@ -17,9 +17,9 @@ data class URLAnalyzeRequest(
 @Serializable
 data class DetectedSignalResponse(
     @SerialName("reason_code") val reasonCode: String = "",
-    @SerialName("signal_type") val signalType: String,
-    @SerialName("severity") val severity: String,
-    @SerialName("reason") val reason: String,
+    @SerialName("signal_type") val signalType: String = "",
+    @SerialName("severity") val severity: String = "MEDIUM",
+    @SerialName("reason") val reason: String = "",
     @SerialName("excerpt") val excerpt: String? = null,
     @SerialName("weight") val weight: Double = 1.0,
     @SerialName("category") val category: String? = null
@@ -45,5 +45,12 @@ data class AnalysisResponse(
     @SerialName("should_alert_family") val shouldAlertFamily: Boolean = false,
     @SerialName("ai_provider") val aiProvider: String = "none",
     @SerialName("analysis_mode") val analysisMode: String = "rule_based",
-    @SerialName("limitations") val limitations: List<String> = emptyList()
+    @SerialName("limitations") val limitations: List<String> = emptyList(),
+    @SerialName("classification") val classification: String = "",
+    @SerialName("severity") val severity: String = "SAFE",
+    @SerialName("summary") val summary: String = "",
+    @SerialName("advice") val advice: String = "",
+    @SerialName("suggested_action") val suggestedAction: String? = null,
+    @SerialName("is_flagged_for_family") val isFlaggedForFamily: Boolean = false,
+    @SerialName("evidence_items") val evidenceItems: List<String> = emptyList()
 )
