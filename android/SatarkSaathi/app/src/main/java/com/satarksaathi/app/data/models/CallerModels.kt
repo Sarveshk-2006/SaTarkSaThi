@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CallerLookupDto(
-    @SerialName("phone_number") val phoneNumber: String,
+    @SerialName("phone_number") val phoneNumber: String = "",
     @SerialName("normalized_number") val normalizedNumber: String = "",
     @SerialName("display_tag") val displayTag: String = "Unknown",
     @SerialName("category") val category: String = "UNKNOWN",

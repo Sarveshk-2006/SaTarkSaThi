@@ -491,15 +491,25 @@ class CallerIntelligenceService:
         )
         return [
             {
+                "phone_number": r.raw_display_number or r.normalized_number,
                 "normalized_number": r.normalized_number,
-                "display_number": r.raw_display_number,
-                "display_tag": r.display_tag,
+                "display_number": r.raw_display_number or r.normalized_number,
+                "display_tag": r.display_tag or f"Reported as {r.category.replace('_', ' ').title()}",
                 "category": r.category,
                 "risk_score": r.risk_score,
                 "risk_level": r.risk_level,
-                "total_reports": r.total_reports,
+                "confidence": r.confidence or "HIGH",
+                "action": "BLOCK" if r.risk_score >= 85 else "WARN",
+                "is_blocked": True if r.risk_score >= 85 else False,
                 "carrier_verified": r.carrier_verified,
-                "ibm_summary": r.ibm_summary,
+                "carrier_name": r.carrier_name,
+                "is_business": r.is_business,
+                "business_name": r.business_name,
+                "total_reports": r.total_reports,
+                "verified_reports": r.verified_reports,
+                "ibm_summary": r.ibm_summary or "Deterministic community threat analysis.",
+                "evidence_signals": json.loads(r.evidence_signals) if r.evidence_signals else [],
+                "recommended_action": r.recommended_action or "Exercise caution before speaking or sharing OTPs.",
                 "last_reported_at": r.last_reported_at.isoformat() if r.last_reported_at else None,
             }
             for r in reps

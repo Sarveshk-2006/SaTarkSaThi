@@ -167,7 +167,7 @@ def remove_from_blocklist(
     return {"status": "success", "message": f"{phone_number} removed from personal blocklist."}
 
 
-@router.get("/threats")
+@router.get("/threats", response_model=List[CallerLookupResponse])
 def list_top_threats(
     limit: int = Query(10, ge=1, le=50),
     db: Session = Depends(get_db)
