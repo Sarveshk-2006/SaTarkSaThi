@@ -204,23 +204,17 @@ fun LoginScreen(
 
                 // Sign In Button
                 Button(
-                    onClick = { viewModel.login() },
-                    enabled = !state.isLoading,
+                    onClick = {
+                        viewModel.login()
+                        onNavigate(Screen.Home.route)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy)
                 ) {
-                    if (state.isLoading) {
-                        CircularProgressIndicator(
-                            color = SurfaceWhite,
-                            strokeWidth = 2.dp,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    } else {
-                        Text("Sign In Securely", fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                    }
+                    Text("Sign In Securely", fontWeight = FontWeight.Bold, fontSize = 15.sp)
                 }
             }
         }
@@ -246,7 +240,10 @@ fun LoginScreen(
             badge = "Elder Protection",
             badgeColor = SafetyTeal,
             badgeBg = SafetyTealLight,
-            onClick = { viewModel.demoLogin(1) }
+            onClick = {
+                viewModel.demoLogin(1)
+                onNavigate(Screen.Home.route)
+            }
         )
 
         Spacer(modifier = Modifier.height(10.dp))
@@ -259,7 +256,10 @@ fun LoginScreen(
             badge = "Family Guardian",
             badgeColor = PrimaryNavy,
             badgeBg = PrimaryNavy.copy(alpha = 0.1f),
-            onClick = { viewModel.demoLogin(2) }
+            onClick = {
+                viewModel.demoLogin(2)
+                onNavigate(Screen.Home.route)
+            }
         )
     }
 }

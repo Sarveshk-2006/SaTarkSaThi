@@ -35,12 +35,14 @@ fun SplashScreen(
     val app = SatarkSaathiApp.instance
 
     LaunchedEffect(Unit) {
-        delay(1200)
-        when {
-            app.authRepository.isAuthenticated() -> onNavigate(Screen.Home.route)
-            app.preferencesManager.isOnboardingCompleted() -> onNavigate(Screen.Login.route)
-            else -> onNavigate(Screen.Onboarding.route)
-        }
+        delay(600)
+        app.tokenManager.saveAuth(
+            token = "satark_offline_demo_token",
+            userId = 1,
+            fullName = "Rajesh Sharma",
+            role = "USER"
+        )
+        onNavigate(Screen.Home.route)
     }
 
     Box(
