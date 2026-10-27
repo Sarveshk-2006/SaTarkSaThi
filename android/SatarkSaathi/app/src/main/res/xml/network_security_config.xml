@@ -5,11 +5,13 @@
             <certificates src="system" />
         </trust-anchors>
     </base-config>
-    <!-- Explicit development loopback overrides for emulator and local dev -->
+    <!-- Development loopback overrides for emulator and local Wi-Fi dev -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">127.0.0.1</domain>
         <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.191.17.15</domain>
+        <domain includeSubdomains="true">10.191.17.0/24</domain>
         <domain includeSubdomains="true">192.168.1.0/24</domain>
     </domain-config>
 </network-security-config>
