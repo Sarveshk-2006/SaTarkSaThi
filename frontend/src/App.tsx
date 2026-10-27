@@ -14,6 +14,7 @@ import { PaymentCheckpointPage } from './pages/PaymentCheckpointPage';
 import { GoldenHourRecoveryPage } from './pages/GoldenHourRecoveryPage';
 import { IncidentHistoryPage } from './pages/IncidentHistoryPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { CallerShieldPage } from './pages/CallerShieldPage';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { ApkTestbedPage } from './pages/ApkTestbedPage';
@@ -77,6 +78,7 @@ export const App: React.FC = () => {
                         <Route path="family-shield" element={<FamilyShieldPage />} />
                         <Route path="golden-hour" element={<GoldenHourRecoveryPage />} />
                         <Route path="incident-history" element={<IncidentHistoryPage />} />
+                        <Route path="caller-shield" element={<CallerShieldPage />} />
                         <Route path="mock-upi" element={<OpenAppMode />} />
                         <Route path="settings" element={<SettingsPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />

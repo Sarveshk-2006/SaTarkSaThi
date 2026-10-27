@@ -71,14 +71,21 @@ const navItems: NavItem[] = [
     shortcut: '6',
   },
   {
+    name: 'Caller Shield',
+    to: '/caller-shield',
+    icon: Phone,
+    badge: 'AI Shield',
+    shortcut: '7',
+  },
+  {
     name: 'Settings',
     to: '/settings',
     icon: Settings,
-    shortcut: '7',
+    shortcut: '8',
   },
 ];
 
-const SENIOR_ROUTES = ['/', '/scanner', '/payment-checkpoint', '/family-shield', '/golden-hour', '/settings'];
+const SENIOR_ROUTES = ['/', '/scanner', '/payment-checkpoint', '/family-shield', '/caller-shield', '/golden-hour', '/settings'];
 
 export const Sidebar: React.FC<SidebarProps> = ({
   isCollapsed: controlledCollapsed,

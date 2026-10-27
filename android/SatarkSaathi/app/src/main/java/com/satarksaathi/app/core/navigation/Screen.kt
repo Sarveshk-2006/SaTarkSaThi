@@ -25,4 +25,5 @@ sealed class Screen(val route: String) {
     data object Profile : Screen("profile")
     data object PrivacyAndPermissions : Screen("privacy_permissions")
     data object Settings : Screen("settings")
+    data object CallerShield : Screen("caller_shield")
 }

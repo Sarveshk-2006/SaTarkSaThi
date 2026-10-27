@@ -276,6 +276,17 @@ fun HomeScreen(
                 }
             }
 
+            // Service 0: Satark Caller Shield
+            item {
+                ServiceCard(
+                    title = "Satark Caller Shield",
+                    description = "Truecaller-style incoming call intelligence, real-time scam radar, and auto-blocking.",
+                    icon = Icons.Default.ContactPhone,
+                    badge = "CALL INTELLIGENCE",
+                    onClick = { onNavigate(Screen.CallerShield.route) }
+                )
+            }
+
             // Service 1: Report Suspicious Communication
             item {
                 ServiceCard(

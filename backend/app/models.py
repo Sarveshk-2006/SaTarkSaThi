@@ -325,3 +325,99 @@ class AuditEvent(Base):
     description = Column(Text, nullable=False)
     metadata_json = Column(Text, nullable=True)
     timestamp = Column(DateTime(timezone=True), default=utc_now, index=True)
+
+
+class CallerReputation(Base):
+    """
+    Caller reputation record indexed by E.164 normalized phone number.
+    Maintains risk scores, fraud category, community report count,
+    carrier verification flags, and IBM AI enriched summaries.
+    """
+    __tablename__ = "caller_reputations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    normalized_number = Column(String(30), unique=True, index=True, nullable=False)  # e.g. +919876500001
+    raw_display_number = Column(String(30), nullable=False)  # Formatted display
+    display_tag = Column(String(100), nullable=True)  # e.g. "Suspected Digital Arrest Extortion"
+    category = Column(String(60), default="UNKNOWN", index=True)  # "DIGITAL_ARREST", "KYC_FRAUD", "ELECTRICITY_SCAM", "COURIER_CUSTOMS", "LEGITIMATE_BUSINESS", "UNKNOWN"
+    
+    risk_score = Column(Integer, default=0, index=True)  # 0 to 100
+    risk_level = Column(String(20), default="UNKNOWN", index=True)  # "LOW", "SUSPICIOUS", "HIGH", "CRITICAL", "UNKNOWN"
+    confidence = Column(String(20), default="MEDIUM")  # "LOW", "MEDIUM", "HIGH"
+    
+    total_reports = Column(Integer, default=0)
+    verified_reports = Column(Integer, default=0)
+    upvotes_spam = Column(Integer, default=0)
+    downvotes_safe = Column(Integer, default=0)
+    
+    carrier_verified = Column(Boolean, default=False)  # STIR/SHAKEN or carrier network signature
+    carrier_name = Column(String(60), nullable=True)
+    is_business = Column(Boolean, default=False)
+    business_name = Column(String(120), nullable=True)
+    
+    ibm_summary = Column(Text, nullable=True)  # Grounded summary produced by IBM watsonx Granite
+    ibm_enriched_at = Column(DateTime(timezone=True), nullable=True)
+    evidence_signals = Column(Text, nullable=True)  # JSON array of detected behavioral signals
+    recommended_action = Column(String(255), nullable=True)
+    
+    last_reported_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+    updated_at = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
+
+    # Relationships
+    reports = orm_relationship("CallerReport", back_populates="reputation", cascade="all, delete-orphan")
+
+
+class CallerReport(Base):
+    """
+    Individual citizen reports of spam, extortion, or fraudulent calls.
+    """
+    __tablename__ = "caller_reports"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=True, index=True)
+    normalized_number = Column(String(30), ForeignKey("caller_reputations.normalized_number"), nullable=False, index=True)
+    
+    category = Column(String(60), nullable=False)  # "DIGITAL_ARREST", "KYC_FRAUD", "ELECTRICITY_SCAM", "COURIER_CUSTOMS", "LOTTERY_FRAUD", "HARASSMENT", "SAFE_BUSINESS"
+    claimed_caller_name = Column(String(100), nullable=True)  # What name did the scammer claim? (e.g. "CBI Officer Sharma")
+    description = Column(Text, nullable=True)
+    call_type = Column(String(30), default="INCOMING")  # "INCOMING", "MISSED", "WHATSAPP_CALL"
+    call_timestamp = Column(DateTime(timezone=True), default=utc_now)
+    
+    status = Column(String(30), default="VERIFIED", index=True)  # "PENDING", "VERIFIED", "DISPUTED", "REJECTED"
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+
+    # Relationships
+    reputation = orm_relationship("CallerReputation", back_populates="reports")
+
+
+class CallerBlocklist(Base):
+    """
+    Personal blocklist and allowlist rules configured by individual users.
+    """
+    __tablename__ = "caller_blocklists"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False, index=True)
+    normalized_number = Column(String(30), nullable=False, index=True)
+    display_name = Column(String(100), nullable=True)
+    action = Column(String(20), default="BLOCK")  # "BLOCK", "ALLOW", "WARN"
+    reason = Column(String(255), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=utc_now)
+
+
+class CallerLookupAudit(Base):
+    """
+    Audit log for caller reputation queries.
+    Uses hashed number for privacy while maintaining statistical telemetry.
+    """
+    __tablename__ = "caller_lookup_audits"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=True, index=True)
+    number_hash = Column(String(64), nullable=False, index=True)  # SHA-256 for privacy
+    risk_score = Column(Integer, default=0)
+    risk_level = Column(String(20), default="UNKNOWN")
+    cache_hit = Column(Boolean, default=False)
+    timestamp = Column(DateTime(timezone=True), default=utc_now, index=True)
+

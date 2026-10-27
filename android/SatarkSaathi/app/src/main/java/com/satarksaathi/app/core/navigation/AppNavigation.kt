@@ -286,6 +286,11 @@ fun AppNavigation(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
+            composable(Screen.CallerShield.route) {
+                com.satarksaathi.app.feature.caller.CallerShieldScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

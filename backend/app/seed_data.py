@@ -24,6 +24,9 @@ from backend.app.models import (
     RecoveryDraft,
     AuditEvent,
     TransactionRecord,
+    CallerReputation,
+    CallerReport,
+    CallerBlocklist,
 )
 
 def seed_default_data(db: Session, force: bool = False):
@@ -396,3 +399,146 @@ def seed_default_data(db: Session, force: bool = False):
             for vpa, name, amount, category, days in history
         ])
         db.commit()
+
+    # 9. Caller Shield Intelligence Seed Data
+    if db.query(CallerReputation).count() == 0 or force:
+        if force:
+            db.query(CallerReport).delete()
+            db.query(CallerReputation).delete()
+        now = datetime.now(timezone.utc)
+        
+        caller_seeds = [
+            CallerReputation(
+                normalized_number="+919876500001",
+                raw_display_number="+91 98765 00001",
+                display_tag="Suspected Fake Police / CBI Extortion",
+                category="DIGITAL_ARREST",
+                risk_score=98,
+                risk_level="CRITICAL",
+                confidence="HIGH",
+                total_reports=142,
+                verified_reports=96,
+                upvotes_spam=138,
+                downvotes_safe=1,
+                carrier_verified=False,
+                is_business=False,
+                ibm_summary="Coordinated extortion campaign impersonating Mumbai Cyber Crime and CBI officers. Demands immediate video call interrogation and funds transfer under threat of imminent arrest.",
+                ibm_enriched_at=now - timedelta(hours=2),
+                evidence_signals='["IMPERSONATING_LAW_ENFORCEMENT", "THREAT_OF_IMMEDIATE_ARREST", "DEMAND_FOR_SECRECY", "SPOOFED_CALLER_ID"]',
+                recommended_action="Do not answer or speak. Disconnect immediately. CBI or Police never arrest over phone calls or WhatsApp video.",
+                last_reported_at=now - timedelta(hours=1),
+                created_at=now - timedelta(days=15),
+            ),
+            CallerReputation(
+                normalized_number="+919123456789",
+                raw_display_number="+91 91234 56789",
+                display_tag="Fake Electricity Disconnection Warning",
+                category="ELECTRICITY_SCAM",
+                risk_score=92,
+                risk_level="HIGH",
+                confidence="HIGH",
+                total_reports=89,
+                verified_reports=62,
+                upvotes_spam=85,
+                downvotes_safe=2,
+                carrier_verified=False,
+                is_business=False,
+                ibm_summary="Fraudulent calls claiming power supply will be cut at 9:30 PM due to unpaid bills, prompting user to call an unauthorized mobile number or install remote access APKs.",
+                ibm_enriched_at=now - timedelta(hours=4),
+                evidence_signals='["ARTIFICIAL_URGENCY", "UTILITY_IMPERSONATION", "MALICIOUS_APK_PUSH"]',
+                recommended_action="Do not call back or install any APK. Check current bill status only on your power discom official website.",
+                last_reported_at=now - timedelta(hours=3),
+                created_at=now - timedelta(days=20),
+            ),
+            CallerReputation(
+                normalized_number="+923001234567",
+                raw_display_number="+92 300 1234567",
+                display_tag="Fake KBC Lottery WhatsApp Call",
+                category="LOTTERY_FRAUD",
+                risk_score=96,
+                risk_level="CRITICAL",
+                confidence="HIGH",
+                total_reports=215,
+                verified_reports=180,
+                upvotes_spam=210,
+                downvotes_safe=0,
+                carrier_verified=False,
+                is_business=False,
+                ibm_summary="International spoofed call claiming a 25 Lakh INR lottery prize from Kaun Banega Crorepati. Demands registration fee payment via gift cards or UPI.",
+                ibm_enriched_at=now - timedelta(hours=6),
+                evidence_signals='["SPOOFED_INTERNATIONAL_PREFIX", "UNREALISTIC_LOTTERY_PRIZE", "UPFRONT_FEE_DEMAND"]',
+                recommended_action="Block and report immediately. Never pay any fee or tax to claim prize money.",
+                last_reported_at=now - timedelta(hours=2),
+                created_at=now - timedelta(days=30),
+            ),
+            CallerReputation(
+                normalized_number="+918000011111",
+                raw_display_number="+91 80000 11111",
+                display_tag="Fake SBI NetBanking KYC Suspension",
+                category="KYC_FRAUD",
+                risk_score=88,
+                risk_level="HIGH",
+                confidence="HIGH",
+                total_reports=64,
+                verified_reports=45,
+                upvotes_spam=60,
+                downvotes_safe=1,
+                carrier_verified=False,
+                is_business=False,
+                ibm_summary="Impersonates bank security desk warning of immediate account freeze unless Aadhaar and OTP are disclosed.",
+                ibm_enriched_at=now - timedelta(hours=8),
+                evidence_signals='["BANK_IMPERSONATION", "OTP_SOLICITATION", "ACCOUNT_FREEZE_COERCION"]',
+                recommended_action="Banks never ask for OTPs or passwords over phone. Report to 1930 Cyber Helpline.",
+                last_reported_at=now - timedelta(hours=5),
+                created_at=now - timedelta(days=10),
+            ),
+            CallerReputation(
+                normalized_number="+912228540000",
+                raw_display_number="+91 22 2854 0000",
+                display_tag="State Bank of India (Official Corporate Desk)",
+                category="LEGITIMATE_BUSINESS",
+                risk_score=4,
+                risk_level="LOW",
+                confidence="HIGH",
+                total_reports=0,
+                verified_reports=0,
+                upvotes_spam=0,
+                downvotes_safe=48,
+                carrier_verified=True,
+                carrier_name="BSNL Enterprise Trunk",
+                is_business=True,
+                business_name="State Bank of India",
+                ibm_summary="Verified official corporate communication trunk for State Bank of India. Cross-matched against RBI Sachet bank directory.",
+                ibm_enriched_at=now - timedelta(days=1),
+                evidence_signals='["CARRIER_VERIFIED_ENTERPRISE", "OFFICIAL_BANK_DIRECTORY_MATCH"]',
+                recommended_action="Verified corporate caller. Still remember to never share NetBanking passwords or OTPs.",
+                last_reported_at=None,
+                created_at=now - timedelta(days=60),
+            ),
+        ]
+        db.add_all(caller_seeds)
+        db.commit()
+
+        # Seed sample report
+        db.add(CallerReport(
+            user_id=1,
+            normalized_number="+919876500001",
+            category="DIGITAL_ARREST",
+            claimed_caller_name="Inspector Vijay Rathore - CBI",
+            description="Caller claimed my Aadhaar was linked to a money laundering case in Mumbai. Demanded Skype video call and transfer to verification account.",
+            call_type="INCOMING",
+            call_timestamp=now - timedelta(hours=2),
+            status="VERIFIED",
+            created_at=now - timedelta(hours=2)
+        ))
+        
+        # Seed sample personal blocklist for user 1
+        db.add(CallerBlocklist(
+            user_id=1,
+            normalized_number="+919876500001",
+            display_name="CBI Impersonator Scammer",
+            action="BLOCK",
+            reason="Attempted extortion via digital arrest threat",
+            created_at=now - timedelta(hours=1)
+        ))
+        db.commit()

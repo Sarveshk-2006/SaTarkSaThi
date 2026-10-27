@@ -24,6 +24,7 @@ from backend.app.routers import (
     safety,
     sdk,
     integrations,
+    caller_shield,
 )
 
 # Configure logging
@@ -110,6 +111,7 @@ app.include_router(guardian.router, prefix=api_prefix)
 app.include_router(safety.router, prefix=api_prefix)
 app.include_router(sdk.router, prefix=api_prefix)
 app.include_router(integrations.router, prefix=api_prefix)
+app.include_router(caller_shield.router, prefix=api_prefix)
 
 from backend.app.services.alert_broadcaster import alert_broadcaster
 from fastapi import WebSocket, WebSocketDisconnect, Query

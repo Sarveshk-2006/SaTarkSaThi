@@ -51,4 +51,13 @@ class ApiClient(private val tokenManager: TokenManager) {
     val incidentApi: IncidentApi get() = getRetrofit().create(IncidentApi::class.java)
     val familyShieldApi: FamilyShieldApi get() = getRetrofit().create(FamilyShieldApi::class.java)
     val recoveryApi: RecoveryApi get() = getRetrofit().create(RecoveryApi::class.java)
+    val callerShieldApi: com.satarksaathi.app.data.remote.CallerShieldApi get() = getRetrofit().create(com.satarksaathi.app.data.remote.CallerShieldApi::class.java)
+
+    fun <T> create(service: Class<T>): T = getRetrofit().create(service)
+
+    companion object {
+        fun create(context: android.content.Context): ApiClient {
+            return ApiClient(TokenManager(context))
+        }
+    }
 }
