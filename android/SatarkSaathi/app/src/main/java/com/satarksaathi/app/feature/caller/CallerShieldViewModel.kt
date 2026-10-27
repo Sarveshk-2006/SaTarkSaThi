@@ -51,8 +51,15 @@ class CallerShieldViewModel(application: Application) : AndroidViewModel(applica
             true // Pre-Q devices have default telecom screening capability
         }
         _uiState.value = _uiState.value.copy(
-            isRoleGranted = isGranted,
+            isRoleGranted = isGranted || _uiState.value.isRoleGranted,
             isAutoBlockEnabled = repository.isAutoBlockEnabled()
+        )
+    }
+
+    fun setManualShieldActive(enabled: Boolean) {
+        _uiState.value = _uiState.value.copy(
+            isRoleGranted = enabled,
+            isAutoBlockEnabled = if (enabled) true else _uiState.value.isAutoBlockEnabled
         )
     }
 

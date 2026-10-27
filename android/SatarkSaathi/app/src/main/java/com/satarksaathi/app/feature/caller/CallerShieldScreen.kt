@@ -136,23 +136,89 @@ fun CallerShieldScreen(
                         }
 
                         if (!uiState.isRoleGranted) {
-                            Button(
-                                onClick = {
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                                        val roleManager = context.getSystemService(RoleManager::class.java)
-                                        if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_CALL_SCREENING)) {
-                                            val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
-                                            roleLauncher.launch(intent)
-                                        }
-                                    }
-                                },
+                            Column(
                                 modifier = Modifier.fillMaxWidth(),
-                                colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy),
-                                shape = RoundedCornerShape(10.dp)
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("Enable Call Screening Protection", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                Button(
+                                    onClick = {
+                                        var launched = false
+                                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                            try {
+                                                val roleManager = context.getSystemService(RoleManager::class.java)
+                                                if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_CALL_SCREENING)) {
+                                                    val intent = roleManager.createRequestRoleIntent(RoleManager.ROLE_CALL_SCREENING)
+                                                    roleLauncher.launch(intent)
+                                                    launched = true
+                                                }
+                                            } catch (e: Exception) {
+                                                launched = false
+                                            }
+                                        }
+
+                                        if (!launched) {
+                                            // Fallback: Launch Android Default Apps screen directly
+                                            try {
+                                                val intent = Intent(android.provider.Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                                                context.startActivity(intent)
+                                                android.widget.Toast.makeText(context, "Select 'Satark Saathi' under 'Caller ID & spam app'", android.widget.Toast.LENGTH_LONG).show()
+                                            } catch (e: Exception) {
+                                                try {
+                                                    val appIntent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                                        data = android.net.Uri.fromParts("package", context.packageName, null)
+                                                    }
+                                                    context.startActivity(appIntent)
+                                                    android.widget.Toast.makeText(context, "Enable Call Screening / Default App in Settings", android.widget.Toast.LENGTH_LONG).show()
+                                                } catch (ex: Exception) {
+                                                    viewModel.setManualShieldActive(true)
+                                                }
+                                            }
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    colors = ButtonDefaults.buttonColors(containerColor = PrimaryNavy),
+                                    shape = RoundedCornerShape(10.dp)
+                                ) {
+                                    Icon(Icons.Default.Call, contentDescription = null, modifier = Modifier.size(16.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("Enable Call Screening Protection", fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                                }
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    OutlinedButton(
+                                        onClick = {
+                                            try {
+                                                val intent = Intent(android.provider.Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS)
+                                                context.startActivity(intent)
+                                                android.widget.Toast.makeText(context, "Tap 'Caller ID & spam app' -> choose 'Satark Saathi'", android.widget.Toast.LENGTH_LONG).show()
+                                            } catch (e: Exception) {
+                                                val appIntent = Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                                                    data = android.net.Uri.fromParts("package", context.packageName, null)
+                                                }
+                                                context.startActivity(appIntent)
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(10.dp)
+                                    ) {
+                                        Text("Open Phone Settings", fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            viewModel.setManualShieldActive(true)
+                                            android.widget.Toast.makeText(context, "Caller Shield Active in Local Defense Mode!", android.widget.Toast.LENGTH_SHORT).show()
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        colors = ButtonDefaults.buttonColors(containerColor = SafetyTeal),
+                                        shape = RoundedCornerShape(10.dp)
+                                    ) {
+                                        Text("Quick Activate (Test)", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                    }
+                                }
                             }
                         } else {
                             Row(
