@@ -23,6 +23,7 @@ import { ConfirmationModal } from '../components/common/ConfirmationModal';
 import { useDemoMode } from '../context/DemoModeContext';
 import { useToast } from '../context/ToastContext';
 import { DuressPhraseSettings, IntegrationStatusPanel, SeniorModeCard } from '../components/settings/SafetySettingsPanels';
+import { AdminConsole } from '../components/settings/AdminConsole';
 
 export const SettingsPage: React.FC = () => {
   const { showToast } = useToast();
@@ -306,6 +307,7 @@ export const SettingsPage: React.FC = () => {
                 >
                   <SelectItem value="rule_based" text="Satark Heuristic Engine (Offline / Rapid Heuristics)" />
                   <SelectItem value="watsonx" text="IBM watsonx.ai Granite Model Adapter (Injectable)" />
+                  <SelectItem value="bob" text="IBM Bob Runtime Adapter (configured in backend .env)" />
                 </Select>
               </div>
 
@@ -345,6 +347,8 @@ export const SettingsPage: React.FC = () => {
           </Tile>
 
           <IntegrationStatusPanel />
+
+          <AdminConsole />
 
           {/* Platform Standards / Ethical Compliance Note */}
           <Tile className="p-6 shadow-sm space-y-2 text-xs text-[#525252]">

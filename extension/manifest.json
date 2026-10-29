@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Satark Saathi – Scam Check",
+  "version": "0.1.0",
+  "description": "Select suspicious text on any page and check it with your Satark Saathi account. Nothing is read unless you choose to check it.",
+  "action": {
+    "default_title": "Satark Saathi scam check",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": ["contextMenus", "storage"],
+  "host_permissions": [
+    "http://127.0.0.1:8000/*",
+    "http://localhost:8000/*"
+  ]
+}

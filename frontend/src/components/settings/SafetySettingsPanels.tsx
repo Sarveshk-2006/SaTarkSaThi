@@ -187,6 +187,8 @@ export const IntegrationStatusPanel: React.FC = () => {
                     ? 'warm-gray'
                     : i.status === 'CONFIGURED_UNVERIFIED'
                     ? 'blue'
+                    : i.status === 'BLOCKED_BY_EXTERNAL_CONFIGURATION'
+                    ? 'red'
                     : 'gray'
                 }
                 size="sm"

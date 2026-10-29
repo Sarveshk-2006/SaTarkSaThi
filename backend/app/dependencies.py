@@ -43,12 +43,27 @@ def get_current_user_id(
         parts = authorization.strip().split(" ", 1)
         if len(parts) == 2 and parts[0].lower() == "bearer":
             token = parts[1].strip()
+            if token in ("offline-token", "demo-token") and settings.allow_demo_header_auth:
+                return 1
             try:
                 payload = decode_access_token(token)
-                return int(payload.get("user_id") or payload.get("sub") or 1)
+                user_id = int(payload.get("user_id") or payload.get("sub") or 1)
+                if not _load_access(user_id)[1]:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="This account has been deactivated.",
+                    )
+                return user_id
+            except HTTPException:
+                raise
             except Exception:
-                # Offline/demo token bypass: resolve to default citizen user 1
-                return 1
+                if settings.allow_demo_header_auth:
+                    return 1
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid authentication token.",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
 
     # 2. Fallback to demo persona
     if x_user_id is not None:
@@ -59,6 +74,56 @@ def get_current_user_id(
 
     # Default to Rajesh Sharma (User ID 1)
     return 1
+
+
+def _load_access(user_id: int):
+    """Returns (access_role, is_active) for a user, or ("USER", True) if the profile is missing."""
+    from backend.app.database import SessionLocal
+    from backend.app.models import UserProfile
+    db = SessionLocal()
+    try:
+        profile = db.query(UserProfile).filter(UserProfile.id == user_id).first()
+        if not profile:
+            return "USER", True
+        return (profile.access_role or "USER").upper(), profile.is_active is not False
+    finally:
+        db.close()
+
+
+def get_access_role(user_id: int) -> str:
+    if user_id in settings.admin_user_id_set:
+        return "ADMIN"
+    role, _ = _load_access(user_id)
+    return role if role in ("USER", "OPERATOR", "ADMIN") else "USER"
+
+
+def require_admin(
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+) -> int:
+    """Authenticates the caller and requires ADMIN (ADMIN_USER_IDS bootstrap list or access_role=ADMIN)."""
+    user_id = get_current_user_id(authorization=authorization, x_user_id=x_user_id)
+    if get_access_role(user_id) != "ADMIN":
+        logger.warning(f"Denied admin-only operation for user_id={user_id}")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator permission required for this operation.",
+        )
+    return user_id
+
+
+def require_operator(
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
+) -> int:
+    """Requires OPERATOR or ADMIN access."""
+    user_id = get_current_user_id(authorization=authorization, x_user_id=x_user_id)
+    if get_access_role(user_id) not in ("OPERATOR", "ADMIN"):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operator or administrator permission required.",
+        )
+    return user_id
 
 
 def get_authorized_incident_user_ids(current_user_id: int, db) -> Set[int]:

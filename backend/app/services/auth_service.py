@@ -164,6 +164,9 @@ def authenticate_user(db: Session, identifier: str, passcode: str) -> Optional[U
     if not user:
         return None
 
+    if user.is_active is False:
+        return None
+
     if not verify_passcode(passcode, user.passcode_hash):
         return None
 

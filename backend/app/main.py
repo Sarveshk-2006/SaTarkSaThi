@@ -25,19 +25,33 @@ from backend.app.routers import (
     sdk,
     integrations,
     caller_shield,
+    admin,
+    whatsapp,
 )
+from backend.app.services.security_ops import RateLimitMiddleware, install_log_redaction, purge_expired_evidence
 
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
+install_log_redaction()
 logger = logging.getLogger("satark_saathi")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    install_log_redaction()
     logger.info("Initializing Satark Saathi database and services...")
     init_db(seed_if_empty=True)
+    try:
+        from backend.app.database import SessionLocal
+        db = SessionLocal()
+        try:
+            purge_expired_evidence(db)
+        finally:
+            db.close()
+    except Exception as e:
+        logger.warning(f"Retention purge skipped: {type(e).__name__}")
     logger.info("Satark Saathi backend initialized successfully.")
     yield
     logger.info("Satark Saathi backend shutting down.")
@@ -48,6 +62,9 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
+# Rate limiting is added before CORS so CORS stays outermost and 429 responses keep CORS headers.
+app.add_middleware(RateLimitMiddleware)
 
 # CORS: use the configured origin list from settings.cors_origin_list.
 # Set CORS_ORIGINS in .env to a comma-separated list of allowed origins.
@@ -112,6 +129,8 @@ app.include_router(safety.router, prefix=api_prefix)
 app.include_router(sdk.router, prefix=api_prefix)
 app.include_router(integrations.router, prefix=api_prefix)
 app.include_router(caller_shield.router, prefix=api_prefix)
+app.include_router(admin.router, prefix=api_prefix)
+app.include_router(whatsapp.router, prefix=api_prefix)
 
 from backend.app.services.alert_broadcaster import alert_broadcaster
 from fastapi import WebSocket, WebSocketDisconnect, Query

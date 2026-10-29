@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Satark Saathi</title>
+  <style>
+    body { font-family: system-ui, sans-serif; width: 340px; margin: 0; padding: 14px; color: #0f172a; font-size: 13px; }
+    h1 { font-size: 15px; margin: 0 0 10px; color: #176B58; }
+    input, textarea, select { width: 100%; box-sizing: border-box; padding: 8px; margin: 4px 0 8px; border: 1px solid #cbd5e1; border-radius: 10px; font: inherit; }
+    button { background: #176B58; color: #fff; border: 0; border-radius: 10px; padding: 8px 12px; font-weight: 600; cursor: pointer; }
+    button.link { background: none; color: #475569; padding: 0; font-weight: 400; text-decoration: underline; }
+    .hidden { display: none; }
+    .result { margin-top: 10px; padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; }
+    .LOW { background: #ecfdf5; } .MEDIUM { background: #fffbeb; } .HIGH, .CRITICAL { background: #fef2f2; }
+    .muted { color: #64748b; font-size: 11px; }
+    ul { padding-left: 18px; margin: 6px 0; }
+    .err { color: #b91c1c; }
+  </style>
+</head>
+<body>
+  <h1>🛡️ Satark Saathi scam check</h1>
+
+  <section id="login">
+    <label>Phone or email<input id="identifier" autocomplete="username" /></label>
+    <label>Passcode<input id="passcode" type="password" autocomplete="current-password" /></label>
+    <label>Server
+      <select id="server">
+        <option value="http://127.0.0.1:8000">http://127.0.0.1:8000</option>
+        <option value="http://localhost:8000">http://localhost:8000</option>
+      </select>
+    </label>
+    <button id="loginBtn">Sign in</button>
+    <p class="muted">Your session token is kept only until the browser closes. No API keys are stored in this extension.</p>
+  </section>
+
+  <section id="check" class="hidden">
+    <p class="muted">Signed in as <strong id="who"></strong> · <button class="link" id="logoutBtn">Sign out</button></p>
+    <textarea id="text" rows="5" placeholder="Paste or right-click → 'Check with Satark Saathi' on a suspicious message"></textarea>
+    <button id="checkBtn">Check message</button>
+    <div id="result"></div>
+  </section>
+
+  <p id="error" class="err"></p>
+  <script src="popup.js"></script>
+</body>
+</html>

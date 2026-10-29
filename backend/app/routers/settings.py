@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 from backend.app.database import get_db, Base, engine
 from backend.app.config import settings
-from backend.app.dependencies import get_current_user_id
+from backend.app.dependencies import get_current_user_id, require_admin
 from backend.app.models import (
     UserProfile,
     TrustedContact,
@@ -43,8 +43,14 @@ def get_system_settings():
     )
 
 @router.put("/system", response_model=SystemSettingsResponse)
-def update_system_settings(update_in: SystemSettingsUpdate):
+def update_system_settings(
+    update_in: SystemSettingsUpdate,
+    _admin_id: int = Depends(require_admin),
+):
     if update_in.analysis_provider:
+        from backend.app.services.factory import SUPPORTED_PROVIDERS
+        if update_in.analysis_provider not in SUPPORTED_PROVIDERS:
+            raise HTTPException(status_code=400, detail=f"analysis_provider must be one of {SUPPORTED_PROVIDERS}.")
         settings.analysis_provider = update_in.analysis_provider
     if update_in.watsonx_apikey is not None:
         settings.watsonx_apikey = update_in.watsonx_apikey
@@ -94,16 +100,20 @@ def update_user_profile(
     return profile
 
 @router.post("/reset-database")
-def reset_database(req: ResetDbRequest, db: Session = Depends(get_db)):
+def reset_database(
+    req: ResetDbRequest,
+    db: Session = Depends(get_db),
+    _admin_id: int = Depends(require_admin),
+):
     """
     Resets the database tables. If seed_demo_data is True, loads realistic seed data.
     If False, leaves all tables empty to demonstrate a brand-new user experience.
-    Strictly forbidden in production environments.
+    Requires an administrator AND ALLOW_DATABASE_RESET=true; never allowed in production.
     """
-    if settings.is_production:
+    if settings.is_production or not settings.allow_database_reset:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Production security policy: Database reset is strictly forbidden in production environments."
+            detail="Database reset is disabled on this server (production or ALLOW_DATABASE_RESET=false)."
         )
 
     db.query(RecoveryDraft).delete()

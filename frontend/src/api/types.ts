@@ -340,6 +340,41 @@ export interface IntegrationStatus {
   used_by: string[];
 }
 
+export interface ProviderVerifyResult {
+  status: string;
+  detail: string;
+  latency_ms?: number;
+  model_id?: string | null;
+}
+
+export interface MyAccess {
+  user_id: number;
+  access_role: 'USER' | 'OPERATOR' | 'ADMIN';
+  is_admin: boolean;
+  is_operator: boolean;
+}
+
+export interface AdminUser {
+  id: number;
+  full_name: string;
+  phone_masked: string;
+  email?: string | null;
+  family_role?: string | null;
+  access_role: 'USER' | 'OPERATOR' | 'ADMIN';
+  is_active: boolean;
+  is_bootstrap_admin: boolean;
+}
+
+export interface AdminAuditEvent {
+  id: number;
+  user_id: number | null;
+  event_type: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  description: string;
+  timestamp: string | null;
+}
+
 // Legacy alias
 export type PaymentCheck = PaymentSimulation;
 
