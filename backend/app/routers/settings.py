@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -103,18 +103,26 @@ def update_user_profile(
 def reset_database(
     req: ResetDbRequest,
     db: Session = Depends(get_db),
-    _admin_id: int = Depends(require_admin),
+    authorization: Optional[str] = Header(None, alias="Authorization"),
+    x_user_id: Optional[str] = Header(None, alias="X-User-Id"),
 ):
     """
     Resets the database tables. If seed_demo_data is True, loads realistic seed data.
     If False, leaves all tables empty to demonstrate a brand-new user experience.
     Requires an administrator AND ALLOW_DATABASE_RESET=true; never allowed in production.
     """
-    if settings.is_production or not settings.allow_database_reset:
+    if settings.is_production:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Database reset is disabled on this server (production or ALLOW_DATABASE_RESET=false)."
+            detail="Production security policy: Database reset is strictly forbidden in production environments."
         )
+    if not settings.allow_database_reset:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Database reset is disabled on this server (ALLOW_DATABASE_RESET=false)."
+        )
+
+    require_admin(authorization=authorization, x_user_id=x_user_id)
 
     db.query(RecoveryDraft).delete()
     db.query(Incident).delete()
